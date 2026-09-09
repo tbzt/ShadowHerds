@@ -63,8 +63,7 @@ Object.assign(EditionSR5, {
         source: "Run Faster p.142",
         family: "modules",
         karma: 750,
-        wip: true,
-        hint: "750 points de Karma dépensés en modules de vie. Catalogue en cours de relevé.",
+        hint: "750 points de Karma dépensés en modules de vie : on compose un parcours, on ne répartit pas des points.",
       },
     },
 
@@ -224,6 +223,7 @@ Object.assign(EditionSR5, {
       const fam = this.methods[build.method]?.family;
       const out = [{ id: "concept", kind: "concept", label: "Concept" }];
       if (fam === "priority") out.push({ id: "priorites", kind: "priorities", label: "Priorités" });
+      if (fam === "modules") out.push({ id: "modules", kind: "life_path_sr5", label: "Parcours" });
       out.push(
         { id: "attrs", kind: "attrs", label: "Attributs" },
         { id: "skills", kind: "skills_sr", label: "Compétences" },
@@ -256,6 +256,8 @@ Object.assign(EditionSR5, {
         contacts: [],
         karmaSpent: 0,
         karmaToNuyen: 0,
+        // Méthode à modules : les modules choisis, dans l'ordre, chacun {id, sousligne}.
+        lifePath: [],
         notes: "",
       };
     },
@@ -462,6 +464,60 @@ Object.assign(EditionSR5, {
       }));
     },
 
+    /** Catalogue groupé par section, dans l'ordre de la vie. */
+    lifePathCatalog() {
+      const cat = this.lifeModules.catalogue || [];
+      return this.lifeModules.order
+        .map((sec) => ({ section: sec, modules: cat.filter((m) => m.section === sec) }))
+        .filter((g) => g.modules.length);
+    },
+
+    lifePathById(id) {
+      return (this.lifeModules.catalogue || []).find((m) => m.id === id) || null;
+    },
+
+    /** Karma dépensé par le parcours, plus le coût du métatype. */
+    lifePathKarmaUsed(build) {
+      return (build.lifePath || []).reduce((sum, sl) => {
+        const m = this.lifePathById(sl && sl.id);
+        return sum + (m ? m.karma || 0 : 0);
+      }, 0);
+    },
+
+    /** Les identifiants de contrainte qui ne désignent AUCUN module. Une
+        règle qui ne cible rien est morte à l'écriture et ne se voit jamais :
+        c'est le motif de la règle CSS visant une classe inexistante du
+        CONTRIBUTING. Deux références l'étaient ici (« adolescence_… » au lieu
+        de « l_adolescence_… », l'apostrophe de « L'adolescence » devenant un
+        souligné dans l'identifiant). Lu par `stepErrors`, qui le signale. */
+    lifePathDeadRefs() {
+      const ids = new Set((this.lifeModules.catalogue || []).map((m) => m.id));
+      const out = [];
+      for (const k of this.lifeModules.constraints) {
+        for (const r of [k.de, ...(k.cibles || [])].filter(Boolean)) {
+          if (!ids.has(r)) out.push(r);
+        }
+      }
+      return out;
+    },
+
+    /** Les contraintes d'enchaînement que le parcours courant viole. */
+    lifePathIssues(build) {
+      const pris = (build.lifePath || []).map((x) => x && x.id).filter(Boolean);
+      const set = new Set(pris);
+      const out = [];
+      for (const c of this.lifeModules.constraints) {
+        if (c.kind === "exclut" && set.has(c.de)) {
+          const conflit = (c.cibles || []).filter((x) => set.has(x));
+          if (conflit.length) out.push(c.texte);
+        }
+        if ((c.kind === "impose" || c.kind === "exige") && set.has(c.de)) {
+          out.push(c.texte);
+        }
+      }
+      return out;
+    },
+
     conceptFields(build) {
       const money = (n) => n.toLocaleString("fr-FR");
       const fields = [
@@ -568,6 +624,30 @@ Object.assign(EditionSR5, {
             over: false,
           },
           cells,
+        };
+      }
+
+      if (method.family === "modules") {
+        // ⚠ Contrairement à SR6, les étapes Attributs et Compétences RESTENT :
+        // le livre dit que le solde finalise le personnage, « les modules
+        // laissant volontairement des attributs bas et des compétences
+        // hautes » (p.158). Le parcours n'est donc pas tout le personnage,
+        // c'est sa moitié narrative — l'autre s'achète avec ce qui reste.
+        const parcours = this.lifePathKarmaUsed(build);
+        const reste = method.karma - parcours;
+        const autres = this.karmaUsed(build);
+        const total = parcours + autres;
+        return {
+          headline: {
+            label: `${n(total)} / ${n(method.karma)} karma · parcours ${n(parcours)}, reste ${n(Math.max(0, reste - autres))}`,
+            used: total,
+            total: method.karma,
+            over: total > method.karma,
+          },
+          cells: [
+            { label: "Modules", used: (build.lifePath || []).filter((x) => x && x.id).length, total: null },
+            { label: "Nuyens", used: this.nuyenUsed(build), total: this.karmaNuyenCap(build) },
+          ],
         };
       }
 
@@ -762,10 +842,111 @@ Object.assign(EditionSR5, {
     },
 
     /* ============================================================
+       SYSTÈME À MODULES CHRONOLOGIQUES (Run Faster p.142-158)
+       Règles relevées et vérifiées ; le catalogue des 51 modules vit dans
+       sr5.lifemodules.js — table isolée, corrigeable sans toucher aux règles.
+       ============================================================ */
+    lifeModules: {
+      karma: 750,
+
+      /** Coût par section. Les encadrés ne le répètent pas : il est donné une
+          fois dans l'intro de chaque section. Les Études supérieures font
+          exception — chaque module y porte son propre coût, imprimé entre
+          parenthèses dans son titre (40 à 115). */
+      sectionKarma: {
+        Nationalités: 15,
+        Enfance: 40,
+        "L'adolescence": 50,
+        "La vraie vie": 100,
+      },
+
+      /** L'ordre de la vie. On ne « remplit » pas des emplacements comme en
+          SR6 : on parcourt les âges, et chaque module dépense du karma. */
+      order: [
+        "Nationalités",
+        "Enfance",
+        "L'adolescence",
+        "Études supérieures",
+        "La vraie vie",
+      ],
+
+      /** ⚠ Différence de règle avec SR6, à ne pas aplatir : l'excédent d'une
+          COMPÉTENCE n'est pas perdu, il est TRANSFÉRÉ. « Une compétence active
+          ne peut être augmentée au-dessus de 7 avec ce système. […] les rangs
+          au-dessus de 7 sont transférés à une compétence liée au même
+          attribut » (p.142). L'excédent d'un ATTRIBUT, lui, est bien perdu. */
+      skillCap: 7,
+      knowledgeCap: 9,
+      skillOverflow: "transfert",
+      attrOverflow: "perte",
+
+      /** « Si un groupe de compétences est sélectionné, mais que les
+          sélections précédentes ont modifié les valeurs des compétences du
+          groupe, ajoutez tout simplement un rang à chacune » (p.142). */
+      groupAddsOneRank: true,
+
+      /** Contraintes d'enchaînement imprimées dans la prose, jamais dans les
+          encadrés — c'est pour ça qu'elles sont ici et non dans le catalogue.
+          `kind` : "exclut" (A ferme B), "exige" (A demande l'un de B),
+          "impose" (A force B ensuite), "porte" (passage à sens unique). */
+      constraints: [
+        {
+          kind: "exclut",
+          de: "l_adolescence_ecole_preparatoire",
+          cibles: ["enfance_fugitif", "enfance_education_rurale_en_zone_isolee"],
+          texte:
+            "École préparatoire est incompatible avec Fugitif et avec Éducation rurale en zone isolée (p.147).",
+        },
+        {
+          kind: "impose",
+          de: "l_adolescence_education_magique",
+          texte:
+            "Éducation magique exige d'avoir acheté une catégorie éveillée (p.141), puis impose le module Corporatiste — directement, ou après des Études supérieures qui restent facultatives.",
+        },
+        {
+          kind: "impose",
+          de: "etudes_superieures_academies_militaires",
+          texte: "Académies militaires impose de choisir ensuite une Période de service.",
+        },
+        {
+          kind: "exige",
+          de: "la_vraie_vie_detective_prive",
+          texte:
+            "Détective privé exige d'avoir terminé Agent secret, Agent gouvernemental, Corporatiste, Forces de l'ordre, Période de service ou Travail dans les Ombres.",
+        },
+        {
+          kind: "exige",
+          de: "la_vraie_vie_periode_de_service_mercenaire",
+          texte:
+            "Période de service (Mercenaire) exige Agent corpo, Période de service ou Travail dans les Ombres.",
+        },
+        {
+          kind: "porte",
+          texte:
+            "Passage à sens unique : prendre un module d'Études supérieures mène ensuite à La vraie vie, mais aller directement à La vraie vie interdit d'y revenir.",
+        },
+      ],
+
+      /** Équilibre karmique — ce qu'on fait du solde (p.158). */
+      finition: {
+        karmaToNuyen: 2000,
+        karmaToNuyenMax: 225,
+        sinRule: "On ne garde que le SIN de plus forte valeur en Karma ; il remplace tous les autres.",
+        traitDouble:
+          "Un trait reçu deux fois et non augmentable est remplacé par un autre de même coût.",
+        defautCap: 25,
+      },
+
+      /** Rempli par sr5.lifemodules.js. Vide si ce fichier n'est pas chargé —
+          `stepErrors` le dit alors plutôt que de laisser créer sans modules. */
+      catalogue: [],
+    },
+
+    /* ============================================================
        VALIDATION — la checklist de création du livre (p.102)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], attrs: [], skills: [], gear: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], gear: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -829,6 +1010,38 @@ Object.assign(EditionSR5, {
             `Ressources dépassées : ${nuyen.toLocaleString("fr-FR")} / ${nuyenMax.toLocaleString("fr-FR")} ¥.`,
           );
         }
+      } else if (method.family === "modules") {
+        const cat = this.lifeModules.catalogue || [];
+        if (!cat.length) {
+          out.concept.push("Catalogue des modules absent — sr5.lifemodules.js n'est pas chargé.");
+        }
+        const mortes = this.lifePathDeadRefs();
+        if (mortes.length) {
+          out.concept.push(
+            `Contrainte(s) de parcours pointant un module inexistant : ${mortes.join(", ")}. La règle ne s'appliquerait jamais.`,
+          );
+        }
+        const pris = (build.lifePath || []).filter((x) => x && x.id);
+        if (!pris.length) out.modules.push("Aucun module choisi — le parcours est vide.");
+
+        const parcours = this.lifePathKarmaUsed(build);
+        const total = parcours + this.karmaUsed(build);
+        if (total > method.karma) {
+          out.modules.push(`Karma dépassé (${total}/${method.karma}) — parcours ${parcours}, reste dépensé ${this.karmaUsed(build)}.`);
+        }
+
+        // Une nationalité est le point de départ obligé (p.142).
+        if (!pris.some((x) => this.lifePathById(x.id)?.section === "Nationalités")) {
+          out.modules.push("Il faut choisir une nationalité et sa région d'origine (p.142).");
+        }
+        // Sous-ligne à trancher quand le module en propose.
+        for (const sl of pris) {
+          const m = this.lifePathById(sl.id);
+          if (m && (m.souslignes || []).length && !sl.sousligne) {
+            out.modules.push(`${m.nom} : la ligne « ${m.souslignes[0].label.split(",")[0]}… » reste à choisir.`);
+          }
+        }
+        for (const t of this.lifePathIssues(build)) out.modules.push(t);
       } else if (method.family === "karma") {
         const used = this.karmaUsed(build);
         if (used > method.karma) out.concept.push(`Karma dépassé (${used}/${method.karma}).`);
@@ -956,6 +1169,15 @@ Object.assign(EditionSR5, {
         creationMethod: build.method,
         gameLevel: build.gameLevel,
         priorities: { ...build.priorities },
+        // Le parcours est conservé sur la fiche : c'est l'histoire du
+        // personnage, et le meneur doit pouvoir la relire.
+        lifePath: (build.lifePath || [])
+          .filter((x) => x && x.id)
+          .map((x) => {
+            const m = this.lifePathById(x.id);
+            return m ? { nom: m.nom, section: m.section, karma: m.karma, choix: x.sousligne || null } : null;
+          })
+          .filter(Boolean),
         attrs,
         skills,
         skillGroups: (build.groups || []).map((g) => ({ name: g.name, val: g.val })),

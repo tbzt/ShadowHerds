@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.158.1",
+  VERSION: "1.159.0",
 
   edition: "none",
   editionModule: null,
@@ -302,6 +302,7 @@ export const App = {
     sr5: [
       "js/editions/sr5.js",
       "js/editions/sr5.creation.js",
+      "js/editions/sr5.lifemodules.js",
       "js/editions/sr5.foundry.js",
       "js/editions/sr5.print.js",
     ],

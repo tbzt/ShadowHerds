@@ -10,6 +10,51 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.159.0] — 2026-09-09
+
+### Ajouté
+
+- **Le système à modules chronologiques de SR5 est jouable.** La quatrième
+  méthode de Run Faster arrive avec ses **51 modules relevés au livre** —
+  4 nationalités, 10 modules d'enfance, 10 d'adolescence, 5 d'études
+  supérieures et 22 de « la vraie vie ». **Les quatre méthodes de création de
+  SR5 sont désormais toutes disponibles.**
+- **Ce parcours-ci n'a pas la forme de celui de SR6, et c'est le livre qui
+  l'impose.** Les modules SR5 **coûtent** du karma sur 750, il n'y a pas de
+  nombre d'emplacements, et **les étapes Attributs et Compétences restent** :
+  « le solde finalise le personnage, les modules laissant volontairement des
+  attributs bas et des compétences hautes » (p.158). En SR6, à l'inverse, les
+  modules donnent tout et ces étapes disparaissent.
+- **Les contraintes d'enchaînement du livre sont portées à l'écran** : École
+  préparatoire incompatible avec Fugitif et Éducation rurale, Académies
+  militaires imposant une Période de service, Détective privé et Période de
+  service (Mercenaire) exigeant un module antérieur, et le passage à sens
+  unique — aller directement à La vraie vie interdit de revenir aux Études
+  supérieures.
+- **Le parcours reste sur la fiche** : chaque module avec son coût et le choix
+  de région ou de spécialité retenu. C'est l'histoire du personnage, le meneur
+  doit pouvoir la relire.
+
+### Notes de règles
+
+- **L'excédent d'une compétence n'est pas perdu, il est TRANSFÉRÉ** à une
+  compétence liée au même attribut (p.142) — contrairement à SR6, où il
+  disparaît. L'excédent d'un attribut, lui, est bien perdu dans les deux.
+- Les gains sont affichés **tels que le livre les écrit** (« Logique +1,
+  Connaissances : [Ville] +2, SINner (5) ») plutôt que décomposés : les
+  encadrés sont irréguliers — mots manquants, puces mixtes, cinq lignes
+  tronquées à la composition — et un analyseur silencieux y fabriquerait des
+  personnages faux.
+
+### Corrigé
+
+- **Deux contraintes de parcours ne ciblaient aucun module** et ne se seraient
+  donc jamais déclenchées : l'apostrophe de « L'adolescence » devient un
+  souligné dans les identifiants, et les règles visaient la mauvaise forme.
+  Une règle qui ne cible rien est morte à l'écriture et invisible — un contrôle
+  la signale désormais au lieu de la laisser dormir.
+- Une cellule de budget sans plafond affichait « 3/null ».
+
 ## [1.158.1] — 2026-09-09
 
 ### Corrigé

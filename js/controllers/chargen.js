@@ -207,7 +207,9 @@ export const CharGen = {
       html += `<div class="cluster cg-budget-row cg-budget-cats">${cells
         .map(
           (c) =>
-            `<span class="cg-budget-cell${c.used > c.total ? " over" : ""}">${this._esc(c.label)} ${c.used}/${c.total}</span>`,
+            // `total: null` = compteur sans plafond (« 3 modules »), pas un
+            // budget : afficher « 3/null » serait pire que rien.
+            `<span class="cg-budget-cell${c.total != null && c.used > c.total ? " over" : ""}">${this._esc(c.label)} ${c.used}${c.total != null ? `/${c.total}` : ""}</span>`,
         )
         .join("")}</div>`;
     }
@@ -782,6 +784,83 @@ export const CharGen = {
     </div>`;
   },
 
+  /* ---- Étape : parcours de vie SR5 ----
+     Rien à voir avec celui de SR6, et c'est le livre qui l'impose. Ici les
+     modules COÛTENT du karma sur 750, il n'y a pas de nombre d'emplacements,
+     et les étapes Attributs/Compétences RESTENT : « le solde finalise le
+     personnage, les modules laissant volontairement des attributs bas et des
+     compétences hautes » (Run Faster p.158).
+
+     Les gains sont affichés TELS QUE LE LIVRE LES ÉCRIT — « Logique +1,
+     Connaissances : [Ville] +2, SINner (5) » — et non décomposés : les
+     encadrés sont irréguliers (mots manquants, puces mixtes, lignes tronquées
+     à la composition), et un analyseur silencieux y fabriquerait des
+     personnages faux. Le meneur lit, applique, et garde la main. */
+  _render_life_path_sr5() {
+    const c = this._creation();
+    const b = this._build;
+    const LM = c.lifeModules;
+    b.lifePath = b.lifePath || [];
+    const parcours = c.lifePathKarmaUsed(b);
+    const issues = c.lifePathIssues(b);
+
+    const rows = b.lifePath
+      .map((sl, i) => {
+        const m = sl && sl.id ? c.lifePathById(sl.id) : null;
+        if (!m) return "";
+        const lignes = (m.lignes || [])
+          .filter((l) => l.valeur)
+          .map((l) => `<li><strong>${this._esc(l.label)}</strong> — ${this._esc(l.valeur)}</li>`)
+          .join("");
+        const sous = (m.souslignes || []).length
+          ? `<div class="cluster cg-add-row">
+              <span class="cg-section-note">${this._esc((m.lignes.find((l) => !l.valeur) || {}).label || "Au choix")} :</span>
+              <select data-cg-action="lp-sousligne" data-idx="${i}">
+                <option value="">— à choisir —</option>
+                ${m.souslignes.map((x) => `<option value="${this._esc(x.label)}" ${sl.sousligne === x.label ? "selected" : ""}>${this._esc(x.label)}</option>`).join("")}
+              </select>
+            </div>
+            ${sl.sousligne ? `<p class="cg-hint">${this._esc((m.souslignes.find((x) => x.label === sl.sousligne) || {}).valeur || "")}</p>` : ""}`
+          : "";
+        return `<div class="cg-lm-slot">
+          <div class="cluster cg-lm-head">
+            <span class="cg-lm-num">${i + 1}</span>
+            <strong>${this._esc(m.nom)}</strong>
+            <span class="tag">${m.karma} karma</span>
+            <span class="cg-section-note">${this._esc(m.section)}</span>
+            <button class="btn-icon-tiny danger" data-cg-action="lp-remove" data-idx="${i}" title="Retirer">✕</button>
+          </div>
+          <ul class="cg-lm-list">${lignes}</ul>
+          ${sous}
+          ${m.special ? `<p class="cg-lm-special">⚑ ${this._esc(m.special)}</p>` : ""}
+        </div>`;
+      })
+      .join("");
+
+    const groupes = c
+      .lifePathCatalog()
+      .map(
+        (g) =>
+          `<optgroup label="${this._esc(g.section)}">${g.modules
+            .map((m) => `<option value="${this._esc(m.id)}">${this._esc(m.nom)} (${m.karma})</option>`)
+            .join("")}</optgroup>`,
+      )
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("modules")}
+      <p class="cg-hint">On compose une vie, on ne répartit pas des points : chaque module coûte du karma sur les ${LM.karma}. L'ordre de choix raconte le parcours. Le solde finalise ensuite le personnage aux étapes Attributs et Compétences — le livre laisse volontairement les attributs bas.</p>
+      ${issues.length ? `<div class="stack cg-step-errors">${issues.map((t) => `<div class="cg-hint">⚑ ${this._esc(t)}</div>`).join("")}</div>` : ""}
+      <div class="cg-section-label">Parcours <span class="cg-section-note">${b.lifePath.filter((x) => x && x.id).length} modules · ${parcours} karma</span></div>
+      ${rows || '<p class="cg-hint">Parcours vide. Commencez par une nationalité.</p>'}
+      <div class="cluster cg-add-row">
+        <select id="cg-lp-pick">${groupes}</select>
+        <button class="btn-secondary btn-small" data-cg-action="lp-add">＋ Ajouter au parcours</button>
+      </div>
+      <p class="cg-hint">Plafonds propres à cette méthode : compétence active ${LM.skillCap} — l'excédent est <strong>transféré</strong> à une compétence du même attribut, pas perdu — connaissances ${LM.knowledgeCap}, et tout rang d'attribut au-delà du maximum du métatype est <strong>perdu</strong>.</p>
+    </div>`;
+  },
+
   /* ---- Étape : parcours de vie (SR6, modules chronologiques) ----
      Trois modules imposés, puis huit emplacements adultes. Chaque option d'un
      module est un vrai choix à résoudre ICI : sans ça, `validate()` passerait
@@ -1175,6 +1254,28 @@ export const CharGen = {
         holder[leaf] = Utils.clamp((holder[leaf] ?? min) + delta, min, max);
         this._saveDraft();
         this._renderAll();
+        break;
+      }
+
+      case "lp-add": {
+        const sel = document.getElementById("cg-lp-pick");
+        if (sel?.value) {
+          b.lifePath = b.lifePath || [];
+          b.lifePath.push({ id: sel.value, sousligne: null });
+          afterMutate();
+        }
+        break;
+      }
+      case "lp-remove":
+        b.lifePath.splice(Number(el.dataset.idx), 1);
+        afterMutate();
+        break;
+      case "lp-sousligne": {
+        const sl = (b.lifePath || [])[Number(el.dataset.idx)];
+        if (sl) {
+          sl.sousligne = el.value || null;
+          afterMutate();
+        }
         break;
       }
 
