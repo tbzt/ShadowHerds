@@ -574,7 +574,16 @@ export const CharGen = {
         view.magicLegend
           ? `<div class="cg-prio-legend">
               <span class="cg-prio-legend-letter">${this._esc(view.magicLegend.letter)}</span>
-              <ul>${view.magicLegend.lignes.map((l) => `<li>${this._esc(l)}</li>`).join("")}</ul>
+              ${
+                (view.magicLegend.options || []).length
+                  ? `<ul class="cg-magic-options">${view.magicLegend.options
+                      .map(
+                        (o) =>
+                          `<li><button class="cg-magic-option${o.chosen ? " chosen" : ""}" data-cg-action="set-magic-option" data-key="${this._esc(o.key)}" aria-pressed="${o.chosen}">${this._esc(o.label)}</button></li>`,
+                      )
+                      .join("")}</ul>`
+                  : `<ul>${view.magicLegend.lignes.map((l) => `<li>${this._esc(l)}</li>`).join("")}</ul>`
+              }
             </div>`
           : ""
       }
@@ -750,6 +759,51 @@ export const CharGen = {
      PNJ, sans prix) : on lui emprunte les noms canoniques et le joueur pose
      le prix lu au livre. Un catalogue chiffré serait un relevé à part
      entière (~80 pages de chapitre Équipement). */
+  /* ---- Étape : Magie / Résonance (SR5, SR6) ----
+     Un seul écran pour trois réserves que le livre distingue — sorts (ou
+     « formules » en SR6), formes complexes, pouvoirs d'adepte — parce que
+     l'ÉCRAN a bien la même forme dans les trois cas : un catalogue groupé par
+     catégorie, des cases à cocher, un compteur. Ce que chaque édition accorde
+     et comment elle le nomme vient de `magicStep()`, jamais d'ici.
+
+     `total: null` signifie « pas de quota, un coût à l'unité » : le compteur
+     affiche alors le nombre choisi sans dénominateur, plutôt qu'un « /null ». */
+  _render_magic_sr() {
+    const c = this._creation();
+    const step = c.magicStep(this._build);
+    if (!step) return `<div class="stack"><p class="cg-hint">Personnage sans Magie ni Résonance.</p></div>`;
+
+    const blocs = step.groups
+      .map((g) => {
+        const chosen = new Set(g.chosen || []);
+        const groupes = (g.catalog || [])
+          .map((cat) => {
+            const cases = (cat.items || [])
+              .map(
+                (it) =>
+                  `<label class="cluster cg-check"><input type="checkbox" data-cg-action="toggle-magic" data-kind="${this._esc(g.key)}" data-name="${this._esc(it.label)}" ${chosen.has(it.label) ? "checked" : ""}> ${this._esc(it.label)}</label>`,
+              )
+              .join("");
+            return `<div class="stack cg-magic-cat"><div class="cg-section-note">${this._esc(cat.category)}</div>
+              <div class="cg-check-grid">${cases}</div></div>`;
+          })
+          .join("");
+        const compteur = g.total == null ? `${g.used} choisi(s)` : this._kitMeter(g.used, g.total, "choisis");
+        return `<div class="stack">
+          <div class="cg-section-label">${this._esc(g.label)} <span class="cg-section-note">${compteur}</span></div>
+          <p class="cg-hint">${this._esc(g.hint)}</p>
+          ${groupes}
+        </div>`;
+      })
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("magie")}
+      <p class="cg-hint">${this._esc(step.hint)}</p>
+      ${blocs}
+    </div>`;
+  },
+
   _render_gear_nuyen() {
     const c = this._creation();
     const b = this._build;
@@ -1670,6 +1724,19 @@ export const CharGen = {
         afterMutate();
         break;
 
+      case "toggle-magic": {
+        const kind = el.dataset.kind;
+        const name = el.dataset.name;
+        const liste = b[kind] || [];
+        b[kind] = liste.includes(name) ? liste.filter((x) => x !== name) : [...liste, name];
+        afterMutate();
+        break;
+      }
+      case "set-magic-option": {
+        b.magicOption = b.magicOption === el.dataset.key ? "" : el.dataset.key;
+        afterMutate();
+        break;
+      }
       case "toggle-spell": {
         const name = el.dataset.name;
         b.spells = b.spells.includes(name) ? b.spells.filter((n) => n !== name) : [...b.spells, name];

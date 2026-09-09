@@ -27,6 +27,7 @@
    augmenter un attribut de 1 », p.68) — l'inverse d'Anarchy 2, qui compte
    depuis 0 (p.85). Ne pas cloner attrPointsUsed() d'Anarchy ici.
    ============================================================ */
+import { Content } from "../rules/content.js";
 import { EditionSR5 } from "./sr5.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Utils } from "../core/utils.js";
@@ -227,6 +228,11 @@ Object.assign(EditionSR5, {
       out.push(
         { id: "attrs", kind: "attrs", label: "Attributs" },
         { id: "skills", kind: "skills_sr", label: "Compétences" },
+      );
+      // L'étape n'existe que si le personnage a quelque chose à y choisir :
+      // un profane n'a pas d'écran vide à traverser.
+      if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
+      out.push(
         { id: "gear", kind: "gear_nuyen", label: "Équipement" },
         { id: "contacts", kind: "contacts", label: "Contacts" },
         { id: "review", kind: "review", label: "Révision" },
@@ -252,6 +258,8 @@ Object.assign(EditionSR5, {
         groups: [],
         knowledges: [],
         spells: [],
+        complexForms: [],
+        adeptPowers: [],
         gear: [],
         contacts: [],
         karmaSpent: 0,
@@ -400,10 +408,22 @@ Object.assign(EditionSR5, {
           const row = self.priorityTable[build.priorities.magic];
           if (!row) return null;
           if (!row.magic.length) {
-            return { letter: build.priorities.magic, lignes: ["Aucune option magique."] };
+            return { letter: build.priorities.magic, options: [], lignes: ["Aucune option magique."] };
           }
           return {
             letter: build.priorities.magic,
+            /* ⚠ Ces lignes étaient DÉCORATIVES : elles disaient « Magicien :
+               Magie 6, 10 sorts » sans qu'on puisse jamais déclarer qu'on
+               était ce magicien. `build.magicOption` existait dans le
+               brouillon, n'était ni écrit ni lu, et l'assistant ne pouvait
+               donc pas savoir s'il fallait proposer des sorts, des formes
+               complexes ou des pouvoirs d'adepte. Elles sont maintenant
+               choisissables, et ce choix commande l'étape Magie. */
+            options: row.magic.map((m) => ({
+              key: m.key,
+              label: self._magicOptionLabel(m),
+              chosen: build.magicOption === m.key,
+            })),
             lignes: row.magic.map((m) => {
               const bits = [];
               if (m.mag) bits.push(`Magie ${m.mag}`);
@@ -718,6 +738,7 @@ Object.assign(EditionSR5, {
       for (const g of build.groups || []) sum += this.karmaForSkill(g.val || 0, kc.groupMult);
       for (const k of build.knowledges || []) sum += this.karmaForSkill(k.val || 1, kc.knowledgeMult);
       sum += (build.spells || []).length * kc.spell;
+      sum += (build.complexForms || []).length * kc.complexForm;
       if (build.awakened && this.awakenedKarma[build.awakened]) {
         sum += this.awakenedKarma[build.awakened].karma;
       }
@@ -833,7 +854,123 @@ Object.assign(EditionSR5, {
         knowledges: (b.knowledges || []).filter((k) => k && String(k.name || "").trim()),
         gear: (b.gear || []).filter((g) => g && String(g.name || "").trim()),
         contacts: (b.contacts || []).filter((c) => c && c.name && c.name.trim()),
+        spells: (b.spells || []).filter((x) => String(x || "").trim()),
+        complexForms: (b.complexForms || []).filter((x) => String(x || "").trim()),
+        adeptPowers: (b.adeptPowers || []).filter((x) => String(x || "").trim()),
       };
+    },
+
+    /* ============================================================
+       MAGIE / RÉSONANCE — sorts, formes complexes, pouvoirs d'adepte
+       ------------------------------------------------------------
+       ⚠ Rien de tout cela n'était choisissable avant la 1.163.0, alors que
+       la grille des priorités PROMETTAIT « 10 sorts » ou « 5 formes
+       complexes » et que `karmaUsed` facturait déjà les sorts. Les
+       catalogues existaient depuis toujours dans `Content`, au service du
+       générateur de PNJ — 192 sorts, 19 formes, 56 pouvoirs en SR5. Même
+       motif que `gearCatalog` et les Atouts d'Anarchy : la donnée était là,
+       l'écran ne la lisait pas.
+       ============================================================ */
+
+    /** Libellé d'une option de la colonne Magie, tel que la légende l'écrit. */
+    _magicOptionLabel(m) {
+      const bits = [];
+      if (m.mag) bits.push(`Magie ${m.mag}`);
+      if (m.res) bits.push(`Résonance ${m.res}`);
+      if (m.spells) bits.push(`${m.spells} sorts`);
+      if (m.forms) bits.push(`${m.forms} formes complexes`);
+      return bits.length ? `${m.label} — ${bits.join(", ")}` : m.label;
+    },
+
+    /** Le profil magique EFFECTIF, ou `null` pour un profane. Deux sources,
+        parce que le livre en a deux : la COLONNE Magie en priorités (p.67,
+        et RF p.138 pour les 10 points), un TRAIT ACHETÉ au karma (RF p.141).
+        Le même écran sert les deux — c'est l'accesseur qui les réconcilie,
+        pas le contrôleur. */
+    magicProfile(build) {
+      const fam = this.methods[build.method]?.family;
+      if (fam === "priority") {
+        const row = this.priorityTable[build.priorities?.magic];
+        if (!row || !row.magic.length) return null;
+        const opt = row.magic.find((m) => m.key === build.magicOption);
+        return opt ? { ...opt, source: "priorite" } : null;
+      }
+      const a = this.awakenedKarma[build.awakened];
+      return a ? { key: build.awakened, label: a.label, source: "karma" } : null;
+    },
+
+    /** Indice de Magie ou de Résonance effectif — il plafonne les pouvoirs
+        d'adepte (un adepte reçoit autant de points de pouvoir que sa Magie,
+        p.69) et sert de repère au joueur. */
+    magicRating(build) {
+      const p = this.magicProfile(build);
+      if (!p) return 0;
+      if (p.source === "priorite") return p.mag || p.res || 0;
+      const sp = build.special || {};
+      return this.awakenedKarma[build.awakened]?.attr === "RES" ? sp.RES || 0 : sp.MAG || 0;
+    },
+
+    /** L'écran Magie, DÉCLARÉ : trois réserves possibles, chacune avec son
+        catalogue groupé par catégorie et son plafond. `total: null` = pas de
+        quota mais un coût en karma à l'unité.
+
+        ⚠ Un adepte ne « dépense » pas ses pouvoirs comme des sorts : il a
+        des POINTS DE POUVOIR (= sa Magie), et le catalogue de l'application
+        ne porte pas le coût de chaque pouvoir. On affiche donc le nombre de
+        points disponibles sans prétendre facturer la sélection — mieux vaut
+        un compteur honnête qu'un total inventé. */
+    magicStep(build) {
+      const prof = this.magicProfile(build);
+      if (!prof) return null;
+      const fam = this.methods[build.method]?.family;
+      const kc = this.karmaCosts;
+      const groups = [];
+
+      const sorts = Content.spellCatalogFor("sr5");
+      if (sorts && prof.key !== "technomancien" && prof.key !== "adepte") {
+        groups.push({
+          key: "spells",
+          label: "Sorts",
+          hint: prof.source === "priorite"
+            ? `La colonne Magie ${build.priorities.magic} en accorde ${prof.spells || 0}.`
+            : `${kc.spell} karma le sort.`,
+          total: prof.source === "priorite" ? prof.spells || 0 : null,
+          used: (build.spells || []).length,
+          chosen: build.spells || [],
+          catalog: sorts,
+        });
+      }
+
+      const formes = Content.complexFormCatalogFor("sr5");
+      if (formes && prof.key === "technomancien") {
+        groups.push({
+          key: "complexForms",
+          label: "Formes complexes",
+          hint: prof.source === "priorite"
+            ? `La colonne Résonance ${build.priorities.magic} en accorde ${prof.forms || 0}.`
+            : `${kc.complexForm} karma la forme complexe.`,
+          total: prof.source === "priorite" ? prof.forms || 0 : null,
+          used: (build.complexForms || []).length,
+          chosen: build.complexForms || [],
+          catalog: formes,
+        });
+      }
+
+      const pouvoirs = Content.pouvoirsAdepte?.sr5 || [];
+      if (pouvoirs.length && (prof.key === "adepte" || prof.key === "mystique")) {
+        const pp = this.magicRating(build);
+        groups.push({
+          key: "adeptPowers",
+          label: "Pouvoirs d'adepte",
+          hint: `${pp} point(s) de pouvoir (autant que la Magie, p.69). Le catalogue ne porte pas le coût de chaque pouvoir : à vérifier au livre.`,
+          total: null,
+          used: (build.adeptPowers || []).length,
+          chosen: build.adeptPowers || [],
+          catalog: [{ category: "Pouvoirs d'adepte", items: pouvoirs.map((x) => ({ id: x.name, label: x.name })) }],
+        });
+      }
+
+      return groups.length ? { hint: `${prof.label}.`, groups } : null;
     },
 
     /** Les attributs spéciaux vivent dans `build.special`, pas `build.attrs`. */
@@ -962,7 +1099,7 @@ Object.assign(EditionSR5, {
        VALIDATION — la checklist de création du livre (p.102)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], gear: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -1131,6 +1268,27 @@ Object.assign(EditionSR5, {
           out.gear.push(`${g.name} : Disponibilité ${g.availability} > ${level.availability} autorisée à la création.`);
         }
       }
+
+      /* Magie : on refuse de DÉPASSER le quota de la colonne. Un quota non
+         épuisé n'est PAS signalé — contrairement aux réserves de points, je
+         n'ai pas vérifié au livre que les sorts non pris sont perdus, et
+         inventer la règle serait pire que se taire. */
+      const magie = this.magicStep(build);
+      for (const g of magie ? magie.groups : []) {
+        if (g.total != null && g.used > g.total) {
+          out.magie.push(`${g.label} : ${g.used} choisi(s) pour ${g.total} accordé(s).`);
+        }
+      }
+      // Une colonne Magie qui offre des options mais dont aucune n'est prise :
+      // le personnage n'est ni profane ni éveillé, il est indéterminé.
+      if (method.family === "priority") {
+        const row = this.priorityTable[build.priorities.magic];
+        if (row && row.magic.length && !this.magicProfile(build)) {
+          out.priorites.push(
+            `La colonne Magie ${build.priorities.magic} ouvre ${row.magic.length} option(s) : il faut en choisir une, ou prendre une lettre sans magie.`,
+          );
+        }
+      }
       return out;
     },
 
@@ -1206,6 +1364,8 @@ Object.assign(EditionSR5, {
         skillGroups: (build.groups || []).map((g) => ({ name: g.name, val: g.val })),
         knowledges: (build.knowledges || []).map((k) => k.name || k),
         spells: build.spells || [],
+        complexForms: build.complexForms || [],
+        adeptPowers: build.adeptPowers || [],
         equip: (build.gear || []).map((g) => g.name),
         awakened: build.awakened || null,
         threatLevel: "forte",

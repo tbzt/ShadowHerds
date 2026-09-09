@@ -645,3 +645,43 @@
   padding-left: 1em;
   line-height: 1.5;
 }
+
+/* ============================================================
+   ÉTAPE MAGIE / RÉSONANCE (SR5, SR6)
+   La légende de la colonne Magie n'était que du texte : elle disait
+   « Magicien : Magie 6, 10 sorts » sans qu'on puisse déclarer qu'on était ce
+   magicien. Ses lignes sont devenues des BOUTONS, et le choix commande
+   l'étape. Elles gardent l'allure d'une légende — c'est toujours ce qu'elles
+   sont — mais avec une cible cliquable pleine largeur.
+   ============================================================ */
+.cg-magic-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cg-magic-option {
+  width: 100%;
+  text-align: left;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.cg-magic-option:hover {
+  border-color: var(--accent);
+}
+.cg-magic-option.chosen {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  font-weight: 700;
+}
+.cg-magic-cat + .cg-magic-cat {
+  margin-top: 8px;
+}

@@ -27,6 +27,7 @@
       absent de A et B, elfe de A) — l'inverse de SR5, où le troll disparaît
       en bas de table.
    ============================================================ */
+import { Content } from "../rules/content.js";
 import { EditionSR6 } from "./sr6.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Settings } from "../controllers/settings.js";
@@ -409,6 +410,7 @@ Object.assign(EditionSR6, {
           { id: "skills", kind: "skills_sr6", label: "Compétences" },
         );
       }
+      if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
       out.push(
         { id: "gear", kind: "gear_nuyen", label: "Équipement" },
         { id: "contacts", kind: "contacts", label: "Contacts" },
@@ -431,6 +433,11 @@ Object.assign(EditionSR6, {
         skills: [],
         knowledges: [],
         spells: [],
+        complexForms: [],
+        adeptPowers: [],
+        /** Option retenue dans la colonne Magie (familles à priorités) ; les
+            familles « points » et « modules » passent par `awakened`. */
+        magicOption: "",
         gear: [],
         contacts: [],
         pcNuyen: 0, // PC investis en ressources (méthode par points)
@@ -778,10 +785,17 @@ Object.assign(EditionSR6, {
           const row = self.priorityTable[build.priorities.magic];
           if (!row) return null;
           if (!row.magic.length) {
-            return { letter: build.priorities.magic, lignes: ["Ordinaire — ni Magie ni Résonance."] };
+            return { letter: build.priorities.magic, options: [], lignes: ["Ordinaire — ni Magie ni Résonance."] };
           }
           return {
             letter: build.priorities.magic,
+            /* Choisissables, et non plus décoratives : ce choix commande
+               l'étape Magie. Cf. le commentaire jumeau de sr5.creation.js. */
+            options: row.magic.map((m) => ({
+              key: m.key,
+              label: self._magicOptionLabel(m),
+              chosen: build.magicOption === m.key,
+            })),
             lignes: row.magic.map((m) => {
               const bits = [];
               if (m.mag) bits.push(`Magie ${m.mag}`);
@@ -1116,12 +1130,116 @@ Object.assign(EditionSR6, {
       return `Réseau + Loyauté se paient sur Charisme × ${this.CONTACT_MULT} : ${this.contactPointsUsed(build)} / ${this.contactPointsTotal(build)} points (p.69). Aucun indice ne peut dépasser le Charisme.`;
     },
 
+    /* ============================================================
+       MAGIE / RÉSONANCE — formules, formes complexes, pouvoirs d'adepte
+       ------------------------------------------------------------
+       Mêmes accesseurs qu'en SR5, MAIS le vocabulaire du livre diffère et on
+       ne l'aplatit pas : SR6 parle de FORMULES (sorts, rituels et
+       préparations alchimiques sous un même quota, core p.67), là où SR5
+       compte des sorts. Le catalogue de l'application ne contient que des
+       sorts : le quota affiché est donc celui du livre, la liste ne couvre
+       qu'une partie de ce qu'il autorise, et l'écran le dit.
+       ============================================================ */
+
+    _magicOptionLabel(m) {
+      const bits = [];
+      if (m.mag) bits.push(`Magie ${m.mag}`);
+      if (m.res) bits.push(`Résonance ${m.res}`);
+      if (m.formulas) bits.push(`${m.formulas} formules`);
+      if (m.forms) bits.push(`${m.forms} formes complexes`);
+      return bits.length ? `${m.label} — ${bits.join(", ")}` : m.label;
+    },
+
+    /** Profil magique effectif, ou `null` pour un ordinaire. La colonne Magie
+        en priorités ; `awakened` pour les méthodes par points et à modules,
+        où le choix se fait au Concept (et, pour les modules, à la Naissance
+        — Compagnon p.31). */
+    magicProfile(build) {
+      const fam = this.methods[build.method]?.family;
+      if (fam === "priority") {
+        const row = this.priorityTable[build.priorities?.magic];
+        if (!row || !row.magic.length) return null;
+        const opt = row.magic.find((m) => m.key === build.magicOption);
+        return opt ? { ...opt, source: "priorite" } : null;
+      }
+      const a = this.awakenedStart[build.awakened];
+      return a ? { key: build.awakened, label: a.label, source: "eveil" } : null;
+    },
+
+    magicRating(build) {
+      const p = this.magicProfile(build);
+      if (!p) return 0;
+      if (p.source === "priorite") return p.mag || p.res || 0;
+      const sp = build.special || {};
+      return this.awakenedStart[build.awakened]?.attr === "RES" ? sp.RES || 0 : sp.MAG || 0;
+    },
+
+    /** L'écran Magie, déclaré. `total: null` = pas de quota de colonne, mais
+        un coût en karma de personnalisation à l'unité. */
+    magicStep(build) {
+      const prof = this.magicProfile(build);
+      if (!prof) return null;
+      const kc = this.karmaCosts;
+      const parPriorite = prof.source === "priorite";
+      const groups = [];
+      const estTechno = prof.key === "technomancien";
+      const estAdepte = prof.key === "adepte" || prof.key === "mystique";
+
+      const sorts = Content.spellCatalogFor("sr6");
+      if (sorts && !estTechno && !estAdepte) {
+        groups.push({
+          key: "spells",
+          label: "Formules",
+          hint: parPriorite
+            ? `La colonne Magie ${build.priorities.magic} en accorde ${prof.formulas || 0}. Le livre compte sorts, rituels et préparations dans ce même quota ; seuls les sorts sont catalogués ici.`
+            : `${kc.spell} karma la formule.`,
+          total: parPriorite ? prof.formulas || 0 : null,
+          used: (build.spells || []).length,
+          chosen: build.spells || [],
+          catalog: sorts,
+        });
+      }
+
+      const formes = Content.complexFormCatalogFor("sr6");
+      if (formes && estTechno) {
+        groups.push({
+          key: "complexForms",
+          label: "Formes complexes",
+          hint: parPriorite
+            ? `La colonne Résonance ${build.priorities.magic} en accorde ${prof.forms || 0}.`
+            : `${kc.complexForm} karma la forme complexe.`,
+          total: parPriorite ? prof.forms || 0 : null,
+          used: (build.complexForms || []).length,
+          chosen: build.complexForms || [],
+          catalog: formes,
+        });
+      }
+
+      const pouvoirs = Content.pouvoirsAdepte?.sr6 || [];
+      if (pouvoirs.length && estAdepte) {
+        groups.push({
+          key: "adeptPowers",
+          label: "Pouvoirs d'adepte",
+          hint: `${this.magicRating(build)} point(s) de pouvoir (autant que la Magie). Le catalogue ne porte pas le coût de chaque pouvoir : à vérifier au livre.`,
+          total: null,
+          used: (build.adeptPowers || []).length,
+          chosen: build.adeptPowers || [],
+          catalog: [{ category: "Pouvoirs d'adepte", items: pouvoirs.map((x) => ({ id: x.name, label: x.name })) }],
+        });
+      }
+
+      return groups.length ? { hint: `${prof.label}.`, groups } : null;
+    },
+
     cleanBuild(b) {
       return {
         ...b,
         knowledges: (b.knowledges || []).filter((k) => k && String(k.name || "").trim()),
         gear: (b.gear || []).filter((g) => g && String(g.name || "").trim()),
         contacts: (b.contacts || []).filter((c) => c && c.name && c.name.trim()),
+        spells: (b.spells || []).filter((x) => String(x || "").trim()),
+        complexForms: (b.complexForms || []).filter((x) => String(x || "").trim()),
+        adeptPowers: (b.adeptPowers || []).filter((x) => String(x || "").trim()),
       };
     },
 
@@ -1129,7 +1247,7 @@ Object.assign(EditionSR6, {
        VALIDATION (core p.66-69)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], gear: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -1336,6 +1454,24 @@ Object.assign(EditionSR6, {
           out.contacts.push(`${c.name || "Contact"} : aucun indice ne peut dépasser le Charisme (${cha}).`);
         }
       }
+      /* Magie : refuser le DÉPASSEMENT du quota de la colonne. Un quota non
+         épuisé n'est pas signalé — je n'ai pas vérifié au livre que les
+         formules non prises sont perdues, et inventer la règle serait pire
+         que se taire. */
+      const magie = this.magicStep(build);
+      for (const g of magie ? magie.groups : []) {
+        if (g.total != null && g.used > g.total) {
+          out.magie.push(`${g.label} : ${g.used} choisi(s) pour ${g.total} accordé(s).`);
+        }
+      }
+      if (method.family === "priority") {
+        const rowM = this.priorityTable[build.priorities.magic];
+        if (rowM && rowM.magic.length && !this.magicProfile(build)) {
+          out.priorites.push(
+            `La colonne Magie ${build.priorities.magic} ouvre ${rowM.magic.length} option(s) : il faut en choisir une, ou prendre une lettre sans magie.`,
+          );
+        }
+      }
       return out;
     },
 
@@ -1426,6 +1562,8 @@ Object.assign(EditionSR6, {
           ? [...grants.know]
           : (build.knowledges || []).map((k) => k.name || k),
         spells: build.spells || [],
+        complexForms: build.complexForms || [],
+        adeptPowers: build.adeptPowers || [],
         equip: (build.gear || []).map((g) => g.name),
         awakened: build.awakened || null,
         threatLevel: "forte",
