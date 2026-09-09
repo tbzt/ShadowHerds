@@ -1047,9 +1047,17 @@ export const CharGen = {
       })
       .join("");
 
+    /* `parmi` est une liste de paires {value, label} : ce que le moteur
+       applique n'est PAS toujours ce que le joueur lit. Le livre écrit « votre
+       Magie (Éveillé uniquement) » — la parenthèse est une condition d'accès,
+       pas une partie du code. Rendre le libellé comme valeur faisait écrire un
+       attribut fantôme que rien ne relisait. Ne pas resimplifier en une seule
+       chaîne. */
     const choixSelect = (slotIdx, kind, optIdx, parmi, valeur) =>
       `<select class="cg-lm-choice" data-cg-action="lm-choice" data-idx="${slotIdx}" data-kind="${kind}" data-opt="${optIdx}">
-        ${parmi.map((o) => `<option value="${this._esc(o)}" ${valeur === o ? "selected" : ""}>${this._esc(o)}</option>`).join("")}
+        ${parmi
+          .map((o) => `<option value="${this._esc(o.value)}" ${valeur === o.value ? "selected" : ""}>${this._esc(o.label)}</option>`)
+          .join("")}
       </select>`;
 
     const slots = [];
@@ -1071,7 +1079,12 @@ export const CharGen = {
           const parmi = c.expandParmi(sk.parmi, "skills");
           lignes.push(`<li>+${sk.n} rang à ${n} : ${choixSelect(i, "skills", k, parmi, slot.skills && slot.skills[k])}</li>`);
         });
-        if (m.know) lignes.push(`<li>connaissance : ${choixSelect(i, "know", 0, m.know.parmi.concat(m.know.ouLangue ? ["— un rang de Langue —"] : []), slot.know)}</li>`);
+        if (m.know) {
+          const opts = m.know.parmi
+            .concat(m.know.ouLangue ? ["— un rang de Langue —"] : [])
+            .map((o) => ({ value: o, label: o }));
+          lignes.push(`<li>connaissance : ${choixSelect(i, "know", 0, opts, slot.know)}</li>`);
+        }
         if (m.nuyen) lignes.push(`<li>+${m.nuyen.toLocaleString("fr-FR")} ¥</li>`);
         if (m.contactPts) lignes.push(`<li>${m.contactPts} points de contacts${m.contactCats ? ` (${this._esc(m.contactCats.join(", "))})` : ""}</li>`);
         if (m.special) lignes.push(`<li class="cg-lm-special">⚑ ${this._esc(m.special)}</li>`);

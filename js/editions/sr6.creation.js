@@ -642,20 +642,33 @@ Object.assign(EditionSR6, {
         });
       }
 
-      // En création par points, la catégorie d'Éveil s'achète (10 PC) et fixe
-      // l'indice de départ ; en priorités elle découle de la colonne Magie.
-      if (fam === "pc") {
+      /* En création par points, la catégorie d'Éveil s'achète (10 PC) et fixe
+         l'indice de départ ; en priorités elle découle de la colonne Magie.
+
+         ⚠ En méthode à MODULES, elle se choisit à la Naissance (Compagnon
+         p.31) — et le contrôle manquait purement et simplement. `build.awakened`
+         était donc toujours vide, si bien que `lifeModuleCatalog` masquait les
+         NEUF modules réservés aux Éveillés, aux Émergés et aux adeptes
+         (Alchimiste, Chaman urbain, Technomancien…) : on ne pouvait pas se
+         construire un magicien par les modules de vie. Le reste du moteur
+         attendait pourtant déjà cette valeur — `lifeModuleGrants` accorde
+         +1 Atout à l'ordinaire. Une omission, pas un désaccord de conception. */
+      if (fam === "pc" || fam === "modules") {
+        const parPoints = fam === "pc";
         fields.push({
           path: "awakened",
-          label: "Éveillé ou Émergé (10 PC)",
+          label: parPoints ? "Éveillé ou Émergé (10 PC)" : "Éveillé ou Émergé — choisi à la Naissance",
           type: "select",
-          options: [{ value: "", label: "Ordinaire (0 PC)" }].concat(
+          options: [{ value: "", label: parPoints ? "Ordinaire (0 PC)" : "Ordinaire (+1 Atout)" }].concat(
             Object.entries(this.awakenedStart).map(([v, a]) => ({
               value: v,
               label: `${a.label} — ${a.attr} ${a.start} au départ`,
             })),
           ),
         });
+      }
+
+      if (fam === "pc") {
         fields.push({
           path: "pcAdjust",
           label: `PC investis en points d'ajustement (${this.pc.adjustCost} PC le point, ${this.pc.adjustMax} max)`,
@@ -890,19 +903,57 @@ Object.assign(EditionSR6, {
       special: ["ATO", "MAG", "RES"],
     },
 
-    /** Développe une option générique en la liste concrète qu'elle désigne.
-        Rend la liste telle quelle si elle ne contient aucun libellé générique. */
+    /** Développe une option générique en la liste concrète qu'elle désigne,
+        et rend TOUJOURS des paires `{value, label}` : `value` est ce que le
+        moteur applique, `label` ce que le joueur lit.
+
+        ⚠ Les deux ont divergé le jour où le livre a écrit « votre Magie
+        (Éveillé uniquement) » : la parenthèse est une CONDITION D'ACCÈS, pas
+        une partie du code. Comme la valeur stockée servait aussi de libellé,
+        `lifeModuleGrants` écrivait un attribut nommé « MAG (Éveillé
+        uniquement) » que rien ne relisait — le point accordé par le module
+        disparaissait sans un mot, dans une quinzaine de modules parmi les plus
+        courants. Ne pas refusionner value et label.
+
+        La restriction reste AFFICHÉE et l'option reste choisissable : c'est la
+        doctrine déjà posée par `lifeModuleCatalog` — une restriction de MODULE
+        ferme le module, une restriction d'OPTION ne ferme rien.
+
+        `value: ""` marque une option que le moteur ne sait pas appliquer.
+        `addAttr` / `addSkill` l'ignorent (garde `if (k)`) et le libellé dit au
+        joueur de la traiter lui-même. Un seul cas subsiste : le second
+        attribut de Drain de l'Alchimiste (p.33), qui dépend de la tradition —
+        que la création ne demande à aucun moment. */
     expandParmi(parmi, kind) {
+      const codes = new Set([...this.ATTRS, ...this.ATTR_GROUPS.special]);
       const out = [];
+      const pousser = (value, label) => out.push({ value, label: label ?? value });
+
       for (const opt of parmi || []) {
         const o = opt.toLowerCase();
-        const generique = o.includes("de votre choix") || o.includes("au choix") || o.startsWith("un attribut") || o.startsWith("une compétence");
-        if (!generique) {
-          out.push(opt);
+
+        // « MAG (Éveillé uniquement) » → valeur MAG, libellé entier.
+        const cond = opt.match(/^(\S+)\s*\((.+)\)$/);
+        if (cond && codes.has(cond[1])) {
+          pousser(cond[1], opt);
           continue;
         }
+
+        const generique =
+          o.includes("de votre choix") ||
+          o.includes("au choix") ||
+          o.startsWith("un attribut") ||
+          o.startsWith("une compétence");
+
+        if (!generique) {
+          // Un nom de compétence est libre ; un attribut doit être un code.
+          if (kind === "skills" || codes.has(opt)) pousser(opt);
+          else pousser("", `${opt} — à appliquer vous-même`);
+          continue;
+        }
+
         if (kind === "skills") {
-          out.push(...this.SKILLS.map((x) => x.name));
+          for (const x of this.SKILLS) pousser(x.name);
           continue;
         }
         const g = this.ATTR_GROUPS;
@@ -910,9 +961,16 @@ Object.assign(EditionSR6, {
         if (o.includes("physique")) parts.push(...g.physique);
         if (o.includes("mental")) parts.push(...g.mental);
         if (o.includes("spécial") || o.includes("special")) parts.push(...g.special);
-        out.push(...(parts.length ? parts : [...g.physique, ...g.mental, ...g.special]));
+        for (const x of parts.length ? parts : [...g.physique, ...g.mental, ...g.special]) pousser(x);
       }
-      return [...new Set(out)];
+
+      const vu = new Set();
+      return out.filter((x) => {
+        const cle = x.value || x.label;
+        if (vu.has(cle)) return false;
+        vu.add(cle);
+        return true;
+      });
     },
 
     lifeModuleById(id) {

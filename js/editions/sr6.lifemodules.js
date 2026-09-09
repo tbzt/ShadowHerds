@@ -362,9 +362,6 @@ EditionSR6.creation.lifeModules.adult = [
     attrs: [
       { n: 1, parmi: ["CHA", "ATO", "INT", "LOG"] },
     ],
-    skills: [
-      { n: 1, parmi: ["—"] },
-    ],
     nuyen: 75000,
     contactPts: 2,
     contactCats: ["corporatiste", "criminel"],
@@ -1073,7 +1070,7 @@ EditionSR6.creation.lifeModules.adult = [
   },
   { id: "vous_avez_fait_l_experience_d_une_dure_reali", nom: "Vous avez fait l'expérience d'une dure réalité de ce monde", type: "evenement", page: 45,
     attrs: [
-      { n: 1, parmi: ["un attribut physique", "mental ou spécial de votre choix"] },
+      { n: 1, parmi: ["un attribut physique, mental ou spécial de votre choix"] },
     ],
     skills: [
       { n: 1, parmi: ["une compétence de votre choix"] },
@@ -1100,9 +1097,6 @@ EditionSR6.creation.lifeModules.adult = [
       { n: 1, parmi: ["CHA", "INT", "LOG", "VOL"] },
       { n: 1, parmi: ["ATO", "MAG (Éveillé uniquement)", "RES (Émergé uniquement)"] },
     ],
-    skills: [
-      { n: 1, parmi: ["—"] },
-    ],
     nuyen: 25000,
     contactPts: 4,
     special: "« Vous pouvez vous lancer sur la voie de trait Obsession et gagner le trait Consumation (p. 136). Celui-ci ne compte pas dans le maximum de six traits sélectionnables à la création. De façon identique au fait d'entamer la voie de trait en cours de jeu, vous ne gagnez pas le bonus de Karma offert par le trait Consumation. Vous devez définir la finalité de votre trait Consumation. »",
@@ -1113,9 +1107,6 @@ EditionSR6.creation.lifeModules.adult = [
       { n: 1, parmi: ["CHA", "INT", "LOG", "VOL"] },
       { n: 1, parmi: ["ATO", "MAG (Éveillé uniquement)", "RES (Émergé uniquement)"] },
     ],
-    skills: [
-      { n: 1, parmi: ["—"] },
-    ],
     contactPts: 4,
     special: "« Vous pouvez acquérir un trait positif représentant les progrès physiques auxquels vous êtes parvenu. »",
   },
@@ -1124,9 +1115,6 @@ EditionSR6.creation.lifeModules.adult = [
       { n: 1, parmi: ["AGI", "CON", "RÉA", "FOR"] },
       { n: 2, parmi: ["CHA", "INT", "LOG", "VOL"] },
       { n: 1, parmi: ["ATO", "MAG (Éveillé uniquement)", "RES (Émergé uniquement)"] },
-    ],
-    skills: [
-      { n: 1, parmi: ["—"] },
     ],
     contactPts: 4,
     special: "« Vous pouvez acquérir un trait négatif ou positif comme conséquence de cette expérience. »",
@@ -1143,9 +1131,6 @@ EditionSR6.creation.lifeModules.adult = [
     special: "« Vous pouvez acquérir un trait négatif ou positif dont vous avez hérité de votre mentor. »",
   },
   { id: "vous_auriez_pu_empecher_quelque_chose_mais_c", nom: "Vous auriez pu empêcher quelque chose mais c'est arrivé ; quel dommage que vous n'ayez pas eu les bonnes compétences ou connaissances à ce moment-là", type: "evenement", page: 46,
-    attrs: [
-      { n: 1, parmi: ["—"] },
-    ],
     skills: [
       { n: 1, parmi: ["quatre compétences de votre choix"] },
     ],
@@ -1154,7 +1139,7 @@ EditionSR6.creation.lifeModules.adult = [
   },
   { id: "vous_etes_devenu_particulierement_interesse_", nom: "Vous êtes devenu particulièrement intéressé par les sujets mystérieux ou inhabituels", type: "evenement", page: 46,
     attrs: [
-      { n: 1, parmi: ["un attribut physique", "mental ou spécial de votre choix"] },
+      { n: 1, parmi: ["un attribut physique, mental ou spécial de votre choix"] },
     ],
     skills: [
       { n: 1, parmi: ["trois compétences de votre choix"] },
@@ -1162,31 +1147,19 @@ EditionSR6.creation.lifeModules.adult = [
     know: { n: 2, parmi: ["Arcanes", "Métaplans", "Histoire [région/période]"], ouLangue: true },
   },
   { id: "vous_avez_acquis_une_grosse_somme_d_argent", nom: "Vous avez acquis une grosse somme d'argent", type: "evenement", page: 46,
-    attrs: [
-      { n: 1, parmi: ["—"] },
-    ],
-    skills: [
-      { n: 1, parmi: ["—"] },
-    ],
     nuyen: 100000,
     contactPts: 4,
     special: "« Sélectionnez un trait négatif représentant une complication engendrée par le fait d'acquérir autant d'argent, comme Esprit d'entreprise (p. 132) ou Style distinctif. »",
   },
   { id: "vous_etes_parvenu_a_voler_quelque_chose_de_v", nom: "Vous êtes parvenu à voler quelque chose de valeur", type: "evenement", page: 46,
     attrs: [
-      { n: 1, parmi: ["un attribut physique", "mental ou spécial de votre choix"] },
-    ],
-    skills: [
-      { n: 1, parmi: ["—"] },
+      { n: 1, parmi: ["un attribut physique, mental ou spécial de votre choix"] },
     ],
     nuyen: 75000,
     contactPts: 4,
     special: "« Sélectionnez un trait négatif représentant une complication engendrée par le crime que vous avez commis, comme Traqué (p. 133) »",
   },
   { id: "vous_avez_survecu_a_un_evenement_qui_a_mis_v", nom: "Vous avez survécu à un événement qui a mis votre vie en danger, uniquement parce que vous étiez en possession du bon équipement", type: "evenement", page: 46,
-    attrs: [
-      { n: 1, parmi: ["—"] },
-    ],
     skills: [
       { n: 1, parmi: ["une compétence de votre choix"] },
     ],
