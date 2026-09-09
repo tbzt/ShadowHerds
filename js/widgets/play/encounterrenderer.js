@@ -243,7 +243,7 @@ export const EncounterRenderer = {
       if (activeLead) activeLead.innerHTML = "";
       list.innerHTML = `<div class="empty-state">
         <span class="empty-state-title">Aucun combattant</span>
-        Ajoutez des combattants avec « ➕ Ajouter » ou depuis leur carte (bouton « ⚔ Combat »).
+        Ajoutez des combattants avec « ➕ Ajouter » ou depuis leur carte (bouton « ⚔ En scène »).
       </div>`;
       return;
     }
@@ -3430,7 +3430,7 @@ export const EncounterRenderer = {
         : []),
       { keys: "✸", html: "<strong>Dégâts</strong> — applique un résultat déjà résisté (net) au moniteur." },
       { keys: "＋", html: "<strong>Poser un état</strong> — Enflammé, Aveuglé… le catalogue de l'édition ; le tap sur un état posé monte d'un cran, le ✕ le retire." },
-      { keys: "⚔", html: "Envoyer au <strong>combat</strong> / rejoindre l'initiative." },
+      { keys: "⚔", html: "Envoyer <strong>en scène</strong> / rejoindre l'initiative." },
       { keys: "◎", html: "<strong>Perception matricielle</strong> d'une CI." },
       { keys: "⚡︎", html: "Ouvrir le <strong>tiroir Matrice</strong> (jets, moniteur, surveillance)." },
       { keys: "⛶", html: "<strong>Voir la fiche</strong> d'un PNJ en réaction (coup d'œil, feuilletable)." },

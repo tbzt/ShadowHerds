@@ -509,7 +509,7 @@ export const DiceLog = {
       chip("all", "Tout") +
       chip("alarm", "Alarmes") +
       (hasPinned ? chip("pinned", "Épinglés") : "") +
-      (activeDossierId ? chip(this._ENCOUNTER_FILTER, "Cette rencontre") : "") +
+      (activeDossierId ? chip(this._ENCOUNTER_FILTER, "Cette scène") : "") +
       whos.map((w) => chip(w, w)).join("") +
       moreChip;
   },

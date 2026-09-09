@@ -505,9 +505,9 @@ export const Play = {
     // relit le stash, jamais resynchronisé pendant qu'on joue, et vidait la
     // scène. Le correctif ne couvrait qu'une des deux surfaces.
     const resumeLabel = live
-      ? "⏹ Fermer la rencontre"
+      ? "⏹ Fermer la scène"
       : stashed
-        ? "▶ Rouvrir la rencontre"
+        ? "▶ Rouvrir la scène"
         : "▶ Lancer la scène";
     const resumeBtn = `<button class="btn-secondary btn-small" data-action="${live ? "play-close" : "play-resume"}" data-dossier="${run.id}">${resumeLabel}</button>`;
     const toposBtn = hasTopos
@@ -642,9 +642,9 @@ export const Play = {
     // en un clic. Le tracker reste joignable par la topbar, la nav « Combat »,
     // la sidebar, la bottom-nav et le raccourci « c ».
     const resumeLabel = live
-      ? "⏹ Fermer la rencontre"
+      ? "⏹ Fermer la scène"
       : stashed
-        ? "▶ Rouvrir la rencontre"
+        ? "▶ Rouvrir la scène"
         : "▶ Lancer la scène";
     // Briefing (§4.2) — décision utilisateur : le CTA de lancement CHAUFFE en
     // accent même dans une coquille FROIDE (il fait basculer vers le chaud). En
@@ -1556,7 +1556,7 @@ export const Play = {
         const playTitle = live
           ? `Fermer (ranger) la scène « ${name} »`
           : stashed
-            ? `Rouvrir la rencontre de « ${name} »`
+            ? `Rouvrir la scène « ${name} »`
             : `Lancer la scène « ${name} »`;
         return `<div class="play-scene-row${live ? " is-live" : ""}">
           <div class="cluster play-scene-head">

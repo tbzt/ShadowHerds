@@ -119,7 +119,7 @@ export const BulkBar = {
       <span class="bulk-count">${ids.length} sélectionné${ids.length > 1 ? "s" : ""}</span>
       <span class="cluster bulk-actions">
         ${linkBtn}
-        ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Ajouter au combat</button>` : ""}
+        ${combat ? `<button class="btn-secondary btn-small" data-action="bulk-encounter"><svg class="icon icon-sm" aria-hidden="true"><use href="#ic-combat"></use></svg> Envoyer en scène</button>` : ""}
         <button class="danger-btn btn-small" data-action="bulk-delete">Supprimer</button>
         <button class="btn-icon-tiny" data-action="bulk-clear" title="Annuler la sélection" aria-label="Annuler la sélection">✕</button>
       </span>`;

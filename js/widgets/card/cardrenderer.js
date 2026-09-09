@@ -2731,7 +2731,7 @@ export const CardRenderer = {
     if (has("save"))
       acts.push({ kind: "primary", icon: "⊕", label: "Sauvegarder", attrs: `data-action="save-pnj" data-id="${id}"` });
     else
-      acts.push({ kind: "primary", icon: "⚔", label: "Combat", attrs: `data-action="add-to-encounter" data-id="${id}"` });
+      acts.push({ kind: "primary", icon: "⚔", label: "En scène", attrs: `data-action="add-to-encounter" data-id="${id}"` });
 
     // Secondaire visible : Éditer.
     if (has("edit"))
@@ -2740,7 +2740,7 @@ export const CardRenderer = {
     // ⋯ : Combat (rétrogradé quand Sauvegarder est primaire), Dupliquer,
     // Portrait, Foundry, puis le destructif en dernier (rouge, annulable).
     if (has("save"))
-      acts.push({ kind: "menu", label: "Combat", attrs: `data-action="add-to-encounter" data-id="${id}"` });
+      acts.push({ kind: "menu", label: "En scène", attrs: `data-action="add-to-encounter" data-id="${id}"` });
     if (has("remove"))
       acts.push({ kind: "menu", label: "Dupliquer", attrs: `data-action="duplicate-pnj" data-id="${id}"` });
       // Drain d'Essence : seulement sur une fiche qui PORTE le pouvoir et dans

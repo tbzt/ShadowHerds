@@ -138,8 +138,8 @@ export const RunRenderer = {
     const active = status === "live";
     const action = active ? "close-rencontre" : "open-rencontre";
     const label = active
-      ? "⏹ Fermer la rencontre"
-      : `▶ ${status === "stashed" ? "Rouvrir" : "Ouvrir"} la rencontre`;
+      ? "⏹ Fermer la scène"
+      : `▶ ${status === "stashed" ? "Rouvrir" : "Ouvrir"} la scène`;
     return [{ kind: "secondary", label, attrs: `data-action="${action}" data-dossier="${r.dossierId}"` }];
   },
 

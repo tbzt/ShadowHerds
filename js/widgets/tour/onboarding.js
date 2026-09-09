@@ -20,7 +20,7 @@ export const Onboarding = {
     b.setAttribute("role", "status");
     b.hidden = true;
     b.innerHTML = `
-      <p>Ces boutons, de gauche à droite : <strong>suivi de combat</strong> ·
+      <p>Ces boutons, de gauche à droite : <strong>scène</strong> ·
         <strong>journal des jets</strong> · <strong>bloc-notes</strong> · <strong>jet opposé</strong> ·
         <strong>palette</strong> (<kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd>, retrouver une fiche) ·
         <strong>sauvegarde</strong> · <strong>aide</strong>.</p>

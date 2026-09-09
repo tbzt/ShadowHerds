@@ -10,6 +10,34 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.9] — 2026-09-09
+
+### Corrigé
+
+- **Lancer une scène improvisée ne l'attache plus au run en contexte.** Depuis
+  la version précédente, le bouton d'ouverture regardait le run en focus et y
+  rattachait la scène même quand ce run n'avait rien de commencé : un meneur
+  qui garde un run en contexte d'une séance à l'autre — le cas normal — et qui
+  voulait juste lancer une bagarre, une poursuite ou une intrusion sans rapport
+  se retrouvait rattaché sans l'avoir demandé. La règle est désormais simple :
+  **la scène reprend ce qui existe, elle n'attache jamais.** Elle rouvre la
+  scène rangée d'un run quand il y en a une, et reste libre sinon. Rattacher
+  reste le geste de « Jouer » (« Lancer la scène », le menu d'un dossier, la
+  carte de topos). **Jouer sans rien préparer redevient un mode à part entière.**
+
+### Modifié
+
+- **Un seul nom pour l'écran de jeu : « Scène ».** Le même écran s'appelait
+  « Combat » dans la navigation, « Suivi d'actions » en titre, « scène » à
+  l'intérieur et « rencontre » dans les dossiers — quatre mots pour une seule
+  chose. Et « Combat » était faux : l'écran fait tourner trois moteurs qui
+  coexistent (combat, poursuite, Matrice). Tout s'appelle maintenant la scène :
+  l'entrée de navigation, le bouton de la barre du haut, le titre, le menu d'un
+  dossier, la carte de topos, le poste de commandement, le journal des jets.
+  Sur une fiche, le bouton qui l'envoie au jeu devient « En scène ».
+  *(« Actions » a été écarté : le mot désigne déjà une mécanique de règles dans
+  les quatre éditions, et l'écran compte justement des actions.)*
+
 ## [1.155.8] — 2026-09-09
 
 ### Corrigé

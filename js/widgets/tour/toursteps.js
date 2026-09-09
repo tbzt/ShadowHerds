@@ -50,7 +50,7 @@ export const TourSteps = {
     },
     {
       id: "combat", anchor: "nav-combat", tours: ["full"], since: "1.0.0", fallback: "center",
-      title: "Suivi d'actions",
+      title: "Scène",
       body: "Initiative, moniteurs, fiche du combattant actif, poursuite et Matrice liées à la scène. Trois moteurs qui tournent ensemble ou séparément selon la situation : le poste de pilotage pour garder les mains sur l'histoire, pas sur les calculs.",
     },
     {

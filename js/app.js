@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.155.8",
+  VERSION: "1.155.9",
 
   edition: "none",
   editionModule: null,
@@ -599,18 +599,30 @@ export const App = {
     return null;
   },
 
-  /* ---- Ouvrir le présent : la porte « Combat » lit le contexte ----
-     Sans rencontre ouverte mais avec un run en focus (ou une scène / un
-     sous-dossier d'un run), Combat ouvre LA scène de ce run — rangée ou
-     neuve — au lieu d'un état sans maison que « Lancer la scène » écraserait
-     ensuite. `restore` peut refuser (scène sans run à écraser, MJ qui
-     renonce) : on retombe alors sur l'état courant, jamais sur rien. Sans
-     contexte de run, comportement d'origine (scène libre). Une seule porte
-     pour la nav, la topbar, la sidebar, le hub, la bottom-nav et la touche c. */
+  /* ---- Ouvrir le présent : « Scène » REPREND ce qui existe, elle n'ATTACHE jamais ----
+     Sans scène ouverte mais avec un run en focus (ou une scène / un sous-dossier
+     d'un run) dont la rencontre est RANGÉE, cette porte la rouvre : c'est une
+     reprise, le MJ retrouve son round et son effectif.
+
+     ⚠ Elle ne fait rien d'autre. La version d'origine redirigeait dès qu'un run
+     était en focus, y compris quand ce run n'avait AUCUNE scène rangée : le MJ
+     qui garde un run en contexte d'une séance à l'autre — le cas normal — et qui
+     voulait juste lancer une baston, une poursuite ou une intrusion sans rapport
+     se retrouvait attaché à ce run sans l'avoir demandé. Le garde de `restore`
+     protège la donnée (il demande avant d'écraser une scène peuplée) mais pas
+     l'INTENTION : sur un tracker vide, l'attachement était silencieux.
+
+     La scène LIBRE (`activeDossierId === null`) est un mode de jeu de plein droit,
+     pas un régime à résorber — cf. `encounter.js` § « Rencontre persistante ».
+     ATTACHER reste le verbe de Jouer (« ▶ Lancer la scène », le menu ⋯ d'un
+     dossier, la carte de topos) : c'est le passage avant → présent, à sa place.
+
+     Une seule porte pour la nav, la topbar, la sidebar, le hub, la bottom-nav
+     et la touche c. */
   openCombat() {
     const focus = this.context.dossier;
     const run = !Encounter.activeDossierId && focus ? Dossiers.runOf(focus) : null;
-    if (!run) return void Encounter.open();
+    if (!run || Encounter.sceneStatus(run) !== "stashed") return void Encounter.open();
     DossierBar.openRencontre(run).then((ok) => {
       if (!ok) Encounter.open();
     });

@@ -115,7 +115,7 @@ export const Encounter = {
     this._commit();
     // PASSAGE — le geste mène là où l'on arrive : la perche « Ouvrir » évite
     // le second clic sur Combat (ou la touche c) après chaque ⚔ de carte.
-    if (!silent) toastAction("Ajouté au suivi de combat.", "Ouvrir", () => this.open());
+    if (!silent) toastAction("Ajouté à la scène.", "Ouvrir", () => this.open());
     return true;
   },
 
@@ -131,11 +131,11 @@ export const Encounter = {
     if (n) this._commit();
     if (n)
       toastAction(
-        `${n} combattant${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} au suivi de combat.`,
+        `${n} combattant${n > 1 ? "s" : ""} ajouté${n > 1 ? "s" : ""} à la scène.`,
         "Ouvrir",
         () => this.open(),
       );
-    else toast("Déjà dans le suivi de combat.");
+    else toast("Déjà en scène.");
     return n;
   },
 
@@ -292,7 +292,7 @@ export const Encounter = {
     }
     this._insertByInit(c);
     this._commit();
-    toast(`${spec.name} rejoint le suivi de combat.`);
+    toast(`${spec.name} rejoint la scène.`);
   },
 
   /** « + Équipe » — l'équipe active (Characters.activeTeamMembers,
@@ -317,7 +317,7 @@ export const Encounter = {
     }
     toast(
       n
-        ? `${n} PJ ajouté${n > 1 ? "s" : ""} au suivi de combat.`
+        ? `${n} PJ ajouté${n > 1 ? "s" : ""} à la scène.`
         : "Équipe déjà en scène.",
     );
     if (!n) return;

@@ -274,8 +274,8 @@ export const DossierBar = {
     const rencontreItem =
       node.kind === "run"
         ? Encounter.sceneStatus(node.id) === "live"
-          ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="close-rencontre" data-dossier="${node.id}">⏹ Fermer la rencontre</button>`
-          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${Encounter.sceneStatus(node.id) === "stashed" ? "Rouvrir" : "Ouvrir"} la rencontre</button>`
+          ? `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="close-rencontre" data-dossier="${node.id}">⏹ Fermer la scène</button>`
+          : `<button type="button" role="menuitem" class="card-menu-item" data-dossier-bar data-action="open-rencontre" data-dossier="${node.id}">▶ ${Encounter.sceneStatus(node.id) === "stashed" ? "Rouvrir" : "Ouvrir"} la scène</button>`
         : "";
     // VIS-16 étape 1 : créer une scène (cellule de jeu) sous un run. Réutilise
     // le popover ⋯ et la délégation existants — aucun CSS ni handler neuf.
@@ -473,8 +473,8 @@ export const DossierBar = {
         : `Supprimer « ${d.name} » ? (Le contenu reste dans la bibliothèque.)`) +
       (stashed
         ? stashed > 1
-          ? `\n\n⚠ ${stashed} rencontres rangées seront également supprimées.`
-          : `\n\n⚠ 1 rencontre rangée sera également supprimée.`
+          ? `\n\n⚠ ${stashed} scènes rangées seront également supprimées.`
+          : `\n\n⚠ 1 scène rangée sera également supprimée.`
         : "");
     Dialog.confirm({
       title: "Supprimer le dossier",
@@ -565,7 +565,7 @@ export const DossierBar = {
     if (!ok) return false;
     this.select(dossierId); // dossier courant = carnet courant (R2)
     Encounter.open();
-    toast(`Rencontre « ${Dossiers.nameOf(dossierId) || "?"} » ouverte.`);
+    toast(`Scène « ${Dossiers.nameOf(dossierId) || "?"} » ouverte.`);
     return true;
   },
 
@@ -581,11 +581,11 @@ export const DossierBar = {
     this.render();
     const name = Dossiers.nameOf(dossierId) || "?";
     if (Dossiers.kindOf(dossierId) === "run" && typeof Debrief !== "undefined") {
-      toastAction(`Rencontre « ${name} » rangée.`, "Débriefer", () =>
+      toastAction(`Scène « ${name} » rangée.`, "Débriefer", () =>
         Debrief.open(dossierId),
       );
     } else {
-      toast(`Rencontre « ${name} » rangée.`);
+      toast(`Scène « ${name} » rangée.`);
     }
   },
 };
