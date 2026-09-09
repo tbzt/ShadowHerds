@@ -36,6 +36,7 @@
    ============================================================ */
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
+import { ContactsBook } from "./contactsbook.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { Storage } from "../core/storage.js";
@@ -551,6 +552,14 @@ export const CharGen = {
       ${this._stepErrorBox("priorites")}
       <p class="cg-hint">${this._esc(view.hint)}</p>
       <div class="cg-prio-grid">${rows}</div>
+      ${
+        view.magicLegend
+          ? `<div class="cg-prio-legend">
+              <span class="cg-prio-legend-letter">${this._esc(view.magicLegend.letter)}</span>
+              <ul>${view.magicLegend.lignes.map((l) => `<li>${this._esc(l)}</li>`).join("")}</ul>
+            </div>`
+          : ""
+      }
       ${view.footer ? `<p class="cg-hint">${view.footer}</p>` : ""}
     </div>`;
   },
@@ -747,11 +756,15 @@ export const CharGen = {
       )
       .join("");
 
+    // Le catalogue est groupé par catégorie : on rend des <optgroup> plutôt
+    // qu'une liste plate de plusieurs centaines d'entrées.
     const catOpts = (c.gearCatalog() || [])
-      .map((it) => {
-        const label = it.label || it.name || String(it);
-        return `<option value="${this._esc(label)}">${this._esc(label)}</option>`;
-      })
+      .map(
+        (g) =>
+          `<optgroup label="${this._esc(g.category)}">${(g.items || [])
+            .map((it) => `<option value="${this._esc(it.label)}">${this._esc(it.label)}</option>`)
+            .join("")}</optgroup>`,
+      )
       .join("");
 
     return `<div class="stack">
@@ -1002,9 +1015,40 @@ export const CharGen = {
     }
     const pnj = c.buildCharacter(clean);
     Characters.add(pnj);
+    const nbContacts = this._persistContacts(c, clean, pnj);
     this._clearDraft();
     this.close();
     App.showPanel("characters");
+    if (nbContacts) {
+      toast(`Personnage créé, ${nbContacts} contact${nbContacts > 1 ? "s" : ""} ajouté${nbContacts > 1 ? "s" : ""} au carnet.`);
+    }
+  },
+
+  /** Les contacts saisis dans l'assistant DOIVENT rejoindre le carnet.
+
+      Avant le 2026-09-09 ils étaient posés sur `pnj.contacts` et personne ne
+      lisait ce champ : le meneur les saisissait, l'assistant les acceptait,
+      et ils disparaissaient sans un mot. Le mécanisme existait pourtant —
+      `ContactsBook.createManual` puis un lien `RelationsStore`, que la carte
+      du PJ sait déjà afficher.
+
+      La traduction des champs appartient à l'ÉDITION (`contactToManual`) :
+      SR5/SR6 stockent Influence + Loyauté, Anarchy un niveau d'atout + RR.
+      Le contrôleur ne connaît aucun de ces noms. */
+  _persistContacts(creation, clean, pnj) {
+    const liste = (clean.contacts || []).filter((x) => x && x.name && x.name.trim());
+    if (!liste.length || !creation.contactToManual) return 0;
+    const ids = [];
+    for (const brut of liste) {
+      try {
+        const cree = ContactsBook.createManual(creation.contactToManual(brut), App.edition);
+        if (cree && cree.id) ids.push(cree.id);
+      } catch (e) {
+        Debug?.warn?.("chargen: contact non créé", e);
+      }
+    }
+    if (ids.length) Characters.addContactLinks(pnj.id, ids);
+    return ids.length;
   },
 
   _discard() {

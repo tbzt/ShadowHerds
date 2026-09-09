@@ -196,6 +196,19 @@ Object.assign(EditionAnarchy2, {
       };
     },
 
+    /** Traduit un contact saisi dans l'assistant vers les champs qu'attend
+        `Contacts.buildManual`. Anarchy ne chiffre pas Connexion/Loyauté : un
+        contact y est un atout à niveau (0-6) avec sa RR.
+
+        ⚠ Le livre donne un niveau de base 0 (p.61), mais on écrit 1 : le
+        carnet fait `parseInt(fields.level) || 1`, où 0 est falsy et retombe
+        donc sur 1. Passer 0 ici serait une intention que la donnée ne
+        porterait pas — mesuré le 2026-09-09, le contact ressortait à 1.
+        Le meneur ajuste ensuite dans le carnet. */
+    contactToManual(c) {
+      return { name: c.name, role: c.description || "", level: 1, rr: 1 };
+    },
+
     contactFields() {
       return [
         { key: "name", placeholder: "Nom" },

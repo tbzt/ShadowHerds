@@ -241,6 +241,7 @@ Object.assign(EditionSR5, {
         meta: "Humain",
         gender: "NB",
         name: "",
+        concept: "",
         awakened: "",
         // Lettre assignée à chaque colonne (système de priorités / 10 points).
         priorities: { meta: "C", attrs: "B", magic: "E", skills: "A", nuyen: "D" },
@@ -374,6 +375,30 @@ Object.assign(EditionSR5, {
         footer: method?.points
           ? `Points de priorité : ${this.priorityPointsUsed(build)} / ${method.points}`
           : "",
+        /** Ce que la lettre CHOISIE en Magie/Résonance accorde, en toutes
+            lettres — voir le commentaire jumeau de sr6.creation.js : la
+            cellule reste compacte, mais le sens sort du `title=`. */
+        magicLegend: (() => {
+          const row = self.priorityTable[build.priorities.magic];
+          if (!row) return null;
+          if (!row.magic.length) {
+            return { letter: build.priorities.magic, lignes: ["Aucune option magique."] };
+          }
+          return {
+            letter: build.priorities.magic,
+            lignes: row.magic.map((m) => {
+              const bits = [];
+              if (m.mag) bits.push(`Magie ${m.mag}`);
+              if (m.res) bits.push(`Résonance ${m.res}`);
+              if (m.skills) bits.push(`${m.skills} compétences indice ${m.skillRating}`);
+              if (m.activeSkills) bits.push(`${m.activeSkills} compétence active indice ${m.skillRating}`);
+              if (m.groups) bits.push(`${m.groups} groupe indice ${m.skillRating}`);
+              if (m.spells) bits.push(`${m.spells} sorts`);
+              if (m.forms) bits.push(`${m.forms} formes complexes`);
+              return `${m.label} : ${bits.join(", ")}`;
+            }),
+          };
+        })(),
         cell(colKey, L) {
           const row = self.priorityTable[L];
           if (colKey === "meta") {
@@ -418,18 +443,35 @@ Object.assign(EditionSR5, {
       };
     },
 
-    /** Catalogue d'équipement : noms canoniques empruntés au module SR5
-        (nominatif, sans prix — il alimente le générateur de PNJ). Passe par
-        le contrat pour que le contrôleur n'aille pas lire l'édition en direct. */
+    /** Catalogue d'équipement, GROUPÉ PAR CATÉGORIE.
+
+        ⚠ Corrigé le 2026-09-09 : `ItemResolver.flattenEquipPools` rend
+        `[{category, items:[{id,label}]}]` — des GROUPES, pas des items. Le
+        code d'origine faisait `it.label || it.name || String(it)` dessus, ce
+        qui donnait `String(<groupe>)` soit « [object Object] » sur TOUTES les
+        entrées du sélecteur. Écrit en 1.156.0 et recopié tel quel d'une
+        édition à l'autre : deux fois la même faute, jamais vue parce que la
+        vérification lisait l'en-tête de l'écran, pas le contenu de la liste.
+
+        La catégorie n'est plus jetée : le sélecteur la rend en <optgroup>,
+        ce qui était la raison d'être de `flattenEquipPools`. */
     gearCatalog() {
-      const cat = EditionSR5.equipCatalog() || [];
-      return cat.map((it) => ({ label: it.label || it.name || String(it) }));
+      return (EditionSR5.equipCatalog() || []).map((g) => ({
+        category: g.category,
+        items: (g.items || []).map((it) => ({ label: it.label })).filter((it) => it.label),
+      }));
     },
 
     conceptFields(build) {
       const money = (n) => n.toLocaleString("fr-FR");
       const fields = [
         { path: "name", label: "Nom", type: "text", placeholder: "Nom du personnage" },
+        {
+          path: "concept",
+          label: "Concept",
+          type: "text",
+          placeholder: "ex. samouraï des rues, décker de rue, mage de combat…",
+        },
         {
           path: "method",
           label: "Méthode de création",
@@ -634,6 +676,20 @@ Object.assign(EditionSR5, {
         footer: isPriority
           ? `Attributs : ${used} / ${total} · Spéciaux : ${usedSp} / ${totalSp} · <span class="${atMax > 1 ? "cg-error-text" : ""}">au maximum naturel : ${atMax} / 1</span>`
           : `Karma dépensé : ${this.karmaUsed(build)} / ${method?.karma || 0}`,
+      };
+    },
+
+    /** Traduit un contact saisi dans l'assistant vers les champs qu'attend
+        `Contacts.buildManual`. SR5 nomme l'indice « Connexion » au livre mais
+        le stocke en `influence` (1-12) — c'est la structure de l'app, pas une
+        traduction du livre. Le mapping vit ICI parce que ses noms de champs
+        sont ceux de l'édition : Anarchy attend `level`/`rr` à la place. */
+    contactToManual(c) {
+      return {
+        name: c.name,
+        role: c.description || "",
+        influence: c.connection || 1,
+        loyaute: c.loyalty || 1,
       };
     },
 
@@ -893,7 +949,10 @@ Object.assign(EditionSR5, {
         meta: build.meta,
         gender: build.gender || "NB",
         tier: this.gameLevels[build.gameLevel]?.label || "Runner expérimenté",
-        archetype: this.methods[build.method]?.label || "Personnage",
+        // Le concept du joueur, pas le libellé de la méthode : celui-ci vit
+        // déjà dans `creationMethod`, et l'afficher en archétype donnait des
+        // fiches disant « Elfe · Système de priorités ».
+        archetype: (build.concept || "").trim() || "Personnage",
         creationMethod: build.method,
         gameLevel: build.gameLevel,
         priorities: { ...build.priorities },

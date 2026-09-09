@@ -3177,9 +3177,14 @@ export const EditionSR6 = {
     Koborokuru: {
       CON: [1, 7],
       AGI: [1, 6],
-      RÉA: [1, 7],
+      // ⚠ RÉA et VOL étaient INVERSÉS ici (RÉA 1-7 / VOL 1-6) depuis 1.155.7.
+      // Corrigé au livre le 2026-09-09 : Compagnon du Sixième Monde p.80,
+      // table « Plages d'attributs des variantes naines », lue à l'image —
+      // Koborokuru 1-7 / 1-6 / 1-6 / 1-7 / 1-7. `Metavariants.sr6` portait
+      // déjà la bonne valeur : les deux sources se contredisaient.
+      RÉA: [1, 6],
       FOR: [1, 7],
-      VOL: [1, 6],
+      VOL: [1, 7],
       LOG: [1, 6],
       INT: [1, 6],
       CHA: [1, 6],

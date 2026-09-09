@@ -28,6 +28,7 @@
       en bas de table.
    ============================================================ */
 import { EditionSR6 } from "./sr6.js";
+import { Metavariants } from "../rules/metavariants.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
 
@@ -130,6 +131,58 @@ Object.assign(EditionSR6, {
         nuyen: 8000,
       },
     },
+
+    /** POINTS D'AJUSTEMENT PAR MÉTATYPE ET PAR PRIORITÉ (Compagnon p.90).
+
+        La table des Priorités du livre de base ne nomme que les cinq souches.
+        Le Compagnon donne à CHAQUE métavariante et métaconscience sa propre
+        ligne, souvent différente de celle de sa souche : le Xapiri thëpë est
+        B10/C8 quand l'Elfe est B11/C9, le Wakyambi monte à B12 mais perd le E,
+        le Fomori atteint A14.
+
+        ⚠ Le réflexe de faire retomber une métavariante sur la ligne de sa
+        souche (`Metavariants.baseMetatype` la donne) est FAUX pour au moins
+        dix entrées. `null` = lettre indisponible (« N/A » au livre).
+
+        `karma` est un coût de personnalisation qui s'applique « quelle que
+        soit la méthode de création utilisée » (note de la table) — donc aussi
+        en création par points et en modules chronologiques. Le livre précise
+        par ailleurs qu'aucun choix de métatype ne coûte de PC.
+
+        Relevé et vérifié à part, cf. REFERENCE/creation_pj_sr6_metavariantes.md.
+        Contrôle : les cinq souches recoupent `priorityTable` au chiffre près. */
+    metaTable: [
+      { nom: "Elfe", souche: "Elfe", adj: { A: null, B: 11, C: 9, D: 4, E: 1 }, karma: 0 },
+      { nom: "Dalakitnon", souche: "Elfe", adj: { A: null, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Dryade", souche: "Elfe", adj: { A: null, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Nocturna", souche: "Elfe", adj: { A: null, B: 10, C: 8, D: 4, E: 1 }, karma: 5 },
+      { nom: "Wakyambi", souche: "Elfe", adj: { A: null, B: 12, C: 9, D: 4, E: null }, karma: 10 },
+      { nom: "Xapiri thëpë", souche: "Elfe", adj: { A: null, B: 10, C: 8, D: 4, E: 1 }, karma: 5 },
+      { nom: "Humain", souche: "Humain", adj: { A: null, B: null, C: 9, D: 4, E: 1 }, karma: 0 },
+      { nom: "Nartaki", souche: "Humain", adj: { A: null, B: null, C: 10, D: 4, E: null }, karma: "5 / 10" },
+      { nom: "Valkyrie", souche: "Humain", adj: { A: null, B: 11, C: 10, D: 4, E: null }, karma: 15 },
+      { nom: "Nain", souche: "Nain", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 0 },
+      { nom: "Duende", souche: "Nain", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 10 },
+      { nom: "Gnome", souche: "Nain", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Hanuman", souche: "Nain", adj: { A: 12, B: 10, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Koborokuru", souche: "Nain", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Menehune", souche: "Nain", adj: { A: 12, B: 10, C: 9, D: 4, E: null }, karma: 5 },
+      { nom: "Ork", souche: "Ork", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 0 },
+      { nom: "Hobgobelin", souche: "Ork", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Ogre", souche: "Ork", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Oni", souche: "Ork", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Satyre", souche: "Ork", adj: { A: 13, B: 11, C: 9, D: 4, E: null }, karma: 10 },
+      { nom: "Troll", souche: "Troll", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 0 },
+      { nom: "Cyclope", souche: "Troll", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Fomori", souche: "Troll", adj: { A: 14, B: 11, C: 9, D: 4, E: null }, karma: 10 },
+      { nom: "Géant", souche: "Troll", adj: { A: 14, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Minotaure", souche: "Troll", adj: { A: 13, B: 11, C: 9, D: 4, E: 1 }, karma: 5 },
+      { nom: "Centaure", souche: null, adj: { A: 13, B: 11, C: 9, D: 4, E: null }, karma: 15 },
+      { nom: "Naga", souche: null, adj: { A: 11, B: 9, C: 4, D: 2, E: null }, karma: 15 },
+      { nom: "Pixie", souche: null, adj: { A: 12, B: 10, C: 9, D: 4, E: null }, karma: 10 },
+      { nom: "Sasquatch", souche: null, adj: { A: 14, B: 11, C: 9, D: 4, E: null }, karma: 10 },
+      { nom: "Triton", souche: null, adj: { A: 13, B: 11, C: 9, D: 5, E: null }, karma: 15 },
+    ],
 
     /** Ordre du livre : Compétences vient AVANT Magie, contrairement à SR5. */
     PRIORITY_COLUMNS: [
@@ -370,6 +423,7 @@ Object.assign(EditionSR6, {
         meta: "Humain",
         gender: "NB",
         name: "",
+        concept: "",
         awakened: "",
         priorities: { meta: "D", attrs: "B", skills: "A", magic: "E", nuyen: "C" },
         attrs: {},
@@ -388,15 +442,54 @@ Object.assign(EditionSR6, {
       };
     },
 
-    /** Bornes lues sur `EditionSR6.attrRange` — la table du livre p.67, déjà
-        dans l'app et vérifiée cellule par cellule. Une seule source. */
+    /** Bornes d'attributs. Source principale : `EditionSR6.attrRange` (table
+        du livre p.67, vérifiée cellule par cellule).
+
+        ⚠ Les cinq MÉTACONSCIENCES (Centaure, Naga, Pixie, Sasquatch, Triton)
+        n'y figurent pas — elles n'ont de fourchettes que dans les tables de
+        `Metavariants`. Sans ce second recours, `_range` retombait en SILENCE
+        sur l'Humain : mesuré le 2026-09-09, un Sasquatch ressortait avec
+        CON 1-6 au lieu de 1-10.
+
+        ⚠ On passe par `Metavariants.use("sr6").resolve()`, PAS par
+        `Metavariants.sr6[nom]` : la table est imbriquée en
+        `{metavariants, metaconsciences, zoocanthropes}` et un accès direct
+        rend `undefined` sans rien signaler — c'est ce qui m'avait piégé. */
     _range(meta, key) {
-      const r = EditionSR6.attrRange[meta] || EditionSR6.attrRange.Humain;
+      const r =
+        EditionSR6.attrRange[meta] ||
+        Metavariants.use("sr6").resolve(meta)?.ranges ||
+        EditionSR6.attrRange.Humain;
       return r[key] || [1, 6];
     },
 
+    /** La liste des métatypes vient de `metaTable` — celle du Compagnon p.90,
+        seule table qui dise quelles LETTRES chaque métatype peut recevoir.
+        Elle était tirée de `Object.keys(attrRange)`, qui ignore tout des
+        priorités : avec un Duende, les cinq lettres rendaient « — ». */
     _metaList() {
-      return Object.keys(EditionSR6.attrRange);
+      return this.metaTable.map((m) => m.nom);
+    },
+
+    /** La ligne p.90 d'un métatype, ou null s'il est inconnu de la table. */
+    metaRow(meta) {
+      return this.metaTable.find((m) => m.nom === meta) || null;
+    },
+
+    /** Points d'ajustement offerts pour ce métatype à cette lettre. `null`
+        signifie que le livre n'ouvre PAS cette lettre à ce métatype. */
+    adjustFor(meta, letter) {
+      const r = this.metaRow(meta);
+      return r ? (r.adj[letter] ?? null) : null;
+    },
+
+    /** Coût en karma de personnalisation du métatype choisi (p.90). Rendu tel
+        quel : le Nartaki vaut « 5 / 10 » selon le nombre de paires de Bras de
+        Shiva, et figer l'un des deux effacerait une règle que le livre
+        distingue — CON et FOR bougent avec. À trancher par le joueur. */
+    metaKarma(build) {
+      const r = this.metaRow(build.meta);
+      return r ? r.karma : 0;
     },
 
     /** Un attribut est « spécial de métatype » quand son maximum dépasse 6 :
@@ -416,7 +509,7 @@ Object.assign(EditionSR6, {
       if (this.methods[build.method]?.family === "pc") {
         return this.pc.adjustFree + Math.floor((build.pcAdjust || 0) / this.pc.adjustCost);
       }
-      return this.priorityTable[build.priorities.meta]?.adjust || 0;
+      return this.adjustFor(build.meta, build.priorities.meta) || 0;
     },
     skillPointsTotal(build) {
       if (this.methods[build.method]?.family === "pc") {
@@ -498,6 +591,12 @@ Object.assign(EditionSR6, {
       const fields = [
         { path: "name", label: "Nom", type: "text", placeholder: "Nom du personnage" },
         {
+          path: "concept",
+          label: "Concept",
+          type: "text",
+          placeholder: "ex. samouraï des rues, décker de rue, mage de combat…",
+        },
+        {
           path: "method",
           label: "Méthode de création",
           type: "select",
@@ -510,7 +609,12 @@ Object.assign(EditionSR6, {
           path: "meta",
           label: "Métatype",
           type: "select",
-          options: this._metaList().map((m) => ({ value: m, label: m })),
+          // Groupés par souche, les métaconsciences à la fin — l'ordre de la
+          // table du Compagnon p.90, qui est aussi celui que le joueur cherche.
+          options: this.metaTable.map((m) => ({
+            value: m.nom,
+            label: m.souche && m.souche !== m.nom ? `${m.nom} (${m.souche})` : m.nom,
+          })),
         },
         {
           path: "gender",
@@ -523,6 +627,21 @@ Object.assign(EditionSR6, {
           ],
         },
       ];
+      // Le coût du métatype se paie en KARMA de personnalisation, « quelle que
+      // soit la méthode de création » (Compagnon p.90) — donc aussi en PC et en
+      // modules, où rien d'autre ne le rappellerait.
+      const kMeta = this.metaKarma(build);
+      if (kMeta) {
+        fields.push({
+          path: "_metaKarma",
+          label:
+            typeof kMeta === "string"
+              ? `${build.meta} coûte ${kMeta} karma de personnalisation — le livre donne deux valeurs selon l'option choisie, à trancher avec le meneur.`
+              : `${build.meta} coûte ${kMeta} karma de personnalisation, sur les ${this.KARMA} de départ.`,
+          type: "note",
+        });
+      }
+
       // En création par points, la catégorie d'Éveil s'achète (10 PC) et fixe
       // l'indice de départ ; en priorités elle découle de la colonne Magie.
       if (fam === "pc") {
@@ -638,16 +757,46 @@ Object.assign(EditionSR6, {
         footer: method?.points
           ? `Points de priorité : ${this.priorityPointsUsed(build)} / ${method.points}`
           : "",
+        /** Ce que la lettre CHOISIE en Magie/Résonance accorde, en toutes
+            lettres. La cellule reste compacte (cinq colonnes doivent tenir à
+            375 px avec des cibles de 44 px), mais le sens ne vit plus dans un
+            `title=` que le tactile n'atteint jamais. */
+        magicLegend: (() => {
+          const row = self.priorityTable[build.priorities.magic];
+          if (!row) return null;
+          if (!row.magic.length) {
+            return { letter: build.priorities.magic, lignes: ["Ordinaire — ni Magie ni Résonance."] };
+          }
+          return {
+            letter: build.priorities.magic,
+            lignes: row.magic.map((m) => {
+              const bits = [];
+              if (m.mag) bits.push(`Magie ${m.mag}`);
+              if (m.res) bits.push(`Résonance ${m.res}`);
+              if (m.formulas) bits.push(`${m.formulas} formules`);
+              if (m.forms) bits.push(`${m.forms} formes complexes`);
+              return `${m.label} : ${bits.join(", ")}`;
+            }),
+          };
+        })(),
         cell(colKey, L) {
           const row = self.priorityTable[L];
           if (colKey === "meta") {
-            const ok = row.metas.includes(build.meta);
+            // Chaque métatype a SA ligne (Compagnon p.90) : une métavariante
+            // ne suit pas forcément celle de sa souche.
+            const pts = self.adjustFor(build.meta, L);
+            if (pts == null) {
+              return {
+                html: "—",
+                title: `${build.meta} n'a pas de ligne en priorité ${L} au Compagnon p.90`,
+                invalid: true,
+              };
+            }
+            const k = self.metaKarma(build);
             return {
-              html: ok ? `${build.meta} (${row.adjust})` : "—",
-              title: ok
-                ? `${row.adjust} point(s) d'ajustement`
-                : `${build.meta} indisponible en ${L} — le livre n'ouvre A qu'aux Nain/Ork/Troll et B qu'à eux plus l'Elfe`,
-              invalid: !ok,
+              html: `${build.meta} (${pts})`,
+              title: `${pts} point(s) d'ajustement${k ? ` · métatype à ${k} karma` : ""}`,
+              invalid: false,
             };
           }
           if (colKey === "attrs") return { html: String(row.attrs), title: "Points d'attributs", invalid: false };
@@ -857,18 +1006,41 @@ Object.assign(EditionSR6, {
       return this.SKILLS.map((s) => ({ ...s }));
     },
 
-    /** Noms canoniques empruntés au module SR6 (catalogue nominatif, sans
-        prix — il alimente le générateur de PNJ). Le joueur saisit le prix
-        lu au livre, comme en SR5. */
+    /** Catalogue d'équipement, GROUPÉ PAR CATÉGORIE.
+
+        ⚠ Corrigé le 2026-09-09 : `ItemResolver.flattenEquipPools` rend
+        `[{category, items:[{id,label}]}]` — des GROUPES, pas des items. Le
+        code d'origine faisait `it.label || it.name || String(it)` dessus, ce
+        qui donnait `String(<groupe>)` soit « [object Object] » sur TOUTES les
+        entrées du sélecteur. Écrit en 1.156.0 et recopié tel quel d'une
+        édition à l'autre : deux fois la même faute, jamais vue parce que la
+        vérification lisait l'en-tête de l'écran, pas le contenu de la liste.
+
+        La catégorie n'est plus jetée : le sélecteur la rend en <optgroup>,
+        ce qui était la raison d'être de `flattenEquipPools`. */
     gearCatalog() {
-      const cat = EditionSR6.equipCatalog() || [];
-      return cat.map((it) => ({ label: it.label || it.name || String(it) }));
+      return (EditionSR6.equipCatalog() || []).map((g) => ({
+        category: g.category,
+        items: (g.items || []).map((it) => ({ label: it.label })).filter((it) => it.label),
+      }));
     },
 
     gearLimits(build) {
       return {
         availability: this.ILLEGAL_AVAILABILITY_CAP - 1,
         hint: `À la création, pas de matériel illégal de Disponibilité ${this.ILLEGAL_AVAILABILITY_CAP} ou plus (p.69). Il ne doit rester au plus ${this.CASH_MAX.toLocaleString("fr-FR")} ¥ en liquide.`,
+      };
+    },
+
+    /** Traduit un contact saisi dans l'assistant vers les champs qu'attend
+        `Contacts.buildManual`. SR6 nomme l'indice « Réseau » au livre et le
+        stocke en `influence` — même structure que SR5, autre vocabulaire. */
+    contactToManual(c) {
+      return {
+        name: c.name,
+        role: c.description || "",
+        influence: c.network || 1,
+        loyaute: c.loyalty || 1,
       };
     },
 
@@ -928,8 +1100,9 @@ Object.assign(EditionSR6, {
             seen.add(l);
           }
         }
-        const row = this.priorityTable[build.priorities.meta];
-        if (row && !row.metas.includes(build.meta)) {
+        if (!this.metaRow(build.meta)) {
+          out.concept.push(`${build.meta} n'a pas de ligne de priorité connue (Compagnon p.90).`);
+        } else if (this.adjustFor(build.meta, build.priorities.meta) == null) {
           out.priorites.push(
             `${build.meta} n'est pas disponible en priorité ${build.priorities.meta} (Métatypes).`,
           );
@@ -1165,7 +1338,10 @@ Object.assign(EditionSR6, {
         meta: build.meta,
         gender: build.gender || "NB",
         tier: "Runner",
-        archetype: this.methods[build.method]?.label || "Personnage",
+        // Le concept du joueur, pas le libellé de la méthode : celui-ci vit
+        // déjà dans `creationMethod`, et l'afficher en archétype donnait des
+        // fiches disant « Elfe · Système de priorités ».
+        archetype: (build.concept || "").trim() || "Personnage",
         creationMethod: build.method,
         priorities: { ...build.priorities },
         attrs,

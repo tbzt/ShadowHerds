@@ -10,6 +10,43 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.158.1] — 2026-09-09
+
+### Corrigé
+
+- **L'écran d'équipement était inutilisable.** Il n'affichait pas des libellés
+  approximatifs : il affichait **23 lignes identiques disant « [object
+  Object] »**, là où il y a 588 objets en SR6 et 572 en SR5. Le catalogue rend
+  des *groupes* `{catégorie, objets}` et le code les traitait comme des objets.
+  Écrit en 1.156.0, recopié tel quel d'une édition à l'autre. Le sélecteur est
+  désormais **groupé par catégorie**, ce qui était la raison d'être du
+  catalogue.
+- **Les contacts saisis à la création disparaissaient en silence** (SR5, SR6,
+  Anarchy 2). Le meneur les renseignait, l'assistant les acceptait, et rien
+  n'était écrit nulle part : ils étaient posés sur un champ que personne ne
+  lit. Ils entrent maintenant dans le **carnet de contacts**, avec un lien vers
+  le personnage — la carte du PJ les affiche.
+- **La fiche annonçait « Elfe · Système de priorités ».** Le libellé de la
+  méthode occupait le champ archétype, alors qu'il est déjà stocké ailleurs. Un
+  champ **Concept** libre le remplace.
+- **Les métavariantes n'avaient pas de ligne de priorité.** Le sélecteur de
+  métatype en proposait 25, la table des priorités n'en connaissait que 5 :
+  choisir un Duende rendait les cinq lettres indisponibles. Les **30 lignes du
+  Compagnon p.90** sont désormais dans le barème — 25 métatypes et les
+  5 métaconsciences, chacun avec ses points d'ajustement par lettre et son coût
+  en karma, affiché à l'écran.
+- **Un Sasquatch se créait avec des bornes d'attributs humaines.** Les
+  métaconsciences n'ont pas d'entrée dans la table de l'édition ; la lecture
+  retombait sur l'Humain sans rien dire. Elle interroge maintenant aussi les
+  métavariantes, par leur API.
+- **`attrRange.Koborokuru` inversait Réaction et Volonté** depuis la 1.155.7.
+  Corrigé au livre (Compagnon p.80, table lue à l'image) ; les deux sources du
+  dépôt concordent enfin.
+- **Le détail de la colonne Magie/Résonance ne vivait que dans une infobulle**,
+  donc hors d'atteinte au doigt. Une **légende sous la grille** dit en toutes
+  lettres ce que la priorité choisie accorde. La grille reste compacte : cinq
+  colonnes doivent tenir à 375 px avec des cibles de 44 px.
+
 ## [1.158.0] — 2026-09-09
 
 ### Ajouté

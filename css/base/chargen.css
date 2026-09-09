@@ -619,3 +619,29 @@
     min-width: 0;
   }
 }
+
+/* Légende de la colonne Magie/Résonance.
+   La cellule de la grille reste compacte — cinq colonnes doivent tenir à
+   375 px avec des cibles de 44 px — donc le détail de la lettre CHOISIE se
+   lit ici, sous la grille. Il était auparavant dans un `title=`, c'est-à-dire
+   inatteignable au doigt : le sens ne doit pas vivre dans un survol. */
+.cg-prio-legend {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: var(--bg-raised);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+}
+.cg-prio-legend-letter {
+  flex: 0 0 auto;
+  font-weight: 700;
+  color: var(--accent);
+}
+.cg-prio-legend ul {
+  margin: 0;
+  padding-left: 1em;
+  line-height: 1.5;
+}
