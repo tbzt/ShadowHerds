@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.159.0",
+  VERSION: "1.160.0",
 
   edition: "none",
   editionModule: null,
@@ -319,7 +319,11 @@ export const App = {
       "js/editions/anarchy2.foundry.js",
       "js/editions/anarchy2.print.js",
     ],
-    anarchy1: ["js/editions/anarchy1.js", "js/editions/anarchy1.print.js"],
+    anarchy1: [
+      "js/editions/anarchy1.js",
+      "js/editions/anarchy1.creation.js",
+      "js/editions/anarchy1.print.js",
+    ],
   },
   // Commun à toutes les éditions (catalogue de créatures, lu dès buildForms).
   _COMMON_JS: ["js/catalogs/creatures.js"],

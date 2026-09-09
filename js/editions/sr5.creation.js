@@ -287,9 +287,25 @@ Object.assign(EditionSR5, {
       return this.priorityTable[build.priorities.attrs]?.attrs || 0;
     },
 
+    /** Points offerts pour ce métatype à cette lettre, `null` quand le livre
+        n'ouvre PAS la lettre à ce métatype : le troll disparaît en C, l'ork
+        en D, tout le monde sauf l'humain en E (p.67). La table ne pose pas
+        de zéro dans ces cases, elle les laisse vides — et « vide » n'est pas
+        « zéro » : le troll en B reçoit bel et bien 0 point.
+
+        Même signature qu'en SR6, où la valeur est un point d'AJUSTEMENT et
+        non un point spécial. Les deux monnaies diffèrent ; la question à
+        laquelle l'accesseur répond — « cette lettre est-elle ouverte à ce
+        métatype ? » — est la même, et c'est elle que le garde-fou interroge. */
+    adjustFor(meta, letter) {
+      const row = this.priorityTable[letter];
+      if (!row || !row.meta) return null;
+      return row.meta[meta] ?? null;
+    },
+
     /** Points d'attributs SPÉCIAUX offerts par la colonne Métatype. */
     specialPointsTotal(build) {
-      return this.priorityTable[build.priorities.meta]?.meta?.[build.meta] ?? 0;
+      return this.adjustFor(build.meta, build.priorities.meta) ?? 0;
     },
 
     /** [individuelles, groupes] offerts par la colonne Compétences. */

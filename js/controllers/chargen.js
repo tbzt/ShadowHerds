@@ -784,6 +784,143 @@ export const CharGen = {
     </div>`;
   },
 
+  /* ---- Étape : compétences Anarchy 1 ----
+     Cinq compétences au maximum, une réserve de points que le métatype ET
+     l'armure déplacent, et UNE SEULE spécialisation pour tout le personnage
+     (p.78). Trois règles qu'aucune autre édition ne combine, d'où ce kind. */
+  _render_skills_a1() {
+    const c = this._creation();
+    const b = this._build;
+    const lvl = c.level(b);
+    const total = c.skillPointsTotal(b);
+    const used = c.skillPointsUsed(b);
+    const taken = new Set((b.skills || []).map((s) => s.name));
+    const specsTotal = (b.skills || []).reduce((n, s) => n + (s.specs || []).length, 0);
+
+    const rows = (b.skills || [])
+      .map((s, i) => {
+        const attrKey = s.attr || "LOG";
+        const pool = (s.val || 0) + c.attrValue(b, attrKey);
+        const peutSpe = (s.val || 0) >= c.SPEC_MIN_RANK && (specsTotal === 0 || (s.specs || []).length);
+        return `<div class="cluster cg-list-row cg-skill-row">
+          <strong>${this._esc(s.name)}</strong>
+          <input type="number" min="${c.SKILL_MIN}" max="${lvl.skillCap}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
+          <span class="cg-pool" title="Pool = ${s.val || 0} + ${c.attrValue(b, attrKey)} (${this._esc(attrKey)})">⚄ ${pool}</span>
+          ${(s.val || 0) > lvl.skillCap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
+          <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
+          <div class="cluster cg-spec-line">
+            ${(s.specs || []).map((sp) => `<span class="cg-spec-chip">◊ ${this._esc(sp)}<button class="cg-spec-x" data-cg-action="remove-spec" data-idx="${i}" data-spec="${this._esc(sp)}" title="Retirer">✕</button></span>`).join("")}
+            <span class="cg-spec-add">
+              <input type="text" id="cg-a1-spec-${i}" placeholder="Spécialisation…">
+              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" ${peutSpe ? "" : "disabled"} title="1 point, indice ${c.SPEC_MIN_RANK} minimum, une seule pour tout le personnage">＋ spé</button>
+            </span>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    const opts = c
+      .skillCatalog()
+      .filter((sk) => !taken.has(sk.name))
+      .map((sk) => `<option value="${this._esc(sk.name)}">${this._esc(sk.name)} (${this._esc(sk.attr)})</option>`)
+      .join("");
+    const knows = (b.knowledges || [])
+      .map((k, i) => `<div class="cluster cg-list-row"><span>${this._esc(k)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-knowledge" data-idx="${i}" title="Retirer">✕</button></div>`)
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("skills")}
+      <p class="cg-hint">${c.MAX_SKILLS} compétences au maximum, indice ${c.SKILL_MIN} à ${lvl.skillCap} pour un ${this._esc(lvl.label)}. La réserve vaut ${total} points : ${lvl.skillPoints} du niveau de jeu, corrigés par le métatype et par l'armure choisie. Une <strong>seule</strong> spécialisation pour tout le personnage, à ${c.SPEC_COST} point, sur une compétence d'indice ${c.SPEC_MIN_RANK} minimum.</p>
+      <div class="cg-section-label">Compétences <span class="cg-section-note">${used} / ${total} · ${(b.skills || []).length}/${c.MAX_SKILLS}</span></div>
+      ${rows || '<p class="cg-hint">Aucune compétence.</p>'}
+      <div class="cluster cg-add-row">
+        <select id="cg-sr-skill-pick">${opts || "<option>— toutes prises —</option>"}</select>
+        <button class="btn-secondary btn-small" data-cg-action="add-skill-sr" ${(b.skills || []).length >= c.MAX_SKILLS ? "disabled" : ""}>＋ Ajouter</button>
+      </div>
+      <div class="cg-section-label">Connaissance <span class="cg-section-note">les mots-clés en tiennent aussi lieu (p.78)</span></div>
+      ${knows}
+      <div class="cluster cg-add-row">
+        <input type="text" id="cg-sr-knowledge" placeholder="ex. Gangs de Seattle…">
+        <button class="btn-secondary btn-small" data-cg-action="add-knowledge-a1">＋ Ajouter</button>
+      </div>
+    </div>`;
+  },
+
+  /* ---- Étape : Atouts Anarchy 1 ----
+     Les points d'Atouts ne paient pas que des Atouts : l'Éveil, la Chance,
+     les contacts et les armes en plus s'y prennent aussi (p.78). Un écran qui
+     ne montrerait que les Atouts cacherait la moitié de la dépense. */
+  _render_edges_a1() {
+    const c = this._creation();
+    const b = this._build;
+    const lvl = c.level(b);
+    const sp = c.edgeSpends;
+    const mv = c.metavariants[b.meta];
+
+    const rows = (b.edges || [])
+      .map((e, i) => `<div class="cluster cg-list-row"><span>${this._esc(e.text)}</span><span class="tag">niv. ${e.level || 1}</span>
+        <button class="btn-icon-tiny danger" data-cg-action="remove-edge" data-idx="${i}" title="Retirer">✕</button></div>`)
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("edges")}
+      <p class="cg-hint">${lvl.edgePoints} points d'Atouts pour un ${this._esc(lvl.label)}, ${c.MAX_EDGES} Atouts au maximum. Quels que soient vos choix, les modificateurs plafonnent à ±${c.edgeCaps.dice} dés, ${c.edgeCaps.rerollFailures} relances d'échecs, ${c.edgeCaps.rerollEnemySuccesses} relances de réussites adverses et ${c.edgeCaps.armor} points d'Armure.</p>
+      ${mv ? `<p class="cg-hint">⚑ ${this._esc(b.meta)} impose l'Atout <strong>${this._esc(mv.edge.nom)}</strong> au niveau ${mv.edge.niveau}${mv.edge.niveau ? `, soit ${mv.edge.niveau} point(s) déjà engagés` : " — offert"}.</p>` : ""}
+      ${rows || '<p class="cg-hint">Aucun Atout.</p>'}
+      <div class="cluster cg-add-row">
+        <input type="text" id="cg-edge-custom-label" placeholder="Atout…">
+        <input type="number" id="cg-edge-custom-level" min="1" value="1" style="width:4em">
+        <button class="btn-secondary btn-small" data-cg-action="add-edge-custom">＋ Ajouter</button>
+      </div>
+      <div class="cg-section-label">Ce que les points d'Atouts achètent aussi</div>
+      <div class="stack cg-field"><label>Chance supplémentaire (${sp.luckPer.cost} point par point, Chance actuelle ${c.luckValue(b)})</label>
+        <input type="number" min="0" data-cg="luck" value="${b.luck || 0}" style="width:5em"></div>
+      <div class="stack cg-field"><label>Contacts en plus (${sp.contactsPer.cost} point pour ${sp.contactsPer.gain})</label>
+        <input type="number" min="0" step="${sp.contactsPer.gain}" data-cg="extraContacts" value="${b.extraContacts || 0}" style="width:5em"></div>
+      <div class="stack cg-field"><label>Armes en plus (${sp.weaponsPer.cost} point pour ${sp.weaponsPer.gain})</label>
+        <input type="number" min="0" step="${sp.weaponsPer.gain}" data-cg="extraWeapons" value="${b.extraWeapons || 0}" style="width:5em"></div>
+      <p class="cg-hint">Points engagés : ${c.edgePointsUsed(b)} / ${lvl.edgePoints}${b.awakened ? ` — dont ${sp.awakened} pour l'Éveil` : ""}.</p>
+    </div>`;
+  },
+
+  /* ---- Étape : équipement Anarchy 1 ----
+     L'armure n'est pas un achat mais un CHOIX qui déplace des points de
+     compétence : légère en rend un, lourde en coûte un (p.78). */
+  _render_gear_a1() {
+    const c = this._creation();
+    const b = this._build;
+    const lvl = c.level(b);
+    const armes = (b.weapons || [])
+      .map((w, i) => `<div class="cluster cg-list-row"><span>${this._esc(w.name)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-weapon-a1" data-idx="${i}" title="Retirer">✕</button></div>`)
+      .join("");
+    const objets = (b.gear || [])
+      .map((g, i) => `<div class="cluster cg-list-row"><span>${this._esc(g)}</span><button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button></div>`)
+      .join("");
+    const armorOpts = Object.entries(c.armors)
+      .map(([k, a]) => `<option value="${k}" ${b.armor === k ? "selected" : ""}>${this._esc(a.label)} — Armure ${a.armor}${a.skillPoints ? `, ${a.skillPoints > 0 ? "+" : ""}${a.skillPoints} point de compétence` : ""}</option>`)
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("gear")}
+      <div class="stack cg-field"><label>Armure de départ — elle déplace vos points de compétence</label>
+        <select data-cg="armor">${armorOpts}</select></div>
+      <p class="cg-hint">Armure finale : <strong>${c.armorTotal(b)}</strong>${(c.metaEntry(b.meta) || {}).armor ? ` (dont +${c.metaEntry(b.meta).armor} de ${this._esc(b.meta)})` : ""}.</p>
+      <div class="cg-section-label">Armes <span class="cg-section-note">${(b.weapons || []).length} / ${c.weaponsTotal(b)}</span></div>
+      ${armes}
+      <div class="cluster cg-add-row">
+        <input type="text" id="cg-a1-weapon" placeholder="Nom de l'arme…">
+        <button class="btn-secondary btn-small" data-cg-action="add-weapon-a1">＋ Ajouter</button>
+      </div>
+      <div class="cg-section-label">Équipement <span class="cg-section-note">${(b.gear || []).length} / ${lvl.gear}</span></div>
+      ${objets}
+      <div class="cluster cg-add-row">
+        <input type="text" id="cg-gear-text" placeholder="Nom de l'équipement…">
+        <button class="btn-secondary btn-small" data-cg-action="add-gear">＋ Ajouter</button>
+      </div>
+      <p class="cg-hint">Le commlink est toujours fourni, en plus de l'armure et des armes (p.78).</p>
+    </div>`;
+  },
+
   /* ---- Étape : parcours de vie SR5 ----
      Rien à voir avec celui de SR6, et c'est le livre qui l'impose. Ici les
      modules COÛTENT du karma sur 750, il n'y a pas de nombre d'emplacements,
@@ -1257,6 +1394,33 @@ export const CharGen = {
         break;
       }
 
+      case "add-knowledge-a1": {
+        const inp = document.getElementById("cg-sr-knowledge");
+        const txt = (inp?.value || "").trim();
+        if (txt) {
+          b.knowledges = b.knowledges || [];
+          b.knowledges.push(txt);
+          if (inp) inp.value = "";
+          afterMutate();
+        }
+        break;
+      }
+      case "add-weapon-a1": {
+        const inp = document.getElementById("cg-a1-weapon");
+        const txt = (inp?.value || "").trim();
+        if (txt) {
+          b.weapons = b.weapons || [];
+          b.weapons.push({ name: txt });
+          if (inp) inp.value = "";
+          afterMutate();
+        }
+        break;
+      }
+      case "remove-weapon-a1":
+        b.weapons.splice(Number(el.dataset.idx), 1);
+        afterMutate();
+        break;
+
       case "lp-add": {
         const sel = document.getElementById("cg-lp-pick");
         if (sel?.value) {
@@ -1340,7 +1504,8 @@ export const CharGen = {
       }
       case "add-spec-sr": {
         const i = Number(el.dataset.idx);
-        const inp = document.getElementById(`cg-sr-spec-${i}`);
+        const inp =
+          document.getElementById(`cg-sr-spec-${i}`) || document.getElementById(`cg-a1-spec-${i}`);
         const txt = (inp?.value || "").trim();
         if (txt) {
           b.skills[i].specs = b.skills[i].specs || [];
