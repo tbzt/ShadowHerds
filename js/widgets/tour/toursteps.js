@@ -39,9 +39,9 @@ export const TourSteps = {
       body: "Des serveurs prêts à hacker, avec CI et pilotage d'intrusion. Le decker n'attend plus que vous improvisiez ses serveurs.",
     },
     {
-      id: "run", anchor: "nav-run", tours: ["full"], since: "1.0.0", fallback: "center",
+      id: "run", anchor: "nav-play", tours: ["full"], since: "1.0.0", fallback: "center",
       title: "Topos",
-      body: "Une amorce de mission en un clic : mandant, lieu, complication, objectif, paiement. Quand les joueurs partent où vous ne l'aviez pas prévu — puis « Faire un run » pour la promouvoir en vrai run.",
+      body: "Une amorce de mission en un clic : mandant, lieu, complication, objectif, paiement. Elle se génère depuis le Briefing d'un run — et quand les joueurs partent où vous ne l'aviez pas prévu, « Faire un run » promeut l'amorce en run.",
     },
     {
       id: "play", anchor: "nav-play", tours: ["full"], since: "1.0.0", fallback: "center",
@@ -66,9 +66,9 @@ export const TourSteps = {
 
     /* --- Orientation (premier lancement, ≤ 4 étapes, « fait faire ») --- */
     {
-      id: "o-lib", anchor: "nav-shadows", panel: "shadows", tours: ["orientation"], since: "1.0.0", fallback: "center",
+      id: "o-play", anchor: "nav-play", panel: "play", tours: ["orientation"], since: "1.0.0", fallback: "center",
       title: "Bienvenue, chummer",
-      body: "« Ombres portées », votre bibliothèque : tout ce que vous créez et sauvegardez vit ici.",
+      body: "« Jouer » est votre poste de séance : vos runs, la scène en cours, le débrief. C'est ici que vous retomberez à chaque ouverture.",
     },
     {
       id: "o-gen", anchor: "nav-generator", panel: "generator", tours: ["orientation"], since: "1.0.0", fallback: "center",
@@ -164,7 +164,7 @@ export const TourSteps = {
       body: "Sur une carte, cliquez un attribut (ou Magie/Résonance/Atout) pour lancer un test à ce nombre de dés — comme les compétences. Le petit dé ⚄ signalant qu'une pastille est cliquable est désormais visible en permanence, sans avoir à survoler.",
     },
     {
-      id: "wn-ranger-la-run", anchor: "nav-run", tours: ["whatsnew"], since: "1.20.0", fallback: "center",
+      id: "wn-ranger-la-run", anchor: "nav-play", tours: ["whatsnew"], since: "1.20.0", fallback: "center",
       title: "La rencontre se range et se rouvre",
       body: "Depuis le menu « ⋯ » d'un dossier Run (ou sa carte de prep) : « Ouvrir la rencontre » restaure combattants, initiative et serveur lié ; « Fermer » range tout. Chaque dossier a aussi son propre carnet de notes.",
     },
@@ -409,12 +409,12 @@ export const TourSteps = {
       body: "Le bouton « ＋ » de la barre de dossiers demande d'abord le type — ◆ Run, ❖ Campagne ou dossier simple — et crée le dossier déjà typé, sans passer par le menu « ⋯ ». Et dans « Jouer », un run sans scène offre enfin un bouton « Lancer la scène » : plus besoin de passer par la bibliothèque pour démarrer une rencontre.",
     },
     {
-      id: "wn-topos-coherent-edit-cast", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
+      id: "wn-topos-coherent-edit-cast", anchor: "nav-play", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
       title: "Des topos cohérents, éditables, et leur casting",
       body: "Le générateur de topos ne tire plus ses champs au hasard : il monte un vrai conflit — un mandant vise un rival dont un site est le lieu, d'où découlent la sécurité, l'objectif et la difficulté — nourri par Seattle. Un bouton « ✎ Éditer » retouche n'importe quel champ, « Topos vierge » vous laisse écrire votre amorce à la main, et « ⚔ Casting » génère les PNJ d'opposition cohérents avec le topos et les range dans le run.",
     },
     {
-      id: "wn-topos-map", anchor: "nav-run", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
+      id: "wn-topos-map", anchor: "nav-play", tours: ["whatsnew"], since: "1.73.0", fallback: "center",
       title: "Un plan de lieu, en image",
       body: "Si les images IA sont activées (Réglages), un topos dont le lieu s'y prête porte un bouton « ▦ Plan du lieu » qui génère un plan/blueprint du décor via Pollinations et le garde sur le topos — une vignette le réaffiche ensuite en grand. Portraits et plans partagent désormais le même réglage et la même file d'attente.",
     },
@@ -499,7 +499,7 @@ export const TourSteps = {
       body: "Un nouveau bouton ◫ dans le rail de vues (à côté de ☰❝⚔) déplie la fiche en PAYSAGE : à gauche le système réduit à l'essentiel de jeu — moniteur en bande horizontale cochable, la capacité signature selon l'archétype (sorts pour un mage, râtelier Matrice pour un decker, armes pour un combattant), les compétences en puces lançables, les augmentations en tags ; à droite la fiction (incarnation lisible, valeurs sous les titres, + contacts/mentions/dossiers). Scannable d'un coup d'œil, tout reste lançable en un tap. Les vues ☰❝⚔ ne changent pas — choisir une lentille sort du paysage. En mode Annuaire, les fiches compactes s'étalent aussi en grille pour comparer plusieurs figurants d'un coup d'œil.",
     },
     {
-      id: "wn-worldstate-memory", anchor: "nav-run", tours: ["whatsnew"], since: "1.95.0", fallback: "center",
+      id: "wn-worldstate-memory", anchor: "nav-play", tours: ["whatsnew"], since: "1.95.0", fallback: "center",
       title: "Le monde se souvient",
       body: "Générez un topos dans une campagne et le monde tient compte de son histoire : une corpo déjà affrontée revient (« 3ᵉ run contre eux, ils vous connaissent »), un contact connu de l'équipe peut s'en mêler, la réputation de l'équipe pèse sur la taille du job, et un ennemi déjà croisé peut resurgir au casting en un tap. Au débrief, marquez qui vous doit une faveur (il vous ramènera un job) ou qui est grillé (il ne rappelle plus). Le monde propose, vous ratifiez : tout est dérivé de votre campagne, rien n'est imposé, et les éditions sans réputation l'ignorent proprement.",
     },
@@ -534,7 +534,7 @@ export const TourSteps = {
       body: "La colonne « Dossiers » quitte « Ombres portées » et les écrans de génération : la bibliothèque montre désormais tout votre monde d'un seul tenant, retrouvé par ses tags et son type. Un PNJ, un contact ou un serveur généré rejoint directement le Monde — plus d'étape de rangement. La timeline Campagne › Run › Scène, elle, reste chez elle, dans « Jouer » et le générateur de topos : ce qui EST (le Monde) et ce qui SE JOUE (le Jeu) ne se mélangent plus dans la même liste.",
     },
     {
-      id: "wn-casting-convocation", anchor: "nav-run", tours: ["whatsnew"], since: "1.99.0", fallback: "center",
+      id: "wn-casting-convocation", anchor: "nav-play", tours: ["whatsnew"], since: "1.99.0", fallback: "center",
       title: "Le casting d'un run se convoque",
       body: "Générer l'opposition d'un run ne la « range » plus dans un dossier : elle est CONVOQUÉE, par référence. Conséquence directe : une même figure peut jouer dans plusieurs runs sans être copiée, et convoquer une faction amène tout son roster vivant — éditer la faction une fois se répercute sur tous les runs qui la convoquent. La fiche indique « Convoqué dans » les nœuds où elle joue, et « ramener un visage déjà croisé » comme la mémoire du monde suivent cette même vérité.",
     },

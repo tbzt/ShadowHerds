@@ -10,6 +10,27 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.10] — 2026-09-09
+
+### Modifié
+
+- **Le topos se prépare depuis le run, il n'est plus une destination.** Une
+  amorce de mission appartient à un run : on la fabrique une fois, au début.
+  Elle avait pourtant sa propre entrée de navigation, ce qui obligeait à
+  quitter la séance pour préparer, puis à retrouver son run. Le Briefing d'un
+  run sans amorce propose désormais « ◈ Générer un topos » : l'amorce est créée
+  **et rattachée à ce run** d'un seul geste, et le briefing se remplit sur
+  place. En contrepartie, « Topos » quitte la barre de navigation et la feuille
+  « Plus ». **L'écran existe toujours** et reste joignable de cinq façons : la
+  touche 6, l'adresse `#<édition>/run`, « Voir le topos » du poste de
+  commandement, « Voir la prep » de la bibliothèque, et le lien de l'écran
+  d'accueil de « Jouer ».
+- **La visite du premier lancement commence par « Jouer ».** Elle ouvrait sur
+  la bibliothèque et ne montrait jamais le poste de séance — l'écran sur lequel
+  l'application retombe pourtant à chaque ouverture depuis longtemps. Elle
+  commence maintenant là, puis enchaîne sur le générateur et finit, comme
+  avant, sur « Générer » pour que le premier PNJ sorte dans la foulée.
+
 ## [1.155.9] — 2026-09-09
 
 ### Corrigé

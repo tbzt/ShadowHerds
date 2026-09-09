@@ -224,6 +224,13 @@ export const Play = {
           // Notebooks). Jouer ne possède aucune de ces données.
           Debrief.open(id);
           break;
+        case "play-topos-new":
+          // P1 — générer l'amorce ICI, rattachée à ce run (RunGen en est le
+          // propriétaire ; Jouer ne fabrique rien). Re-rendu pour faire
+          // apparaître le briefing à la place de l'invite.
+          RunGen.generateForRun(id);
+          this.render();
+          break;
         case "play-topos-edit":
           // VIS-8 étape 3 — éditer le topos SANS quitter Jouer. Délégué à
           // ToposEdit (propriétaire du formulaire de topos). `data-id` = topos.
@@ -1334,7 +1341,22 @@ export const Play = {
       Vide si le run n'a pas de topos rattaché. */
   _toposGlanceHtml(runId) {
     const topoi = typeof RunGen !== "undefined" ? RunGen.forDossier(runId) : [];
-    if (!topoi.length) return "";
+    // P1 — un run SANS amorce ne rend plus le vide : il rend l'invite. C'est la
+    // contrepartie du retrait de « Topos » de la navigation — l'écran n'est plus
+    // une destination, donc le verbe doit exister ici. Même coquille que le
+    // briefing rempli (aucune classe neuve) : le MJ voit la même chose à sa
+    // place, une fois vide, une fois pleine.
+    if (!topoi.length)
+      return `<div class="play-topos play-briefing is-empty">
+        <div class="stack play-brief-head">
+          <span class="play-brief-label">◈ Briefing</span>
+          <div class="play-brief-obj">Pas encore d'amorce</div>
+          <div class="play-brief-meta">Objectif · mandant · lieu · complication · paie</div>
+        </div>
+        <div class="cluster play-prep-actions">
+          <button class="btn-secondary btn-small" data-action="play-topos-new" data-dossier="${runId}" title="Générer une amorce de mission et la rattacher à ce run">◈ Générer un topos</button>
+        </div>
+      </div>`;
     const t = topoi[0];
     const esc = CardRenderer._esc;
     // Briefing (§4.2) — le topos rendu comme un VRAI briefing, pas une table

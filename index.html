@@ -383,14 +383,15 @@
         <button class="cluster nav-btn" data-panel="matrix" data-tour="nav-matrix" data-action="show-panel">
           <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-matrix"></use></svg></span><span class="nav-label">Serveurs</span>
         </button>
-        <!-- « Préparer un run » : les DEUX rampes vers un run. Topos = amorce
-             rapide (jouer vite) ; Trames = structure d'avance (construire son
-             aventure). Le mot canon « Run » (dossier ◆) reste la mission JOUÉE,
-             dans « Jouer ». L'id de panneau `run` = Topos (interne, historique). -->
+        <!-- « Préparer un run » — il n'y reste que Trames. Le TOPOS (amorce
+             de mission) a quitté la nav : c'est un objet du run, pas une
+             destination, et il se génère/édite depuis le Briefing du run dans
+             « Jouer » (cf. play.js `_toposGlanceHtml`). Le panneau `run` existe
+             toujours et reste joignable — hash `#<édition>/run`, touche 6,
+             « Voir le topos » du poste de commandement, « Voir la prep » du hub,
+             et l'état vide de Jouer — mais il ne réclame plus une entrée de nav
+             permanente pour une chose qu'on prépare une fois par run. -->
         <span class="nav-section-label">Préparer un run</span>
-        <button class="cluster nav-btn" data-panel="run" data-tour="nav-run" data-action="show-panel" title="Amorce de mission générée — pour jouer vite">
-          <span class="nav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-run"></use></svg></span><span class="nav-label">Topos</span>
-        </button>
         <button class="cluster nav-btn" data-panel="trames" data-tour="nav-trames" data-action="show-panel" title="Atelier de trame : construire et relier vos scènes à l'avance">
           <span class="nav-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="6" r="2.1"/><circle cx="18" cy="8.5" r="2.1"/><circle cx="9.5" cy="18" r="2.1"/><path d="M7 6.6l8.9 1.6M6.4 8l2.6 8"/></svg></span><span class="nav-label">Trames</span>
         </button>
@@ -663,9 +664,6 @@
         </button>
         <button class="bnav-btn" data-panel="matrix" data-tour="nav-matrix" data-action="show-panel">
           <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-matrix"></use></svg></span><span class="bnav-label">Serveurs</span>
-        </button>
-        <button class="bnav-btn" data-panel="run" data-tour="nav-run" data-action="show-panel" title="Amorce de mission générée — pour jouer vite">
-          <span class="bnav-icon"><svg class="icon" aria-hidden="true"><use href="#ic-run"></use></svg></span><span class="bnav-label">Topos</span>
         </button>
         <button class="bnav-btn" data-panel="trames" data-tour="nav-trames" data-action="show-panel" title="Atelier de trame : construire et relier vos scènes à l'avance">
           <span class="bnav-icon"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="6" r="2.1"/><circle cx="18" cy="8.5" r="2.1"/><circle cx="9.5" cy="18" r="2.1"/><path d="M7 6.6l8.9 1.6M6.4 8l2.6 8"/></svg></span><span class="bnav-label">Trames</span>

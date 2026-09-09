@@ -34,6 +34,37 @@ export const RunGen = {
     return { id: Utils.uid(), ...ToposCatalog.assemble(WorldState.factsFor(scope, { repTracks })) };
   },
 
+  /** Génère un topos et le RATTACHE d'emblée à un run — le verbe que VIS-8
+      étape 3 avait dû différer (« il n'existe pas d'appel unique générer-dans-ce-
+      dossier »), et qui manquait au Briefing : sans lui, préparer une amorce
+      obligeait à quitter Jouer, générer ailleurs, puis « Faire un run » en
+      retapant le nom. Rien de neuf côté moteur — `generate()` (donc
+      `ToposCatalog` + `WorldState`) et le rattachement par `dossierId` existent
+      déjà ; on les met bout à bout.
+
+      ⚠ LIT STORAGE FRAIS, comme `forDossier`. `this._runs` n'est peuplé que par
+      `_restore()`, à l'ouverture du panneau Topos : appelé depuis Jouer sans y
+      être jamais passé, il vaut `[]`, et un `_save()` naïf ÉCRASERAIT tous les
+      topos déjà enregistrés. On repart donc de la clé, on préfixe, on réécrit. */
+  generateForRun(runId) {
+    if (!runId || Dossiers.kindOf(runId) !== "run") return null;
+    const topos = this.generate();
+    topos.dossierId = runId;
+    topos.dossierName = Dossiers.nameOf(runId);
+    const stored = Storage.get(this._RUNS_KEY, []);
+    stored.unshift(topos);
+    Storage.set(this._RUNS_KEY, stored);
+    this._runs = stored; // la mémoire du module rejoint la vérité de la clé
+    // Le panneau Topos peut être monté derrière (rare, mais gratuit à tenir).
+    if (document.getElementById("run-list")) this._renderCard(topos, true);
+    toastAction(
+      `Topos généré pour « ${topos.dossierName} ».`,
+      "Éditer",
+      () => ToposEdit.open(topos.id),
+    );
+    return topos;
+  },
+
   initPanel() {
     this._bindDelegation();
     const zone = document.getElementById("run-panel-content");

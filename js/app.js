@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.155.9",
+  VERSION: "1.155.10",
 
   edition: "none",
   editionModule: null,
@@ -703,7 +703,7 @@ const SHORTCUT_PANELS = {
   3: "generator",
   4: "contacts",
   5: "matrix",
-  6: "run",
+  6: "run", // Topos : plus d'entrée de nav (P1), mais la porte reste ouverte
   7: "settings",
   8: "play", // Jouer (8 pour ne pas décaler la mémoire des touches 1-7)
 };
