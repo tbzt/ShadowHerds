@@ -1011,6 +1011,7 @@ export const CharGen = {
     b.lifePath = b.lifePath || [];
     const parcours = c.lifePathKarmaUsed(b);
     const issues = c.lifePathIssues(b);
+    const etat = c.lifePathApplyState(b);
 
     const rows = b.lifePath
       .map((sl, i) => {
@@ -1030,6 +1031,29 @@ export const CharGen = {
             </div>
             ${sl.sousligne ? `<p class="cg-hint">${this._esc((m.souslignes.find((x) => x.label === sl.sousligne) || {}).valeur || "")}</p>` : ""}`
           : "";
+        /* Ce que l'application sait lire de la prose du livre, PROPOSÉ et non
+           appliqué d'office ; et, sans le farder, ce qu'elle ne sait pas lire.
+           Le texte du livre reste au-dessus : la proposition se relit contre
+           lui, ce qui est toute la raison de ne pas avoir écrit un analyseur
+           muet. */
+        const gains = (c.lifePathGains(b) || []).find((g) => g.id === m.id);
+        const gainsHtml = gains
+          ? `${
+              gains.effets.length
+                ? `<div class="cg-lp-gains">${gains.effets
+                    .map(
+                      (e) =>
+                        `<button class="cg-lp-gain${e.applique ? " applique" : ""}" data-cg-action="lp-apply" data-gid="${this._esc(e.gid)}" ${e.applique ? "disabled" : ""}>${e.applique ? "✓ " : "＋ "}${this._esc(e.label)}</button>`,
+                    )
+                    .join("")}</div>`
+                : ""
+            }
+            ${
+              gains.manuels.length
+                ? `<p class="cg-hint">⚑ À reporter vous-même : ${this._esc(gains.manuels.join(" · "))}</p>`
+                : ""
+            }`
+          : "";
         return `<div class="cg-lm-slot">
           <div class="cluster cg-lm-head">
             <span class="cg-lm-num">${i + 1}</span>
@@ -1040,6 +1064,7 @@ export const CharGen = {
           </div>
           <ul class="cg-lm-list">${lignes}</ul>
           ${sous}
+          ${gainsHtml}
           ${m.special ? `<p class="cg-lm-special">⚑ ${this._esc(m.special)}</p>` : ""}
         </div>`;
       })
@@ -1060,6 +1085,15 @@ export const CharGen = {
       <p class="cg-hint">On compose une vie, on ne répartit pas des points : chaque module coûte du karma sur les ${LM.karma}. L'ordre de choix raconte le parcours. Le solde finalise ensuite le personnage aux étapes Attributs et Compétences — le livre laisse volontairement les attributs bas.</p>
       ${issues.length ? `<div class="stack cg-step-errors">${issues.map((t) => `<div class="cg-hint">⚑ ${this._esc(t)}</div>`).join("")}</div>` : ""}
       <div class="cg-section-label">Parcours <span class="cg-section-note">${b.lifePath.filter((x) => x && x.id).length} modules · ${parcours} karma</span></div>
+      ${
+        etat.lisibles || etat.manuels
+          ? `<div class="cluster cg-add-row">
+              <span class="cg-section-note">Gains reportés : ${etat.appliques} / ${etat.lisibles} lisibles${etat.manuels ? ` · ${etat.manuels} ligne(s) à la main` : ""}</span>
+              ${etat.appliques < etat.lisibles ? `<button class="btn-secondary btn-small" data-cg-action="lp-apply-all">＋ Tout reporter</button>` : ""}
+            </div>
+            <p class="cg-hint">Ces gains sont PAYÉS par le karma des modules : les reporter ne consomme rien de plus. Le solde ne sert qu'à ce que vous ajoutez par-dessus.</p>`
+          : ""
+      }
       ${rows || '<p class="cg-hint">Parcours vide. Commencez par une nationalité.</p>'}
       <div class="cluster cg-add-row">
         <select id="cg-lp-pick">${groupes}</select>
@@ -1724,6 +1758,17 @@ export const CharGen = {
         afterMutate();
         break;
 
+      case "lp-apply":
+        c.applyLifePathGain(b, el.dataset.gid);
+        afterMutate();
+        break;
+      case "lp-apply-all": {
+        for (const mod of c.lifePathGains(b)) {
+          for (const e of mod.effets) c.applyLifePathGain(b, e.gid);
+        }
+        afterMutate();
+        break;
+      }
       case "toggle-magic": {
         const kind = el.dataset.kind;
         const name = el.dataset.name;

@@ -266,6 +266,10 @@ Object.assign(EditionSR5, {
         karmaToNuyen: 0,
         // Méthode à modules : les modules choisis, dans l'ordre, chacun {id, sousligne}.
         lifePath: [],
+        /** Gains du parcours DÉJÀ reportés, par identifiant stable. Sert deux
+            fois : à ne pas appliquer deux fois, et à ne pas refacturer en
+            karma ce que le module a déjà payé. */
+        lifePathApplied: {},
         notes: "",
       };
     },
@@ -720,11 +724,16 @@ Object.assign(EditionSR5, {
     karmaUsed(build) {
       const kc = this.karmaCosts;
       let sum = 0;
+      /* ⚠ Ce que le PARCOURS a accordé a déjà été payé par le karma du module :
+         le refacturer ici compterait le parcours deux fois et ferait sauter
+         les 750. Le report part donc du rang offert, pas du minimum. */
+      const offert = this.lifePathGranted(build);
       // Attributs : cumul de (nouvel indice × 5) depuis le minimum du métatype.
       for (const k of this.ATTRS) {
         const [min] = this._range(build.meta, k);
         const val = (build.attrs || {})[k] ?? min;
-        for (let i = min + 1; i <= val; i++) sum += i * kc.attrMult;
+        const depart = min + (offert.attrs[k] || 0);
+        for (let i = depart + 1; i <= val; i++) sum += i * kc.attrMult;
       }
       for (const k of this.SPECIAL_ATTRS) {
         const base = k === "CHC" ? this._range(build.meta, "CHC")[0] : 0;
@@ -732,11 +741,20 @@ Object.assign(EditionSR5, {
         for (let i = base + 1; i <= val; i++) sum += i * kc.attrMult;
       }
       for (const s of build.skills || []) {
-        sum += this.karmaForSkill(s.val || 0, kc.skillMult);
+        const base = offert.skills[s.name] || 0;
+        sum += this.karmaForSkill(s.val || 0, kc.skillMult) - this.karmaForSkill(base, kc.skillMult);
         sum += (s.specs || []).length * kc.specialization;
       }
-      for (const g of build.groups || []) sum += this.karmaForSkill(g.val || 0, kc.groupMult);
-      for (const k of build.knowledges || []) sum += this.karmaForSkill(k.val || 1, kc.knowledgeMult);
+      // Une spécialisation offerte par un module est payée par lui aussi.
+      sum -= (offert.specs || 0) * kc.specialization;
+      for (const g of build.groups || []) {
+        const base = offert.groups[g.name] || 0;
+        sum += this.karmaForSkill(g.val || 0, kc.groupMult) - this.karmaForSkill(base, kc.groupMult);
+      }
+      for (const k of build.knowledges || []) {
+        const base = offert.knowledges[k.name] || 0;
+        sum += this.karmaForSkill(k.val || 1, kc.knowledgeMult) - this.karmaForSkill(base, kc.knowledgeMult);
+      }
       sum += (build.spells || []).length * kc.spell;
       sum += (build.complexForms || []).length * kc.complexForm;
       if (build.awakened && this.awakenedKarma[build.awakened]) {
@@ -1093,6 +1111,200 @@ Object.assign(EditionSR5, {
       /** Rempli par sr5.lifemodules.js. Vide si ce fichier n'est pas chargé —
           `stepErrors` le dit alors plutôt que de laisser créer sans modules. */
       catalogue: [],
+    },
+
+    /* ============================================================
+       REPORT DES GAINS DU PARCOURS (Run Faster p.142-158)
+       ------------------------------------------------------------
+       Les encadrés du livre sont de la PROSE, et le relevé les garde telles
+       quelles : « Charisme +1, Logique +1 », « Connaissances (hobbies) :
+       [1 au choix] +3, Négociation +1 ». C'était voulu — les encadrés sont
+       irréguliers (mots manquants, puces mixtes, lignes tronquées à la
+       composition) et un analyseur SILENCIEUX y fabriquerait des personnages
+       faux tout en paraissant fonctionner.
+
+       Le prix de ce parti, c'est qu'il fallait tout recopier à la main, alors
+       que SR6 applique ses modules tout seul. D'où ce compromis : on lit ce
+       qu'on sait lire, on le PROPOSE, et le joueur valide. Ce qu'on ne sait
+       pas lire est montré tel quel, jamais deviné ni escamoté.
+
+       ⚠ Couverture mesurée sur les 51 modules : 82 % des 1 200 fragments
+       sont mécaniques (attributs, compétences, groupes, connaissances,
+       spécialisations). Le reste est de la prose CONDITIONNELLE
+       (« **Magicien :** ajoutez 1 rang à 2 des groupes suivants… »), des
+       listes de langues au choix, et les traits — que rien ne modélise
+       encore. Ces 18 % restent à la main, et l'écran le dit.
+       ============================================================ */
+
+    /** Noms d'attributs tels que le livre les écrit, vers les codes de l'app. */
+    _LP_ATTRS: {
+      Constitution: "CON", Agilité: "AGI", Réaction: "REA", Force: "FOR",
+      Volonté: "VOL", Logique: "LOG", Intuition: "INT", Charisme: "CHA",
+      Chance: "CHC", Magie: "MAG", Résonance: "RES",
+    },
+
+    /** Étiquettes dont la VALEUR est une liste d'options et non de gains :
+        « Langues secondaires (choisir une langue, rang 1) » énumère des choix,
+        pas des acquis. Les découper en gains ferait gagner huit langues. */
+    _LP_CHOIX: /langues? secondaires|régions|branches|démographies|rôles?|travails|langue principale/i,
+
+    /** Lit UN fragment. Rend toujours un objet : `kind: "inconnu"` est un
+        résultat, pas un échec silencieux — l'écran l'affiche tel quel. */
+    _lifePathRead(item) {
+      const norm = (x) => String(x || "").trim().replace(/\s+/g, " ");
+      const t = norm(item).replace(/\*+$/, "");
+      if (!t) return { kind: "vide" };
+      const skills = new Set(this.skillCatalog().map((x) => x.name));
+      let m;
+
+      /* Deux gains collés faute d'une virgule : « Connaissances
+         professionnelles : Stratégie +1 Course +1 ». La virgule manque DANS LE
+         LIVRE (vérifié au zoom 300 dpi lors du relevé, cf. la note du module),
+         et le catalogue l'a conservée littéralement. On ne l'applique donc pas
+         à sa place : on refuse de lire, et la note ⚑ du module dit au joueur
+         la lecture attendue. Sans ce garde, l'analyseur fabriquait une
+         connaissance nommée « Stratégie +1 Course ». */
+      if (/[+-]\d+\s*\S/.test(t)) return { kind: "inconnu", label: t };
+
+      if ((m = t.match(/^Spécialisations?\s+(.+?)\s*\((.+)\)$/i))) {
+        return { kind: "spec", name: norm(m[1]), spec: norm(m[2]), label: t };
+      }
+      if ((m = t.match(/^(.+?)\s*:\s*(.+?)\s*([+-]\d+)$/))) {
+        if (/^connaissances?/i.test(m[1]) || /^langues?/i.test(m[1])) {
+          return { kind: "know", name: `${norm(m[1])} : ${norm(m[2])}`, delta: Number(m[3]), label: t };
+        }
+        return { kind: "inconnu", label: t };
+      }
+      if ((m = t.match(/^(.+?)\s*\(GC\)\s*([+-]\d+)$/i))) {
+        return { kind: "group", name: norm(m[1]), delta: Number(m[2]), label: t };
+      }
+      // « Arme de mêlée exotique (Harpon) +2 » : compétence ET spécialisation.
+      if ((m = t.match(/^(.+?)\s*\(([^)]+)\)\s*([+-]\d+)$/)) && skills.has(norm(m[1]))) {
+        return { kind: "skill", name: norm(m[1]), spec: norm(m[2]), delta: Number(m[3]), label: t };
+      }
+      if ((m = t.match(/^(.+?)\s*([+-]\d+)$/))) {
+        const nom = norm(m[1]);
+        if (this._LP_ATTRS[nom]) return { kind: "attr", key: this._LP_ATTRS[nom], delta: Number(m[2]), label: t };
+        if (skills.has(nom)) return { kind: "skill", name: nom, delta: Number(m[2]), label: t };
+        if (/^langue/i.test(nom)) return { kind: "know", name: nom, delta: Number(m[2]), label: t };
+        return { kind: "inconnu", label: t };
+      }
+      // « Asocial (14) » : un trait et son coût. Rien ne les modélise encore.
+      if (/\(\d+\)$/.test(t)) return { kind: "trait", label: t };
+      return { kind: "inconnu", label: t };
+    },
+
+    /** Les gains de chaque module du parcours, lus et identifiés. L'identifiant
+        est bâti sur l'id du module, pas sur sa position : réordonner le
+        parcours ne doit pas rendre « appliqué » un gain qui ne l'est pas. */
+    lifePathGains(build) {
+      const applied = build.lifePathApplied || {};
+      const out = [];
+      (build.lifePath || []).forEach((sl) => {
+        const mod = this.lifePathById(sl && sl.id);
+        if (!mod) return;
+        const lignes = [...(mod.lignes || [])];
+        // La sous-ligne CHOISIE compte comme une ligne de plus.
+        const sous = (mod.souslignes || []).find((x) => x.label === sl.sousligne);
+        if (sous) lignes.push({ label: sous.label, valeur: sous.valeur, sousligne: true });
+
+        const effets = [];
+        const manuels = [];
+        lignes.forEach((l, li) => {
+          if (!l.valeur) return;
+          if (this._LP_CHOIX.test(l.label || "")) {
+            manuels.push(`${l.label} — ${l.valeur}`);
+            return;
+          }
+          String(l.valeur).split(",").forEach((frag, fi) => {
+            const r = this._lifePathRead(frag);
+            if (r.kind === "vide") return;
+            if (r.kind === "inconnu" || r.kind === "trait") {
+              manuels.push(r.label);
+              return;
+            }
+            const gid = `${mod.id}#${li}#${fi}`;
+            effets.push({ ...r, gid, applique: !!applied[gid] });
+          });
+        });
+        out.push({ id: mod.id, nom: mod.nom, karma: mod.karma, effets, manuels });
+      });
+      return out;
+    },
+
+    /** Ce que le parcours a DÉJÀ accordé, par catégorie. Lu par `karmaUsed`
+        pour ne pas refacturer ce que le karma du module a payé : sans cela,
+        reporter les gains ferait exploser les 750 avec le parcours compté
+        deux fois. */
+    lifePathGranted(build) {
+      const g = { attrs: {}, skills: {}, groups: {}, knowledges: {}, specs: 0 };
+      const applied = build.lifePathApplied || {};
+      for (const mod of this.lifePathGains(build)) {
+        for (const e of mod.effets) {
+          if (!applied[e.gid]) continue;
+          if (e.kind === "attr") g.attrs[e.key] = (g.attrs[e.key] || 0) + e.delta;
+          if (e.kind === "skill") g.skills[e.name] = (g.skills[e.name] || 0) + e.delta;
+          if (e.spec || e.kind === "spec") g.specs += 1;
+          if (e.kind === "group") g.groups[e.name] = (g.groups[e.name] || 0) + e.delta;
+          if (e.kind === "know") g.knowledges[e.name] = (g.knowledges[e.name] || 0) + e.delta;
+        }
+      }
+      return g;
+    },
+
+    /** Reporte un gain sur le brouillon. Idempotent : un gain déjà appliqué
+        ne l'est pas deux fois — c'est `lifePathApplied` qui fait foi, pas la
+        valeur courante, qu'un joueur a le droit d'avoir modifiée depuis. */
+    applyLifePathGain(build, gid) {
+      build.lifePathApplied = build.lifePathApplied || {};
+      if (build.lifePathApplied[gid]) return build;
+      let effet = null;
+      for (const mod of this.lifePathGains(build)) {
+        const e = mod.effets.find((x) => x.gid === gid);
+        if (e) { effet = e; break; }
+      }
+      if (!effet) return build;
+
+      const listeAjoute = (liste, nom, delta, spec) => {
+        const row = liste.find((x) => x.name === nom);
+        if (row) {
+          row.val = (row.val || 0) + delta;
+          if (spec) row.specs = [...new Set([...(row.specs || []), spec])];
+        } else {
+          liste.push({ name: nom, val: delta, specs: spec ? [spec] : [] });
+        }
+      };
+
+      if (effet.kind === "attr") {
+        const [min] = this.attrRangeFor(build, effet.key);
+        const cible = this.SPECIAL_ATTRS.includes(effet.key) ? (build.special = build.special || {}) : (build.attrs = build.attrs || {});
+        cible[effet.key] = (cible[effet.key] ?? min) + effet.delta;
+      } else if (effet.kind === "skill") {
+        build.skills = build.skills || [];
+        listeAjoute(build.skills, effet.name, effet.delta, effet.spec);
+      } else if (effet.kind === "group") {
+        build.groups = build.groups || [];
+        listeAjoute(build.groups, effet.name, effet.delta);
+      } else if (effet.kind === "know") {
+        build.knowledges = build.knowledges || [];
+        listeAjoute(build.knowledges, effet.name, effet.delta);
+      } else if (effet.kind === "spec") {
+        build.skills = build.skills || [];
+        listeAjoute(build.skills, effet.name, 0, effet.spec);
+      }
+      build.lifePathApplied[gid] = true;
+      return build;
+    },
+
+    /** Où en est le report — lu par l'écran pour dire l'état en une ligne. */
+    lifePathApplyState(build) {
+      let lisibles = 0, appliques = 0, manuels = 0;
+      for (const mod of this.lifePathGains(build)) {
+        lisibles += mod.effets.length;
+        appliques += mod.effets.filter((e) => e.applique).length;
+        manuels += mod.manuels.length;
+      }
+      return { lisibles, appliques, manuels };
     },
 
     /* ============================================================

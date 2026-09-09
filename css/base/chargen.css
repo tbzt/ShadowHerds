@@ -685,3 +685,37 @@
 .cg-magic-cat + .cg-magic-cat {
   margin-top: 8px;
 }
+
+/* ============================================================
+   REPORT DES GAINS DU PARCOURS (SR5)
+   Chaque bouton porte la LECTURE que l'application fait d'un fragment du
+   livre, juste sous le texte d'origine : on doit pouvoir relire la
+   proposition contre la prose, sinon autant avoir écrit un analyseur muet.
+   Un gain reporté reste visible, désactivé et coché — le retirer de la liste
+   ferait perdre la trace de ce qui a été fait.
+   ============================================================ */
+.cg-lp-gains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.cg-lp-gain {
+  min-height: 30px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-raised);
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-xs);
+  cursor: pointer;
+}
+.cg-lp-gain:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.cg-lp-gain.applique {
+  border-color: var(--ok, var(--accent));
+  opacity: 0.65;
+  cursor: default;
+}
