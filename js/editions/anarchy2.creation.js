@@ -569,6 +569,16 @@ Object.assign(EditionAnarchy2, {
       }));
     },
 
+    /** Atouts déjà décrits par le livre, proposés en SUGGESTION et non en
+        liste fermée : Anarchy assume qu'on invente ses Atouts, et un `select`
+        retirerait cette liberté. L'écran les sert donc en `datalist`, derrière
+        un champ libre. Le catalogue vit sur le module d'édition (dérivé des
+        statblocks) ; on le relaie ici pour que chargen.js lise le CONTRAT et
+        jamais `EditionAnarchy2` en direct. */
+    edgeCatalog() {
+      return EditionAnarchy2.edgeCatalog();
+    },
+
     /** Sorts sélectionnables à la création. */
     spellPool() {
       return (Content.spells.anarchy2 || []).map((sp) => ({ name: sp.name }));

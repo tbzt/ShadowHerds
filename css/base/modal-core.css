@@ -89,6 +89,18 @@
   background: var(--bg-card);
 }
 
+/* ⚠ `.cluster` passe en `flex-wrap: wrap` ; `.modal-footer` l'ANNULE au-dessus
+   pour tenir les actions sur une ligne au large. Sous 700 px, ce `nowrap` ne
+   protège plus rien : il pousse les boutons HORS de la modale, à gauche, où
+   `cluster--end` les repousse. Mesuré à 375 px dans l'assistant de création,
+   qui en aligne trois : « Abandonner » commençait à −76 px, donc à moitié
+   inatteignable, dans les quatre éditions. On rend le retour à la ligne. */
+@media (max-width: 700px) {
+  .modal-footer {
+    flex-wrap: wrap;
+  }
+}
+
 /* Indicateur discret « les modifs sont sauvegardées toutes seules » : occupe
    la place de l'ancien bouton Sauvegarder et pousse les actions à droite. */
 .modal-autosave-hint {

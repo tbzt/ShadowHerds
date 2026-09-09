@@ -414,6 +414,21 @@ export const CharGen = {
   },
 
   /* ---- Étape : Atouts / Magie ---- */
+  /** Suggestions d'Atouts, en `datalist` et non en `select` : les deux Anarchy
+      décrivent des Atouts au livre MAIS assument qu'on en invente. Fermer la
+      liste retirerait cette liberté ; ne rien proposer obligeait à les saisir
+      de mémoire, alors que le catalogue existait — 37 entrées en Anarchy 1, 80
+      en Anarchy 2, exposées par le contrat et lues par personne. Même motif que
+      `gearCatalog` en septembre : l'accesseur était là, l'écran l'ignorait. */
+  _edgeSuggestions() {
+    const c = this._creation();
+    if (typeof c.edgeCatalog !== "function") return "";
+    const opts = (c.edgeCatalog() || [])
+      .map((e) => `<option value="${this._esc(e.label || e.id)}"></option>`)
+      .join("");
+    return opts ? `<datalist id="cg-edge-suggestions">${opts}</datalist>` : "";
+  },
+
   _render_edges_anarchy() {
     const c = this._creation();
     const b = this._build;
@@ -470,7 +485,8 @@ export const CharGen = {
         <button class="btn-secondary btn-small" data-cg-action="add-edge-rrskill" ${b.skills.length ? "" : "disabled"}>＋ RR 1 (compétence, niv. 5)</button>
       </div>
       <div class="cluster cg-add-row">
-        <input type="text" id="cg-edge-custom-label" placeholder="Atout personnalisé…">
+        ${this._edgeSuggestions()}
+        <input type="text" id="cg-edge-custom-label" list="cg-edge-suggestions" placeholder="Atout — tapez ou choisissez…">
         <input type="number" id="cg-edge-custom-level" min="1" value="1" style="width:4em">
         <button class="btn-secondary btn-small" data-cg-action="add-edge-custom">＋ Ajouter</button>
       </div>
@@ -868,7 +884,8 @@ export const CharGen = {
       ${mv ? `<p class="cg-hint">⚑ ${this._esc(b.meta)} impose l'Atout <strong>${this._esc(mv.edge.nom)}</strong> au niveau ${mv.edge.niveau}${mv.edge.niveau ? `, soit ${mv.edge.niveau} point(s) déjà engagés` : " — offert"}.</p>` : ""}
       ${rows || '<p class="cg-hint">Aucun Atout.</p>'}
       <div class="cluster cg-add-row">
-        <input type="text" id="cg-edge-custom-label" placeholder="Atout…">
+        ${this._edgeSuggestions()}
+        <input type="text" id="cg-edge-custom-label" list="cg-edge-suggestions" placeholder="Atout — tapez ou choisissez…">
         <input type="number" id="cg-edge-custom-level" min="1" value="1" style="width:4em">
         <button class="btn-secondary btn-small" data-cg-action="add-edge-custom">＋ Ajouter</button>
       </div>
