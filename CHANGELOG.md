@@ -10,6 +10,58 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.156.0] — 2026-09-09
+
+### Ajouté
+
+- **On crée un personnage-joueur en SR5.** L'assistant de création n'existait
+  que pour Anarchy 2 ; le bouton était simplement masqué partout ailleurs.
+  Il s'ouvre désormais aussi en Shadowrun 5, avec **trois des quatre méthodes
+  du livre** : le **système de priorités** (Livre de Règles p.67), le **système
+  à 10 points** (Run Faster p.138) et le **système de création par Karma**
+  (Run Faster p.140). Le **système à modules chronologiques** (Run Faster
+  p.142) est déclaré et sélectionnable, mais annonce lui-même que son
+  catalogue de modules n'est pas encore relevé — il refuse la création plutôt
+  que d'inventer des chiffres.
+- **La Table des priorités est l'écran, pas un formulaire.** Cinq lignes,
+  cinq lettres, on clique la valeur qu'on veut. Les cases que le livre
+  n'offre pas — le troll n'existe qu'en A et B, l'ork jusqu'en C, l'elfe
+  jusqu'en D — sont **montrées barrées** plutôt que retirées : une grille qui
+  masque ses absences ment sur ce que le livre propose.
+- **Les trois niveaux de campagne de l'encadré « Jouabilité alternative »**
+  (p.66) : rue, runner expérimenté, runner d'élite. Ils changent le karma de
+  départ, la colonne Ressources, la Disponibilité maximale et le multiplicateur
+  de karma des contacts. C'est la même structure à trois paliers que les
+  niveaux de jeu d'Anarchy 2 — ce n'était donc pas une particularité Anarchy.
+
+### Modifié
+
+- **L'assistant de création est réellement édition-agnostique.** Il se
+  *disait* tel depuis toujours, mais tenait en dur la forme d'Anarchy 2 : la
+  liste des étapes (dont « Narratif », qui n'existe que là), la barre de
+  budget libellée en ¥ et ses trois cellules, les cinq attributs
+  `FOR/AGI/VOL/LOG/CHA`, la liste des éveils, la forme du brouillon, et
+  jusqu'au libellé « contacts du Réseau » qui se serait affiché tel quel en
+  SR5. Le motif du CONTRIBUTING § « Concevoir un écran », mais à l'envers :
+  pas un contrat qui aplatit, un consommateur qui détenait le savoir
+  d'édition. Ce savoir est rendu aux modules (`steps`, `newBuild`,
+  `conceptFields`, `budget`, `attrsStep`, `cleanBuild`, `contactFields`), et
+  le `kind` d'une étape choisit son écran. **Anarchy 2 est inchangé** : mêmes
+  étapes, mêmes chiffres, même personnage produit.
+
+### Notes de règles
+
+- En SR5, les points d'attribut se comptent **depuis l'indice de départ du
+  métatype** (p.68), là où Anarchy 2 les compte depuis 0 (p.85). Le piège
+  était signalé depuis l'audit du générateur Anarchy ; il est évité.
+- La table « Attributs par métatype » du livre (p.68) était **déjà** dans
+  l'app, exacte, en `EditionSR5.attrRange`. Vérifiée cellule par cellule sur
+  les 5 métatypes × 9 attributs, elle est **lue** par le barème de création
+  plutôt que recopiée — un fait n'a qu'une source.
+- Le catalogue d'équipement SR5 de l'app est nominatif (il alimente le
+  générateur de PNJ, sans prix). L'étape Équipement lui emprunte donc les
+  noms canoniques et laisse le joueur saisir le prix lu au livre.
+
 ## [1.155.11] — 2026-09-09
 
 ### Modifié

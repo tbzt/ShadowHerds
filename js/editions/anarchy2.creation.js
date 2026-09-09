@@ -21,6 +21,211 @@ import { Utils } from "../core/utils.js";
 
 Object.assign(EditionAnarchy2, {
   creation: {
+    /* ============================================================
+       CONTRAT LU PAR CHARGEN — la forme de l'assistant, pas ses chiffres.
+
+       `chargen.js` se disait édition-agnostique mais tenait en dur la forme
+       d'Anarchy 2 : la liste des étapes, la barre de budget en ¥, ses trois
+       cellules, et les cinq attributs `["FOR","AGI","VOL","LOG","CHA"]`.
+       C'était le motif du CONTRIBUTING § « Concevoir un écran » à l'envers —
+       pas un contrat qui aplatit, un consommateur qui détient le savoir
+       d'édition. Les quatre accesseurs ci-dessous le rendent au module, pour
+       que SR5/SR6/A1 puissent décrire une création de forme différente
+       (grille de priorités, budget en karma, 8 attributs + spéciaux) sans
+       qu'aucune branche n'apparaisse dans le contrôleur.
+       ============================================================ */
+
+    /** Les étapes, dans l'ordre. `id` indexe stepErrors() ; `kind` choisit le
+        renderer côté contrôleur. Deux éditions partagent un `kind` quand
+        elles partagent réellement la forme de l'écran — jamais par défaut :
+        les compétences Anarchy (un pool, plafond d'indice) et SR5 (deux pools
+        individuel/groupe) sont deux formes, donc deux kinds. */
+    steps: [
+      { id: "concept", kind: "concept", label: "Concept" },
+      { id: "attrs", kind: "attrs", label: "Attributs" },
+      { id: "skills", kind: "skills_pool", label: "Compétences" },
+      { id: "edges", kind: "edges_anarchy", label: "Atouts/Magie" },
+      { id: "gear", kind: "gear_kit", label: "Équipement" },
+      { id: "narrative", kind: "narrative", label: "Narratif" },
+      { id: "contacts", kind: "contacts", label: "Contacts" },
+      { id: "review", kind: "review", label: "Révision" },
+    ],
+
+    /** Brouillon vierge. Vivait dans `CharGen._newBuild` — donc la forme du
+        personnage Anarchy (mots-clés, comportements, citations) était écrite
+        dans le contrôleur. */
+    newBuild() {
+      return {
+        gameLevel: "runner",
+        archetypeTable: "equilibre",
+        advancedMode: false,
+        meta: "Humain",
+        gender: "NB",
+        name: "",
+        awakened: null,
+        attrs: { FOR: 1, AGI: 1, VOL: 1, LOG: 1, CHA: 1 },
+        skills: [],
+        knowledges: [],
+        edges: [],
+        weapons: [],
+        gear: [],
+        extraArmor: 0,
+        spells: [],
+        mentorSpirit: null,
+        keywords: ["", "", "", "", ""],
+        behaviors: ["", "", "", ""],
+        quotes: ["", "", "", ""],
+        lifestyle: "",
+        contacts: [],
+        notes: "",
+      };
+    },
+
+    /** Champs du concept, déclarés plutôt que dessinés : ce sont des selects,
+        la seule étape où le déclaratif paie vraiment (SR5 y mettra sa méthode
+        de création et son niveau de campagne sans un renderer de plus). */
+    conceptFields(build) {
+      const money = (n) => n.toLocaleString("fr-FR");
+      return [
+        { path: "name", label: "Nom", type: "text", placeholder: "Nom du personnage" },
+        {
+          path: "gameLevel",
+          label: "Niveau de jeu",
+          type: "select",
+          options: Object.entries(this.gameLevels).map(([v, o]) => ({
+            value: v,
+            label: `${o.label} (${money(o.nuyen)} ¥)`,
+          })),
+        },
+        {
+          path: "archetypeTable",
+          label: "Table de points",
+          type: "select",
+          options: Object.entries(this.pointTables[build.gameLevel] || {}).map(([v, o]) => ({
+            value: v,
+            label: o.label,
+          })),
+        },
+        {
+          path: "meta",
+          label: "Métatype",
+          type: "select",
+          options: Object.keys(this.metatypes).map((m) => ({ value: m, label: m })),
+        },
+        {
+          path: "gender",
+          label: "Genre",
+          type: "select",
+          options: [
+            { value: "M", label: "Masculin" },
+            { value: "F", label: "Féminin" },
+            { value: "NB", label: "Non-binaire" },
+          ],
+        },
+        {
+          path: "awakened",
+          label: "Éveil",
+          type: "select",
+          emptyIsNull: true,
+          options: [
+            { value: "", label: "Aucun" },
+            { value: "hermétique", label: "Hermétique" },
+            { value: "chamanique", label: "Chamanique" },
+            { value: "adepte", label: "Adepte" },
+          ],
+        },
+        {
+          path: "advancedMode",
+          label: "Mode avancé (nuyens fins, transferts libres entre catégories)",
+          type: "checkbox",
+        },
+      ];
+    },
+
+    /** Budget neutre : une jauge de tête + des cellules de catégorie. Le
+        contrôleur n'a plus à savoir que l'unité est le nuyen — SR5 y passera
+        des points de priorité puis du karma dans la même forme. */
+    budget(build) {
+      const level = this.gameLevels[build.gameLevel];
+      if (!level) return { headline: null, cells: [] };
+      const table = this.pointTables[build.gameLevel]?.[build.archetypeTable];
+      const spent = this.totalCost(build);
+      const money = (n) => n.toLocaleString("fr-FR");
+      // La jauge n'est une LIMITE qu'en mode avancé ; en mode table, ce sont
+      // les cellules qui portent les vraies limites (comportement d'origine).
+      const headline = {
+        label: build.advancedMode
+          ? `${money(spent)} / ${money(level.nuyen)} ¥`
+          : `Coût ${money(spent)} ¥ · budget ${money(level.nuyen)} ¥`,
+        used: spent,
+        total: level.nuyen,
+        over: build.advancedMode && spent > level.nuyen,
+      };
+      if (build.advancedMode || !table) return { headline, cells: [] };
+      return {
+        headline,
+        cells: [
+          { label: "Attributs", used: this.attrPointsUsed(build.attrs), total: table.attrPoints },
+          { label: "Compétences", used: this.skillPointsUsed(build), total: table.skillPoints },
+          {
+            label: "Atouts",
+            used: (build.edges || []).reduce((a, e) => a + (e.level || 0), 0),
+            total: table.edgePoints,
+          },
+        ],
+      };
+    },
+
+    /** Modèle de l'étape Attributs. Rendu en GROUPES parce que SR5 en a deux
+        (attributs, puis attributs spéciaux Chance/Magie/Résonance, qui ont
+        leur propre réserve et échappent à la règle du « un seul au max ») ;
+        Anarchy 2 n'en a qu'un, sans libellé. */
+    attrsStep(build) {
+      const range = this.metatypes[build.meta];
+      const level = this.gameLevels[build.gameLevel];
+      const table = this.pointTables[build.gameLevel]?.[build.archetypeTable];
+      if (!range || !level || !table) return { hint: "", groups: [], footer: "" };
+      const keys = ["FOR", "AGI", "VOL", "LOG", "CHA"];
+      const specs = keys.map((key) => ({ key, min: range[key][0], max: range[key][1] }));
+      const used = this.attrPointsUsed(build.attrs);
+      const atMax = keys.filter((k) => (build.attrs[k] || 0) >= range[k][1]).length;
+      return {
+        hint: `Table « ${table.label} » : ${table.attrPoints} points d'attributs, comptés depuis 0 (somme des indices, p.85). Dé d'Anarchy du ${build.meta} : ${range.anarchy}.`,
+        groups: [{ used, total: table.attrPoints, specs }],
+        footer: `Points utilisés : ${used} / ${table.attrPoints} · <span class="${atMax > level.attrsAtMax ? "cg-error-text" : ""}">attributs au max : ${atMax} / ${level.attrsAtMax}</span>`,
+      };
+    },
+
+    contactFields() {
+      return [
+        { key: "name", placeholder: "Nom" },
+        { key: "description", placeholder: "Description (rôle, loyauté…)" },
+      ];
+    },
+    contactsHint() {
+      return "Contacts nommés du Réseau (niveau de base 0, p.61) — libre, narratif.";
+    },
+
+    /** Nettoyage du brouillon : les champs narratifs d'Anarchy sont des
+        CHAÎNES, on retire les vides. Vivait dans `CharGen._cleanBuild`, où
+        il supposait cette forme pour toutes les éditions. */
+    cleanBuild(b) {
+      return {
+        ...b,
+        keywords: (b.keywords || []).map((s) => s.trim()).filter(Boolean),
+        behaviors: (b.behaviors || []).map((s) => s.trim()).filter(Boolean),
+        quotes: (b.quotes || []).map((s) => s.trim()).filter(Boolean),
+        knowledges: (b.knowledges || []).map((s) => s.trim()).filter(Boolean),
+        contacts: (b.contacts || []).filter((c) => c && c.name && c.name.trim()),
+      };
+    },
+
+    /** Bornes d'un attribut, pour le clamp générique du contrôleur. */
+    attrRangeFor(build, key) {
+      const range = this.metatypes[build.meta];
+      return range && range[key] ? range[key] : [0, 99];
+    },
+
     /* ---- Coûts unitaires (récapitulatif p.83) ---- */
     costs: {
       attrPoint: 10000, // par point d'attribut

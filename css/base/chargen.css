@@ -464,3 +464,97 @@
 /* Les champs de l'assistant étaient posés sans classe : c'est l'un des trois
    cas qui ont motivé la règle de fond sur `input`/`select`/`textarea`
    (forms.css). Elle les habille désormais — plus rien de spécifique ici. */
+
+/* ============================================================
+   GRILLE DE PRIORITÉS (SR5/SR6)
+   Une ligne par colonne du livre, cinq cases A→E. La case EST le
+   contrôle : on clique la valeur qu'on veut, pas un menu qui la
+   cache. Les cases indisponibles (le troll n'existe qu'en A/B,
+   l'ork jusqu'en C, l'elfe jusqu'en D) sont montrées barrées
+   plutôt que retirées — l'absence doit se lire, sinon la grille
+   ment sur ce que le livre propose.
+   ============================================================ */
+.cg-prio-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.cg-prio-row {
+  display: grid;
+  grid-template-columns: 8.5em 1fr;
+  gap: 8px;
+  align-items: stretch;
+}
+.cg-prio-head {
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  align-self: center;
+}
+.cg-prio-cells {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+.cg-prio-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 44px; /* cible tactile : règle du projet */
+  padding: 4px 6px;
+  text-align: left;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+.cg-prio-cell:hover:not(.invalid) {
+  border-color: var(--accent);
+}
+.cg-prio-cell.chosen {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, var(--bg-raised));
+}
+.cg-prio-cell.invalid {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cg-prio-cell.invalid .cg-prio-val {
+  text-decoration: line-through;
+}
+.cg-prio-letter {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--text-dim);
+}
+.cg-prio-cell.chosen .cg-prio-letter {
+  color: var(--accent);
+}
+/* Coût en points du système à 10 points, discret à côté de la lettre. */
+.cg-prio-letter em {
+  font-style: normal;
+  font-weight: 400;
+  opacity: 0.7;
+}
+.cg-prio-val {
+  font-size: var(--fs-xs);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+/* Sous 700 px la grille passe en colonnes empilées : cinq cases côte à
+   côte deviennent illisibles sur téléphone, alors que l'assistant doit
+   rester utilisable là où le MJ l'ouvre. */
+@media (max-width: 700px) {
+  .cg-prio-row {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+  .cg-prio-cells {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .cg-prio-val {
+    font-size: 10px;
+  }
+}
