@@ -575,22 +575,17 @@
         <!-- TOPOS — amorces de mission (id `run` interne, historique) -->
         <div class="panel" id="panel-run">
           <div class="cluster panel-title">Générateur de topos<span class="panel-subtitle">amorces de mission — client, lieu, complication</span></div>
-          <div class="shadows-layout" data-sidebar="run">
-            <div class="sidebar-backdrop" data-sidebar-action="close" data-sidebar-target="run"></div>
-            <button class="sidebar-reopen" data-sidebar-action="open" data-sidebar-target="run" title="Afficher les dossiers"
-              aria-label="Afficher les dossiers">
-              <span class="sidebar-reopen-icon"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></span>
-              <span class="sidebar-reopen-label">Dossiers</span>
-            </button>
-            <aside class="shadows-sidebar">
-              <div class="cluster shadows-sidebar-header">
-                <button class="btn-icon sidebar-collapse-btn" data-sidebar-action="close" data-sidebar-target="run" title="Replier"
-                  aria-label="Replier les dossiers"><svg class="icon" aria-hidden="true"><use href="#ic-chevron"></use></svg></button>
-                <span class="shadows-sidebar-title">Dossiers</span>
-                <button class="btn-icon" data-dossier-bar data-action="add-dossier" title="Nouveau dossier">＋</button>
-              </div>
-              <div id="run-dossier-list"></div>
-            </aside>
+          <!-- P2 — plus de colonne de dossiers ici. C'était le SECOND montage du
+               MÊME arbre (DossierBar n'en rendait que deux : celui-ci et celui de
+               Personnages), et le seul des deux à ne rien filtrer : `rungen.js` ne
+               lit jamais `DossierBar.current`, la liste des topos est rendue en
+               entier quoi qu'on y sélectionne. Elle ne servait donc qu'à dire « où
+               je suis » — ce que le fil d'Ariane et le sélecteur de contexte disent
+               déjà, en haut, sur tous les écrans. Le montage de Personnages, lui,
+               RESTE : il porte le seul CRUD de dossiers de l'app (renommer,
+               supprimer, typer, dupliquer, sous-groupe). Même gabarit sans aside
+               que le générateur, Contacts et Serveurs. -->
+          <div class="shadows-layout">
             <div class="stack shadows-main">
               <div id="run-panel-content"></div>
             </div>

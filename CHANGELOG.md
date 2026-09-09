@@ -10,6 +10,25 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.155.11] — 2026-09-09
+
+### Modifié
+
+- **L'écran des topos n'a plus de colonne de dossiers.** C'était le second
+  affichage du même arbre — celui de « Personnages » est le premier — et le
+  seul des deux à ne rien filtrer : la liste des amorces s'affichait en entier
+  quel que soit le dossier sélectionné. Elle ne disait donc que « où je suis »,
+  ce que la barre de contexte annonce déjà en haut de tous les écrans. Les
+  amorces occupent maintenant toute la largeur. **Aucun geste n'est perdu** :
+  créer, renommer, supprimer, typer ou dupliquer un dossier reste dans la
+  colonne de « Personnages », inchangée.
+- **Sur « Personnages », le compte affiché décrit enfin la grille.** Sélectionner
+  un dossier dans la colonne affichait son nom et le nombre de personnages qui y
+  sont convoqués — « R-T (0) » — au-dessus d'une grille qui montrait, elle,
+  toute la bibliothèque. Les deux moitiés de l'écran se contredisaient. La ligne
+  annonce désormais ce qu'on voit. Le dossier sélectionné garde ses deux rôles
+  réels sur cet écran : désigner l'équipe active, et gérer l'arbre des dossiers.
+
 ## [1.155.10] — 2026-09-09
 
 ### Modifié

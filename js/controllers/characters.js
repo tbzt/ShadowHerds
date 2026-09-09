@@ -3,15 +3,24 @@
 /* ============================================================
    CHARACTERS — bibliothèque de personnages jouables (PJ)
    ------------------------------------------------------------
-   Panneau autonome (reste le point de CRÉATION, cf. CharGen), mais sa
-   sidebar affiche désormais l'arbre de dossiers **transverse**
-   (DossierBar), le même que Ombres portées : un PJ rangé
-   dans « Run 1 » y apparaît, qu'on vienne d'ici ou d'Ombres portées.
-   Pas de `dom.sidebar` dans la config Collection ci-dessous : c'est
-   `initPanel()` qui monte DossierBar sur #characters-group-list, la
-   grille (`_renderGrid` du socle) continue de filtrer sur `currentGroup`,
-   déjà tenu à jour par `DossierBar._applyCurrent()` (Characters fait
-   partie de `DossierBar._cols()`).
+   Panneau autonome (reste le point de CRÉATION, cf. CharGen). Sa colonne
+   affiche l'arbre de dossiers **transverse** (DossierBar) : pas de
+   `dom.sidebar` dans la config Collection ci-dessous, c'est `initPanel()`
+   qui monte DossierBar sur #characters-group-list.
+
+   ⚠ CETTE COLONNE NE FILTRE PAS LA GRILLE, et ce commentaire a longtemps
+   prétendu le contraire (« la grille continue de filtrer sur `currentGroup` »).
+   C'est faux depuis A4-bis.3b : `currentGroup` et `data.groups` ont disparu
+   avec l'appartenance de dossier, `_applyCurrent()` est un no-op assumé, et
+   `Collection._renderGrid` rend `data.all` en entier. La croyance a survécu
+   dans le code : `renderLabel` comptait les PJ CONVOQUÉS sur le dossier
+   sélectionné au-dessus d'une grille qui les montrait tous (mesuré :
+   « R-T (0) » sur trois fiches). Corrigé — le libellé décrit la grille.
+
+   Ce que la colonne fait vraiment ici, et qui suffit à la justifier : elle est
+   le SEUL gestionnaire de l'arbre Campagne › Run › Scène de l'app (créer,
+   renommer, supprimer, typer, dupliquer — rendus par `DossierBar._nodeHtml`,
+   monté nulle part ailleurs), et elle désigne la cible du bouton ☆ Équipe.
 
    Les entités stockées ont la forme d'un PNJ (cf.
    EditionAnarchy2.generate()) avec la couche PJ en plus (isPC,
@@ -265,16 +274,29 @@ export const Characters = Object.assign(
       btn.toggleAttribute("hidden", !available);
     },
 
+    /** Le libellé décrit LA GRILLE, et rien d'autre.
+
+        Il annonçait le dossier sélectionné dans la colonne et comptait les PJ
+        qui y sont CONVOQUÉS — alors que la grille, elle, montre toute la
+        bibliothèque depuis A4-bis.3b (`Collection._renderGrid` : « toute la
+        bibliothèque, plus de filtrage par currentGroup »). Les deux moitiés de
+        l'écran disaient donc deux choses différentes : mesuré, sélectionner un
+        run affichait « R-T (0) » au-dessus de trois fiches bien présentes.
+
+        Un compte qui ne compte pas ce qu'on voit est pire qu'une absence de
+        compte : il apprend à ne plus lire la ligne. Le contexte, lui, n'est pas
+        perdu — le fil d'Ariane et le sélecteur le portent en haut de tous les
+        écrans, et le dossier sélectionné garde ses deux vraies fonctions ici :
+        désigner l'équipe active (☆) et servir de gestionnaire de dossiers.
+
+        Reste hors de portée de ce correctif, et inchangé : le compte ne suit pas
+        le filtre TEXTE (la grille en montre alors moins). Le Hub sait le dire
+        (« affichées/total », `hub.js:_renderLabel`) parce qu'il possède son
+        propre filtre ; ici il faudrait envelopper `setFilter` du socle. */
     renderLabel() {
       const label = document.getElementById("characters-group-label");
       if (!label) return;
-      const node = DossierBar.currentNode();
-      const base = node ? node.name : "Tous les personnages";
-      // A4-bis.3b : compte = PJ convoqués sur le nœud (ou toute la troupe à « Tout »).
-      const n = node
-        ? DossierBar.convenedIds(node.id, { types: ["pj"] }).length
-        : this.data.all.length;
-      label.textContent = `${base} (${n})`;
+      label.textContent = `Tous les personnages (${this.data.all.length})`;
     },
   },
 );

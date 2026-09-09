@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.155.10",
+  VERSION: "1.155.11",
 
   edition: "none",
   editionModule: null,
@@ -549,9 +549,9 @@ export const App = {
         Servers.initGenPanel();
         break;
       case "run":
-        DossierBar.mount("run-dossier-list");
+        // P2 : plus de colonne de dossiers sur cet écran (elle ne filtrait rien
+        // et doublait celle de Personnages) — donc plus rien à monter ni à rendre.
         RunGen.initPanel();
-        DossierBar.render();
         break;
       case "play":
         Play.initPanel(); // colonne Campagne › Run › Scène
