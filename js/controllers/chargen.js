@@ -983,11 +983,11 @@ export const CharGen = {
       case "apply-preset": {
         const preset = (c.presets || []).find((p) => p.id === el.dataset.id);
         if (!preset) break;
-        // Repart d'un brouillon neuf (garde le niveau de jeu choisi) + patch.
-        const level = b.gameLevel;
-        const fresh = c.newBuild();
-        fresh.gameLevel = level;
-        this._build = { ...fresh, ...preset.patch };
+        // Repart d'un brouillon neuf, décliné pour le niveau de jeu choisi.
+        // Le module est seul à savoir comment un preset devient un brouillon
+        // (et seul à le DÉTACHER du catalogue livré) : ne pas remonter cette
+        // expression ici, le garde-fou de tests/ lit la même.
+        this._build = c.buildFromPreset(preset.id, b.gameLevel);
         // Normalise l'attribut + les spés (specs[]) de chaque compétence.
         this._build.skills = this._normalizeSkillSpecs(
           (this._build.skills || []).map((s) => {

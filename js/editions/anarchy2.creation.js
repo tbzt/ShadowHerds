@@ -568,9 +568,22 @@ Object.assign(EditionAnarchy2, {
     },
 
     /* ---- Presets de démarrage rapide ----
-       Chaque `patch` est un build partiel appliqué sur un brouillon neuf
-       (l'assistant normalise ensuite l'attribut de chaque compétence).
-       Pensés « dans les clous » d'un runner mais ajustables librement. */
+       Un preset porte le CONCEPT (table d'archétype, éveil, armes) dans
+       `patch`, et sa RÉPARTITION dans `byLevel` : les trois niveaux de jeu
+       n'ouvrent ni le même budget d'attributs, ni le même plafond de
+       compétences, ni le même nombre d'attributs au maximum (p.86). Un seul
+       jeu de chiffres ne pouvait donc pas être juste aux trois — celui écrit
+       pour un runner produisait 2 à 3 erreurs de validation dès qu'on
+       cliquait le bouton en niveau ganger.
+
+       Chaque ligne de `byLevel` tient dans `pointTables[niveau][table]` et
+       respecte `gameLevels[niveau]` : c'est vérifié par `tests/` (voir
+       creation-presets.test.js), pas par relecture.
+
+       Les compétences restent volontairement en deçà du budget : elles sont
+       l'endroit où le meneur personnalise, et le livre demande d'ailleurs un
+       minimum de 2 en Athlétisme, Furtivité, Perception, Influence et Réseau
+       pour tout runner (p.84) — à ajouter avec les points laissés libres. */
     presets: [
       {
         id: "sam",
@@ -578,14 +591,36 @@ Object.assign(EditionAnarchy2, {
         patch: {
           archetypeTable: "combattant",
           awakened: null,
-          attrs: { FOR: 3, AGI: 4, VOL: 3, LOG: 2, CHA: 2 },
-          skills: [
-            { name: "Armes à distance", val: 5, spec: "Pistolets" },
-            { name: "Combat rapproché", val: 4 },
-            { name: "Athlétisme", val: 3 },
-            { name: "Perception", val: 2 },
-          ],
           weapons: [{ name: "Pistolet lourd" }, { name: "Couteau de combat" }],
+        },
+        byLevel: {
+          ganger: {
+            attrs: { FOR: 3, AGI: 3, VOL: 2, LOG: 2, CHA: 2 },
+            skills: [
+              { name: "Armes à distance", val: 4, spec: "Pistolets" },
+              { name: "Combat rapproché", val: 4 },
+              { name: "Athlétisme", val: 3 },
+              { name: "Perception", val: 2 },
+            ],
+          },
+          runner: {
+            attrs: { FOR: 3, AGI: 4, VOL: 3, LOG: 2, CHA: 2 },
+            skills: [
+              { name: "Armes à distance", val: 5, spec: "Pistolets" },
+              { name: "Combat rapproché", val: 4 },
+              { name: "Athlétisme", val: 3 },
+              { name: "Perception", val: 2 },
+            ],
+          },
+          elite: {
+            attrs: { FOR: 4, AGI: 4, VOL: 3, LOG: 3, CHA: 2 },
+            skills: [
+              { name: "Armes à distance", val: 6, spec: "Pistolets" },
+              { name: "Combat rapproché", val: 5 },
+              { name: "Athlétisme", val: 3 },
+              { name: "Perception", val: 2 },
+            ],
+          },
         },
       },
       {
@@ -594,14 +629,36 @@ Object.assign(EditionAnarchy2, {
         patch: {
           archetypeTable: "magicien",
           awakened: "hermétique",
-          attrs: { FOR: 1, AGI: 2, VOL: 4, LOG: 3, CHA: 2 },
-          skills: [
-            { name: "Sorcellerie", val: 5, spec: "Sorts de combat" },
-            { name: "Conjuration", val: 3 },
-            { name: "Perception", val: 2 },
-            { name: "Athlétisme", val: 2 },
-          ],
           spells: ["Boule de feu", "Armure"],
+        },
+        byLevel: {
+          ganger: {
+            attrs: { FOR: 1, AGI: 2, VOL: 3, LOG: 3, CHA: 2 },
+            skills: [
+              { name: "Sorcellerie", val: 4, spec: "Sorts de combat" },
+              { name: "Conjuration", val: 3 },
+              { name: "Perception", val: 2 },
+              { name: "Athlétisme", val: 2 },
+            ],
+          },
+          runner: {
+            attrs: { FOR: 1, AGI: 2, VOL: 4, LOG: 3, CHA: 2 },
+            skills: [
+              { name: "Sorcellerie", val: 5, spec: "Sorts de combat" },
+              { name: "Conjuration", val: 3 },
+              { name: "Perception", val: 2 },
+              { name: "Athlétisme", val: 2 },
+            ],
+          },
+          elite: {
+            attrs: { FOR: 1, AGI: 2, VOL: 4, LOG: 4, CHA: 2 },
+            skills: [
+              { name: "Sorcellerie", val: 6, spec: "Sorts de combat" },
+              { name: "Conjuration", val: 4 },
+              { name: "Perception", val: 2 },
+              { name: "Athlétisme", val: 2 },
+            ],
+          },
         },
       },
       {
@@ -610,14 +667,36 @@ Object.assign(EditionAnarchy2, {
         patch: {
           archetypeTable: "equilibre",
           awakened: null,
-          attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 4, CHA: 2 },
-          skills: [
-            { name: "Piratage", val: 5, spec: "Cybercombat" },
-            { name: "Électronique", val: 4 },
-            { name: "Ingénierie", val: 2 },
-            { name: "Perception", val: 2 },
-          ],
           weapons: [{ name: "Pistolet léger" }],
+        },
+        byLevel: {
+          ganger: {
+            attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 3, CHA: 2 },
+            skills: [
+              { name: "Piratage", val: 4, spec: "Cybercombat" },
+              { name: "Électronique", val: 4 },
+              { name: "Ingénierie", val: 2 },
+              { name: "Perception", val: 2 },
+            ],
+          },
+          runner: {
+            attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 4, CHA: 2 },
+            skills: [
+              { name: "Piratage", val: 5, spec: "Cybercombat" },
+              { name: "Électronique", val: 4 },
+              { name: "Ingénierie", val: 2 },
+              { name: "Perception", val: 2 },
+            ],
+          },
+          elite: {
+            attrs: { FOR: 1, AGI: 4, VOL: 2, LOG: 4, CHA: 2 },
+            skills: [
+              { name: "Piratage", val: 6, spec: "Cybercombat" },
+              { name: "Électronique", val: 5 },
+              { name: "Ingénierie", val: 2 },
+              { name: "Perception", val: 2 },
+            ],
+          },
         },
       },
       {
@@ -626,14 +705,36 @@ Object.assign(EditionAnarchy2, {
         patch: {
           archetypeTable: "equilibre",
           awakened: null,
-          attrs: { FOR: 1, AGI: 2, VOL: 3, LOG: 2, CHA: 4 },
-          skills: [
-            { name: "Influence", val: 5, spec: "Négociation" },
-            { name: "Réseau", val: 4 },
-            { name: "Perception", val: 3 },
-            { name: "Armes à distance", val: 2 },
-          ],
           weapons: [{ name: "Pistolet léger" }],
+        },
+        byLevel: {
+          ganger: {
+            attrs: { FOR: 1, AGI: 2, VOL: 3, LOG: 2, CHA: 3 },
+            skills: [
+              { name: "Influence", val: 4, spec: "Négociation" },
+              { name: "Réseau", val: 4 },
+              { name: "Perception", val: 3 },
+              { name: "Armes à distance", val: 2 },
+            ],
+          },
+          runner: {
+            attrs: { FOR: 1, AGI: 2, VOL: 3, LOG: 2, CHA: 4 },
+            skills: [
+              { name: "Influence", val: 5, spec: "Négociation" },
+              { name: "Réseau", val: 4 },
+              { name: "Perception", val: 3 },
+              { name: "Armes à distance", val: 2 },
+            ],
+          },
+          elite: {
+            attrs: { FOR: 1, AGI: 2, VOL: 4, LOG: 2, CHA: 4 },
+            skills: [
+              { name: "Influence", val: 6, spec: "Négociation" },
+              { name: "Réseau", val: 5 },
+              { name: "Perception", val: 3 },
+              { name: "Armes à distance", val: 2 },
+            ],
+          },
         },
       },
       {
@@ -642,17 +743,62 @@ Object.assign(EditionAnarchy2, {
         patch: {
           archetypeTable: "equilibre",
           awakened: null,
-          attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 4, CHA: 2 },
-          skills: [
-            { name: "Pilotage", val: 5, spec: "Drones volants" },
-            { name: "Ingénierie", val: 4, spec: "C&R drones" },
-            { name: "Électronique", val: 2 },
-            { name: "Perception", val: 2 },
-          ],
           weapons: [{ name: "Pistolet léger" }],
+        },
+        byLevel: {
+          ganger: {
+            attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 3, CHA: 2 },
+            skills: [
+              { name: "Pilotage", val: 4, spec: "Drones volants" },
+              { name: "Ingénierie", val: 4, spec: "C&R drones" },
+              { name: "Électronique", val: 2 },
+              { name: "Perception", val: 2 },
+            ],
+          },
+          runner: {
+            attrs: { FOR: 1, AGI: 3, VOL: 2, LOG: 4, CHA: 2 },
+            skills: [
+              { name: "Pilotage", val: 5, spec: "Drones volants" },
+              { name: "Ingénierie", val: 4, spec: "C&R drones" },
+              { name: "Électronique", val: 2 },
+              { name: "Perception", val: 2 },
+            ],
+          },
+          elite: {
+            attrs: { FOR: 1, AGI: 4, VOL: 2, LOG: 4, CHA: 2 },
+            skills: [
+              { name: "Pilotage", val: 6, spec: "Drones volants" },
+              { name: "Ingénierie", val: 5, spec: "C&R drones" },
+              { name: "Électronique", val: 2 },
+              { name: "Perception", val: 2 },
+            ],
+          },
         },
       },
     ],
+
+    /** Brouillon complet issu d'un preset de démarrage rapide, pour le niveau
+        de jeu demandé. SEULE expression du passage « preset → brouillon » :
+        l'assistant et le garde-fou de `tests/` lisent la même, sans quoi le
+        test validerait un chemin que l'application n'emprunte plus.
+
+        Le `structuredClone` est load-bearing, pas de la prudence : sans lui
+        le brouillon PARTAGE les objets du catalogue livré (spread
+        superficiel), et le bouton « + » de l'assistant écrit alors dans
+        `presets` — un appui sur Force et le « Samouraï des rues » devient
+        définitivement un build à 15 points d'attributs, invalide au clic
+        suivant. Même piège pour `weapons`, `spells` et `skills`.
+
+        Renvoie `null` si l'id est inconnu. Un niveau inconnu retombe sur
+        celui du brouillon vierge. */
+    buildFromPreset(presetId, gameLevel) {
+      const preset = this.presets.find((p) => p.id === presetId);
+      if (!preset) return null;
+      const fresh = this.newBuild();
+      const level = this.gameLevels[gameLevel] ? gameLevel : fresh.gameLevel;
+      const patch = { ...preset.patch, ...(preset.byLevel[level] || {}) };
+      return { ...fresh, gameLevel: level, ...structuredClone(patch) };
+    },
 
     /* ---- Pools d'inspiration narrative (p.50-51) ---- */
     _narrativePools: {
