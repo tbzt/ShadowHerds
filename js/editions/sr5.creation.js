@@ -234,6 +234,13 @@ Object.assign(EditionSR5, {
       if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
       out.push(
         { id: "gear", kind: "gear_nuyen", label: "Équipement" },
+      );
+      /* « Karma restant » est une ÉTAPE du livre (p.102), pas une case : on
+         y monte ce qu'on veut aux coûts d'amélioration, et on n'en garde pas
+         plus de 7. Les méthodes au karma et à modules n'en ont pas besoin :
+         leur monnaie EST le karma, `karmaUsed` s'en charge déjà. */
+      if (fam === "priority") out.push({ id: "finition", kind: "finish_sr5", label: "Karma" });
+      out.push(
         { id: "contacts", kind: "contacts", label: "Contacts" },
         { id: "review", kind: "review", label: "Révision" },
       );
@@ -262,7 +269,11 @@ Object.assign(EditionSR5, {
         adeptPowers: [],
         gear: [],
         contacts: [],
-        karmaSpent: 0,
+        /** Achats faits sur le karma de finition (p.102). `karmaSpent` ne
+            servait à rien : il était déclaré et personne ne l'écrivait ni ne
+            le lisait, si bien que les 13/25/35 karma annoncés en tête d'écran
+            n'étaient dépensables NULLE PART. */
+        karmaBuys: [],
         karmaToNuyen: 0,
         // Méthode à modules : les modules choisis, dans l'ordre, chacun {id, sousligne}.
         lifePath: [],
@@ -327,10 +338,12 @@ Object.assign(EditionSR5, {
 
     /** ⚠ Comptés DEPUIS L'INDICE DE DÉPART DU MÉTATYPE (p.68), pas depuis 0. */
     attrPointsUsed(build) {
+      const achete = this.karmaBought(build).attrs;
       return this.ATTRS.reduce((sum, k) => {
         const [min] = this._range(build.meta, k);
         const val = (build.attrs || {})[k];
-        return sum + Math.max(0, (val == null ? min : val) - min);
+        const brut = Math.max(0, (val == null ? min : val) - min);
+        return sum + Math.max(0, brut - (achete[k] || 0));
       }, 0);
     },
 
@@ -344,8 +357,9 @@ Object.assign(EditionSR5, {
 
     /** Une spécialisation coûte 1 point de compétence à la création (p.91). */
     skillPointsUsed(build) {
+      const achete = this.karmaBought(build).skills;
       return (build.skills || []).reduce(
-        (sum, s) => sum + (s.val || 0) + (s.specs || []).length,
+        (sum, s) => sum + Math.max(0, (s.val || 0) - (achete[s.name] || 0)) + (s.specs || []).length,
         0,
       );
     },
@@ -882,6 +896,135 @@ Object.assign(EditionSR5, {
     },
 
     /* ============================================================
+       KARMA DE FINITION (LdR p.102, « Karma restant »)
+       ------------------------------------------------------------
+       « Le Karma restant peut maintenant [être dépensé] […] Pour
+       l'amélioration de compétences et d'attributs, il faut [en payer le
+       coût] […] Si un joueur souhaite garder du Karma pour un usage
+       ultérieur, [il ne peut pas conser]ver plus de 7 points de Karma. »
+       Jusqu'à 10 points (selon le palier) se transfèrent en nuyens.
+
+       Le barème annonçait « 25 karma de finition » en tête d'écran depuis le
+       début et il n'y avait aucun endroit où les dépenser.
+
+       ⚠ Un rang acheté au karma NE DOIT PAS consommer les points de la
+       colonne : `attrPointsUsed` et `skillPointsUsed` retranchent ce que la
+       finition a payé, exactement comme `karmaUsed` retranche les gains du
+       parcours. Sans ça, acheter au karma ferait « Trop de points
+       d'attributs » alors qu'on n'a rien pris à la réserve.
+       ============================================================ */
+
+    /** Ce que la finition a acheté, par cible. */
+    karmaBought(build) {
+      const out = { attrs: {}, skills: {}, knowledges: {}, nuyen: 0 };
+      for (const a of build.karmaBuys || []) {
+        if (a.kind === "attr") out.attrs[a.name] = (out.attrs[a.name] || 0) + 1;
+        else if (a.kind === "skill") out.skills[a.name] = (out.skills[a.name] || 0) + 1;
+        else if (a.kind === "know") out.knowledges[a.name] = (out.knowledges[a.name] || 0) + 1;
+        else if (a.kind === "nuyen") out.nuyen += a.cost || 0;
+      }
+      return out;
+    },
+
+    /** État de la bourse de finition. `left` peut être positif : le livre
+        autorise à en garder, mais pas plus de 7. */
+    finishingKarma(build) {
+      const total = this.gameLevels[build.gameLevel]?.karma || 0;
+      const used = (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0);
+      const nuyenKarma = this.karmaBought(build).nuyen;
+      return {
+        total,
+        used,
+        left: total - used,
+        carryoverMax: this.KARMA_CARRYOVER,
+        nuyenKarma,
+        nuyenKarmaMax: this.gameLevels[build.gameLevel]?.karmaToNuyenMax || 0,
+        nuyen: nuyenKarma * this.KARMA_TO_NUYEN,
+      };
+    },
+
+    /** Coût du PROCHAIN rang d'une cible — « nouvel indice × multiplicateur »
+        (p.107). Rend `null` quand la cible est au plafond de création. */
+    karmaBuyCost(build, kind, name) {
+      const kc = this.karmaCosts;
+      if (kind === "attr") {
+        const [min, max] = this.attrRangeFor(build, name);
+        const cur = this.SPECIAL_ATTRS.includes(name)
+          ? (build.special || {})[name] ?? min
+          : (build.attrs || {})[name] ?? min;
+        return cur >= max ? null : (cur + 1) * kc.attrMult;
+      }
+      if (kind === "skill") {
+        const row = (build.skills || []).find((x) => x.name === name);
+        const cur = row ? row.val || 0 : 0;
+        return cur >= this.SKILL_CAP ? null : (cur + 1) * kc.skillMult;
+      }
+      if (kind === "know") {
+        const row = (build.knowledges || []).find((x) => x.name === name);
+        const cur = row ? row.val || 0 : 0;
+        return (cur + 1) * kc.knowledgeMult;
+      }
+      if (kind === "nuyen") return 1;
+      return null;
+    },
+
+    /** Achète un rang (ou un point de nuyens) sur la finition. Refuse
+        silencieusement ce qui dépasse la bourse : le bouton est déjà masqué,
+        ceci n'est qu'une ceinture. */
+    applyKarmaBuy(build, kind, name) {
+      const cost = this.karmaBuyCost(build, kind, name);
+      if (cost == null) return build;
+      const bourse = this.finishingKarma(build);
+      if (cost > bourse.left) return build;
+
+      build.karmaBuys = build.karmaBuys || [];
+      if (kind === "attr") {
+        const [min] = this.attrRangeFor(build, name);
+        const cible = this.SPECIAL_ATTRS.includes(name)
+          ? (build.special = build.special || {})
+          : (build.attrs = build.attrs || {});
+        cible[name] = (cible[name] ?? min) + 1;
+      } else if (kind === "skill") {
+        build.skills = build.skills || [];
+        const row = build.skills.find((x) => x.name === name);
+        if (row) row.val = (row.val || 0) + 1;
+        else build.skills.push({ name, val: 1, specs: [] });
+      } else if (kind === "know") {
+        build.knowledges = build.knowledges || [];
+        const row = build.knowledges.find((x) => x.name === name);
+        if (row) row.val = (row.val || 0) + 1;
+        else build.knowledges.push({ name, val: 1 });
+      } else if (kind === "nuyen") {
+        if (bourse.nuyenKarma >= bourse.nuyenKarmaMax) return build;
+      }
+      build.karmaBuys.push({ kind, name, cost });
+      return build;
+    },
+
+    /** Annule le DERNIER achat portant sur cette cible — on défait dans
+        l'ordre inverse, sinon le coût remboursé ne serait pas celui payé. */
+    undoKarmaBuy(build, kind, name) {
+      const liste = build.karmaBuys || [];
+      for (let i = liste.length - 1; i >= 0; i--) {
+        const a = liste[i];
+        if (a.kind !== kind || a.name !== name) continue;
+        if (kind === "attr") {
+          const cible = this.SPECIAL_ATTRS.includes(name) ? build.special : build.attrs;
+          if (cible && cible[name] != null) cible[name] -= 1;
+        } else if (kind === "skill") {
+          const row = (build.skills || []).find((x) => x.name === name);
+          if (row) row.val = Math.max(0, (row.val || 0) - 1);
+        } else if (kind === "know") {
+          const row = (build.knowledges || []).find((x) => x.name === name);
+          if (row) row.val = Math.max(0, (row.val || 0) - 1);
+        }
+        liste.splice(i, 1);
+        break;
+      }
+      return build;
+    },
+
+    /* ============================================================
        MAGIE / RÉSONANCE — sorts, formes complexes, pouvoirs d'adepte
        ------------------------------------------------------------
        ⚠ Rien de tout cela n'était choisissable avant la 1.163.0, alors que
@@ -1314,7 +1457,7 @@ Object.assign(EditionSR5, {
        VALIDATION — la checklist de création du livre (p.102)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], finition: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -1481,6 +1624,19 @@ Object.assign(EditionSR5, {
       for (const g of build.gear || []) {
         if (g.availability != null && Number(g.availability) > level.availability) {
           out.gear.push(`${g.name} : Disponibilité ${g.availability} > ${level.availability} autorisée à la création.`);
+        }
+      }
+
+      if (method.family === "priority") {
+        const kf = this.finishingKarma(build);
+        if (kf.used > kf.total) out.finition.push(`Karma de finition dépassé (${kf.used}/${kf.total}).`);
+        if (kf.left > kf.carryoverMax) {
+          out.finition.push(
+            `On ne garde pas plus de ${kf.carryoverMax} karma après la création (p.102) : il en reste ${kf.left}.`,
+          );
+        }
+        if (kf.nuyenKarma > kf.nuyenKarmaMax) {
+          out.finition.push(`Au plus ${kf.nuyenKarmaMax} karma convertis en nuyens à ce palier (${kf.nuyenKarma}).`);
         }
       }
 

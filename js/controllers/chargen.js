@@ -764,6 +764,66 @@ export const CharGen = {
      PNJ, sans prix) : on lui emprunte les noms canoniques et le joueur pose
      le prix lu au livre. Un catalogue chiffré serait un relevé à part
      entière (~80 pages de chapitre Équipement). */
+  /* ---- Étape : karma de finition (SR5, familles à priorités) ----
+     Le livre en fait une étape (« Karma restant », p.102) et l'assistant
+     annonçait « 25 karma de finition » en tête d'écran depuis le début sans
+     offrir un seul endroit où les dépenser.
+
+     Un achat MONTE la cible et enregistre son coût ; les réserves de la
+     colonne l'ignorent (cf. `karmaBought`). On défait dans l'ordre inverse,
+     sinon le remboursement ne serait pas le prix payé. */
+  _render_finish_sr5() {
+    const c = this._creation();
+    const b = this._build;
+    const kf = c.finishingKarma(b);
+
+    const ligne = (kind, name, courant, plafond) => {
+      const cout = c.karmaBuyCost(b, kind, name);
+      const achete = (b.karmaBuys || []).filter((a) => a.kind === kind && a.name === name).length;
+      const possible = cout != null && cout <= kf.left;
+      return `<div class="cluster cg-list-row">
+        <span class="cg-pick-name">${this._esc(name)}</span>
+        <span class="cg-section-note">${courant}${plafond != null ? ` / ${plafond}` : ""}${achete ? ` · ${achete} au karma` : ""}</span>
+        <span class="cg-section-note">${cout == null ? "au plafond" : `${cout} karma`}</span>
+        <button class="btn-secondary btn-small" data-cg-action="karma-buy" data-kind="${this._esc(kind)}" data-name="${this._esc(name)}" ${possible ? "" : "disabled"}>＋</button>
+        <button class="btn-icon-tiny danger" data-cg-action="karma-undo" data-kind="${this._esc(kind)}" data-name="${this._esc(name)}" ${achete ? "" : "disabled"} title="Annuler le dernier achat">✕</button>
+      </div>`;
+    };
+
+    const attrs = [...c.ATTRS, ...c.SPECIAL_ATTRS]
+      .map((k) => {
+        const [min, max] = c.attrRangeFor(b, k);
+        const cur = c.SPECIAL_ATTRS.includes(k) ? (b.special || {})[k] ?? min : (b.attrs || {})[k] ?? min;
+        return ligne("attr", k, cur, max);
+      })
+      .join("");
+
+    const skills = (b.skills || []).length
+      ? b.skills.map((s) => ligne("skill", s.name, s.val || 0, c.SKILL_CAP)).join("")
+      : `<p class="cg-hint">Aucune compétence à monter — revenez à l'étape Compétences pour en prendre.</p>`;
+
+    const nuyenPossible = kf.nuyenKarma < kf.nuyenKarmaMax && kf.left >= 1;
+    return `<div class="stack">
+      ${this._stepErrorBox("finition")}
+      <p class="cg-hint">${kf.used} / ${kf.total} karma dépensés — il en reste <strong>${kf.left}</strong>. On n'en garde pas plus de ${kf.carryoverMax} après la création (p.102) : le reste est à dépenser ici.</p>
+
+      <div class="cg-section-label">Attributs <span class="cg-section-note">nouvel indice × ${c.karmaCosts.attrMult}</span></div>
+      ${attrs}
+
+      <div class="cg-section-label">Compétences <span class="cg-section-note">nouvel indice × ${c.karmaCosts.skillMult}</span></div>
+      ${skills}
+
+      <div class="cg-section-label">Ressources <span class="cg-section-note">${kf.nuyenKarma} / ${kf.nuyenKarmaMax} karma convertis · ${kf.nuyen.toLocaleString("fr-FR")} ¥</span></div>
+      <div class="cluster cg-list-row">
+        <span class="cg-pick-name">1 karma = ${c.KARMA_TO_NUYEN.toLocaleString("fr-FR")} ¥</span>
+        <button class="btn-secondary btn-small" data-cg-action="karma-buy" data-kind="nuyen" data-name="nuyen" ${nuyenPossible ? "" : "disabled"}>＋</button>
+        <button class="btn-icon-tiny danger" data-cg-action="karma-undo" data-kind="nuyen" data-name="nuyen" ${kf.nuyenKarma ? "" : "disabled"} title="Annuler">✕</button>
+      </div>
+
+      <p class="cg-hint">Les traits, contacts et connaissances s'achètent aussi sur ce karma au livre ; l'application ne les modélise pas encore ici.</p>
+    </div>`;
+  },
+
   /* ---- Étape : Magie / Résonance (SR5, SR6) ----
      Un seul écran pour trois réserves que le livre distingue — sorts (ou
      « formules » en SR6), formes complexes, pouvoirs d'adepte — parce que
@@ -1822,6 +1882,14 @@ export const CharGen = {
         afterMutate();
         break;
       }
+      case "karma-buy":
+        c.applyKarmaBuy(b, el.dataset.kind, el.dataset.name);
+        afterMutate();
+        break;
+      case "karma-undo":
+        c.undoKarmaBuy(b, el.dataset.kind, el.dataset.name);
+        afterMutate();
+        break;
       case "toggle-magic": {
         // Depuis un bouton retenu (data-kind direct) ou depuis le sélecteur,
         // dont l'identifiant porte la réserve : « magic-<kind> ».
