@@ -10,6 +10,55 @@ sont listés que s'ils sont notables. La propriété `App.VERSION` (`js/app.js`)
 ce fichier : on ne l'incrémente qu'au moment où une capacité est livrée, pas à chaque
 commit.
 
+## [1.157.0] — 2026-09-09
+
+### Ajouté
+
+- **On crée un personnage-joueur en SR6.** Trois des quatre méthodes des
+  livres : le **système de priorités** (livre de base p.67), le **système à
+  10 points** et le **système de création par points** — 100 PC — (Compagnon
+  du Sixième Monde p.26 et p.27). Le **système à modules chronologiques**
+  (Compagnon p.29) est déclaré et sélectionnable, mais annonce que son
+  catalogue n'est pas relevé et refuse la création, comme son homologue SR5.
+- **La grille de priorités SR6 est celle du livre, pas une copie de SR5.**
+  L'ordre des colonnes diffère (Compétences vient avant Magie), la colonne
+  Métatypes donne des **points d'ajustement** — qui montent l'Atout, la Magie
+  ou la Résonance, et les seuls attributs dont le maximum dépasse 6 — et ce
+  sont l'humain et l'elfe qui manquent aux priorités **hautes**, l'inverse de
+  SR5 où le troll disparaît en bas de table. Les cases indisponibles sont
+  montrées barrées, avec la raison en infobulle.
+- **Les règles de création SR6 que le livre imprime sont appliquées** : les
+  attributs partent tous de 1 et se paient un pour un ; un seul attribut au
+  maximum du métatype ; une seule compétence au rang plafond ; une seule
+  spécialisation par compétence, sauf Armes exotiques ; contacts payés sur
+  Charisme × 6 en **Réseau** et Loyauté, aucun indice au-dessus du Charisme ;
+  pas de matériel illégal de Disponibilité 7 ou plus.
+
+### Modifié
+
+- **L'écran Équipement ne suppose plus les paliers de campagne de SR5.** Il
+  demandait `gameLevels` — une notion que SR6 n'a pas — pour afficher ses
+  limites d'achat. Elles viennent maintenant du contrat (`gearLimits`) : SR5 y
+  met son indice d'appareil et sa Disponibilité par palier, SR6 sa règle
+  d'illégalité. Les contacts et les compétences ont eu le même traitement,
+  chaque édition portant sa forme.
+
+### Notes de règles
+
+- Le moniteur d'un PJ SR6 lit **le même réglage** que celui d'un PNJ
+  (`separateMonitors`) : moniteur d'état unique par défaut, deux pistes si la
+  table l'a activé. Deux consommateurs d'un même fait doivent lire la même
+  expression, sinon la fiche d'un PJ contredit celle d'un PNJ créé le même jour.
+- Les compétences coûtent **5 × le nouveau rang** en SR6, contre 2 × en SR5.
+- La table « Attributs des métatypes » (p.67) était **déjà** dans l'app, exacte,
+  en `EditionSR6.attrRange` — vérifiée cellule par cellule, elle est lue et non
+  recopiée, comme pour SR5.
+- ⚠ **`SkillCatalog.sr6` diverge du livre** : il porte quatre compétences SR5
+  (Discrétion, Intimidation, Leadership, Survie) et omet Armes exotiques, Plein
+  air et Technomancie. Il sert l'édition manuelle des PNJ ; le barème de
+  création porte donc les **19 compétences officielles** p.66, comme
+  `anarchy2.creation.js` porte déjà les siennes pour la même raison.
+
 ## [1.156.1] — 2026-09-09
 
 ### Corrigé

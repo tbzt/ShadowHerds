@@ -637,6 +637,17 @@ Object.assign(EditionSR5, {
       };
     },
 
+    /** Limites d'achat à la création — indexées sur le niveau de campagne
+        (p.66) et la règle générale p.98. */
+    gearLimits(build) {
+      const level = this.gameLevels[build.gameLevel];
+      return {
+        availability: level.availability,
+        deviceRating: level.deviceRating,
+        hint: `À la création, indice maximum ${level.deviceRating} et Disponibilité maximum ${level.availability} (p.98).`,
+      };
+    },
+
     /** Contacts SR5 : Connexion et Loyauté chiffrées (p.100). */
     contactFields() {
       return [

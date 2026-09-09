@@ -249,6 +249,10 @@ export const CharGen = {
       if (f.type === "checkbox") {
         return `<div class="stack cg-field"><label><input type="checkbox" data-cg="${f.path}" ${cur ? "checked" : ""}> ${this._esc(f.label)}</label></div>`;
       }
+      if (f.type === "number") {
+        return `<div class="stack cg-field"><label>${this._esc(f.label)}</label>
+          <input type="number" min="${f.min ?? 0}" data-cg="${f.path}" value="${cur ?? 0}"></div>`;
+      }
       if (f.type === "note") {
         return `<p class="cg-hint">${this._esc(f.label)}</p>`;
       }
@@ -639,6 +643,81 @@ export const CharGen = {
     </div>`;
   },
 
+  /* ---- Étape : compétences SR6 ----
+     Une seule réserve, contrairement à SR5 qui en a deux (individuelles et
+     groupes) : d'où un kind distinct plutôt qu'un renderer à options qui
+     mentirait sur leur parenté. Une spécialisation coûte 1 rang, et le livre
+     n'en autorise qu'une par compétence — sauf Armes exotiques (p.66,
+     Compagnon p.29). */
+  _render_skills_sr6() {
+    const c = this._creation();
+    const b = this._build;
+    const total = c.skillPointsTotal(b);
+    const used = c.skillPointsUsed(b);
+    const cap = c.SKILL_CAP;
+    const taken = new Set((b.skills || []).map((s) => s.name));
+
+    const rows = (b.skills || [])
+      .map((s, i) => {
+        const attrKey = s.attr || "LOG";
+        const attrVal = (b.attrs || {})[attrKey] ?? 1;
+        const pool = (s.val || 0) + attrVal;
+        const multiOk = s.name === "Armes exotiques";
+        const specChips = (s.specs || [])
+          .map(
+            (sp) =>
+              `<span class="cg-spec-chip">◊ ${this._esc(sp)} <strong>${(s.val || 0) + 2 + attrVal}</strong><button class="cg-spec-x" data-cg-action="remove-spec" data-idx="${i}" data-spec="${this._esc(sp)}" title="Retirer">✕</button></span>`,
+          )
+          .join("");
+        const canAddSpec = (s.val || 0) >= 1 && (multiOk || (s.specs || []).length === 0);
+        return `<div class="cluster cg-list-row cg-skill-row">
+          <strong>${this._esc(s.name)}</strong>
+          <input type="number" min="0" max="${cap}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
+          <span class="cg-pool" title="Pool = ${s.val || 0} + ${attrVal} (${this._esc(attrKey)})">⚄ ${pool}</span>
+          ${(s.val || 0) > cap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
+          <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
+          <div class="cluster cg-spec-line">${specChips}
+            <span class="cg-spec-add">
+              <input type="text" id="cg-sr-spec-${i}" placeholder="Spécialisation…">
+              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" ${canAddSpec ? "" : "disabled"} title="${canAddSpec ? "1 point de compétence" : "Une seule spécialisation par compétence"}">＋ spé</button>
+            </span>
+          </div>
+        </div>`;
+      })
+      .join("");
+
+    const opts = c
+      .skillCatalog()
+      .filter((sk) => !taken.has(sk.name))
+      .map((sk) => `<option value="${this._esc(sk.name)}">${this._esc(sk.name)} (${this._esc(sk.attr)})</option>`)
+      .join("");
+
+    const knowRows = (b.knowledges || [])
+      .map(
+        (k, i) =>
+          `<div class="cluster cg-list-row"><span>${this._esc(k.name || "")}</span>
+        <button class="btn-icon-tiny danger" data-cg-action="remove-knowledge" data-idx="${i}" title="Retirer">✕</button></div>`,
+      )
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("skills")}
+      <p class="cg-hint">Une seule réserve : ${total} rangs. Un point donne un rang, ou une spécialisation. Rang maximum à la création : ${cap} (7 avec le trait Aptitude), et <strong>une seule compétence</strong> peut l'atteindre.</p>
+      <div class="cg-section-label">Compétences <span class="cg-section-note">${used} / ${total}</span></div>
+      ${rows || '<p class="cg-hint">Aucune compétence.</p>'}
+      <div class="cluster cg-add-row">
+        <select id="cg-sr-skill-pick">${opts || "<option>— toutes prises —</option>"}</select>
+        <button class="btn-secondary btn-small" data-cg-action="add-skill-sr">＋ Ajouter</button>
+      </div>
+      <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">hors réserve de compétences</span></div>
+      ${knowRows}
+      <div class="cluster cg-add-row">
+        <input type="text" id="cg-sr-knowledge" placeholder="ex. Pègre de Seattle, Sperethiel…">
+        <button class="btn-secondary btn-small" data-cg-action="add-knowledge-sr">＋ Ajouter</button>
+      </div>
+    </div>`;
+  },
+
   /* ---- Étape : équipement payé en nuyens ----
      Le catalogue SR5 de l'app est NOMINATIF (il alimente le générateur de
      PNJ, sans prix) : on lui emprunte les noms canoniques et le joueur pose
@@ -649,7 +728,10 @@ export const CharGen = {
     const b = this._build;
     const budget = c.budget(b);
     const nuyenCell = budget.cells.find((x) => x.label === "Nuyens");
-    const level = c.gameLevels[b.gameLevel];
+    // Les limites d'achat viennent du contrat : SR5 les fait dépendre du
+    // niveau de campagne (rue/expérimenté/élite), SR6 n'a pas ces paliers et
+    // interdit simplement l'illégal de Disponibilité ≥ 7.
+    const limits = c.gearLimits(b);
 
     const rows = (b.gear || [])
       .map(
@@ -674,7 +756,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("gear")}
-      <p class="cg-hint">Ressources : ${(nuyenCell?.used || 0).toLocaleString("fr-FR")} / ${(nuyenCell?.total || 0).toLocaleString("fr-FR")} ¥. À la création, indice maximum ${level.deviceRating} et Disponibilité maximum ${level.availability} (p.98). Les prix se lisent au livre — le catalogue de l'app ne porte que les noms.</p>
+      <p class="cg-hint">Ressources : ${(nuyenCell?.used || 0).toLocaleString("fr-FR")} / ${(nuyenCell?.total || 0).toLocaleString("fr-FR")} ¥. ${this._esc(limits.hint)} Les prix se lisent au livre — le catalogue de l'app ne porte que les noms.</p>
       ${rows || '<p class="cg-hint">Aucun équipement.</p>'}
       <div class="cluster cg-add-row">
         <select id="cg-sr-gear-pick">${catOpts}</select>
