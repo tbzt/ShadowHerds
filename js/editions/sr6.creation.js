@@ -442,6 +442,7 @@ Object.assign(EditionSR6, {
             familles « points » et « modules » passent par `awakened`. */
         magicOption: "",
         tradition: "",
+        lifestyle: "",
         /** Traits retenus : `{id, karma}`. */
         traits: [],
         gear: [],
@@ -565,7 +566,9 @@ Object.assign(EditionSR6, {
     },
 
     nuyenUsed(build) {
-      return (build.gear || []).reduce((sum, g) => sum + (Number(g.cost) || 0), 0);
+      // ⚠ Le premier mois de style de vie est payé d'avance : il fait
+      // partie des ressources dépensées, pas d'un budget à côté.
+      return this.lifestyleCost(build) + (build.gear || []).reduce((sum, g) => sum + (Number(g.cost) || 0), 0);
     },
 
     /** PC dépensés — méthode par points uniquement. */
@@ -716,6 +719,15 @@ Object.assign(EditionSR6, {
           options: [{ value: "", label: "— à choisir —" }].concat(this.traditionCatalog()),
         });
       }
+
+      /* Le style de vie se choisit à la création et son PREMIER MOIS se
+         paie d'avance : il pèse donc sur les ressources de départ. */
+      fields.push({
+        path: "lifestyle",
+        label: "Style de vie (premier mois payé d'avance)",
+        type: "select",
+        options: [{ value: "", label: "— à choisir —" }].concat(this.lifestyleCatalog()),
+      });
 
       return fields;
     },
@@ -1196,6 +1208,45 @@ Object.assign(EditionSR6, {
         employé pour le Drain » de l'Alchimiste (module de vie SR6, p.33), que
         j'avais déclaré irréductible en 1.163.0 : il n'est irréductible que
         tant qu'on ignore la tradition du personnage. */
+    /* ---- Styles de vie (Livre de base p.253) ----
+       ⚠ L'application les modélise DÉJÀ : `pnj.identities[].lifestyles` et
+       `pnj.orphanLifestyles`, avec leur section sur la fiche et leur interface
+       dans le kit. Seule la création ne les demandait pas. On émet donc un
+       style de vie ORPHELIN (« sans SIN ») plutôt qu'un champ neuf : la fiche
+       sait déjà l'afficher, et le joueur le rattachera à une identité quand
+       il en créera une.
+
+       La grille est identique en SR5 et en SR6, mais chaque édition déclare
+       la sienne avec sa page : ce n'est pas au contrôleur de savoir qu'elles
+       coïncident, et rien ne garantit qu'une errata ne les sépare pas. */
+    lifestyles: [
+      { id: "rue", nom: "La rue", cout: 0, note: "Gratuit — et on en a pour son argent." },
+      { id: "squatter", nom: "Squatter", cout: 500 },
+      { id: "bas", nom: "Bas", cout: 2000 },
+      { id: "moyen", nom: "Moyen", cout: 5000 },
+      { id: "eleve", nom: "Élevé", cout: 10000 },
+      { id: "luxueux", nom: "Luxueux", cout: 100000 },
+    ],
+
+    /** Le catalogue, prêt pour un champ déclaré. */
+    lifestyleCatalog() {
+      return this.lifestyles.map((l) => ({
+        value: l.id,
+        label: `${l.nom} — ${l.cout ? l.cout.toLocaleString("fr-FR") + " ¥/mois" : "gratuit"}`,
+      }));
+    },
+
+    lifestyleById(id) {
+      return this.lifestyles.find((l) => l.id === id) || null;
+    },
+
+    /** Coût du style de vie retenu. Le livre fait payer UN MOIS d'avance à la
+        création : c'est ce mois qui pèse sur les ressources de départ. */
+    lifestyleCost(build) {
+      const l = this.lifestyleById(build.lifestyle);
+      return l ? l.cout : 0;
+    },
+
     traditionCatalog() {
       return (Magic.traditions?.sr6 || []).map((t) => ({
         value: t.name,
@@ -1703,6 +1754,11 @@ Object.assign(EditionSR6, {
         awakened: build.awakened || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
         tradition: build.tradition || null,
+        /* Style de vie « sans SIN » : la fiche et le kit savent déjà l'afficher
+           et le rattacher à une identité plus tard. */
+        orphanLifestyles: build.lifestyle
+          ? [{ name: (this.lifestyleById(build.lifestyle) || {}).nom, city: "" }]
+          : [],
         threatLevel: "forte",
         me,
         physMon,

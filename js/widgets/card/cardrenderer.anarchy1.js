@@ -101,6 +101,14 @@ Object.assign(CardRenderer, {
 
     // ---- ZONE DÉTAILS (repliable) ----
     let detailsBody = "";
+    /* Le style de vie d'Anarchy vient du 4ᵉ mot-clé (« Train de vie ») : il
+       arrivait bien sur le personnage mais AUCUNE fiche V1 ne le rendait,
+       alors que celle de la V2 le fait. Même bloc, même place. */
+    if (pnj.lifestyle) {
+      detailsBody += `<div class="ref-block"><div class="ref-lbl">Style de vie</div>
+        <div class="cluster combat-row"><span class="stat-pill">${this._esc(pnj.lifestyle)}</span></div>
+      </div>`;
+    }
     if (prefs.showAttributes) {
       const attrKeys = ["FOR", "AGI", "VOL", "LOG", "CHA", "CHC"];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>
