@@ -1381,12 +1381,12 @@ export const CharGen = {
       if (m) {
         const lignes = [];
         (m.attrs || []).forEach((a, k) => {
-          const parmi = c.expandParmi(a.parmi, "attrs");
+          const parmi = c.expandParmi(a.parmi, "attrs", b);
           lignes.push(`<li>+${a.n} à ${choixSelect(i, "attrs", k, parmi, slot.attrs && slot.attrs[k])}</li>`);
         });
         (m.skills || []).forEach((sk, k) => {
           const n = sk.pour === 2 ? "deux compétences" : "une compétence";
-          const parmi = c.expandParmi(sk.parmi, "skills");
+          const parmi = c.expandParmi(sk.parmi, "skills", b);
           lignes.push(`<li>+${sk.n} rang à ${n} : ${choixSelect(i, "skills", k, parmi, slot.skills && slot.skills[k])}</li>`);
         });
         if (m.know) {

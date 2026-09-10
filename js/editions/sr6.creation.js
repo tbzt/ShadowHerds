@@ -28,6 +28,7 @@
       en bas de table.
    ============================================================ */
 import { Content } from "../rules/content.js";
+import { Magic } from "../rules/magic.js";
 import { EditionSR6 } from "./sr6.js";
 import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
@@ -440,6 +441,7 @@ Object.assign(EditionSR6, {
         /** Option retenue dans la colonne Magie (familles à priorités) ; les
             familles « points » et « modules » passent par `awakened`. */
         magicOption: "",
+        tradition: "",
         /** Traits retenus : `{id, karma}`. */
         traits: [],
         gear: [],
@@ -701,6 +703,20 @@ Object.assign(EditionSR6, {
           type: "number",
         });
       }
+      /* La tradition n'est demandée QU'À UN LANCEUR DE SORTS : un adepte
+         n'en a pas, un technomancien encore moins. Elle porte l'attribut de
+         résistance au Drain, que la fiche et les règles savent déjà lire.
+         ⚠ Hors de toute branche de méthode : le choix vaut pour les quatre. */
+      const profilMagique = this.magicProfile(build);
+      if (profilMagique && profilMagique.key !== "technomancien" && profilMagique.key !== "adepte") {
+        fields.push({
+          path: "tradition",
+          label: "Tradition magique (résistance au Drain)",
+          type: "select",
+          options: [{ value: "", label: "— à choisir —" }].concat(this.traditionCatalog()),
+        });
+      }
+
       return fields;
     },
 
@@ -942,7 +958,7 @@ Object.assign(EditionSR6, {
         joueur de la traiter lui-même. Un seul cas subsiste : le second
         attribut de Drain de l'Alchimiste (p.33), qui dépend de la tradition —
         que la création ne demande à aucun moment. */
-    expandParmi(parmi, kind) {
+    expandParmi(parmi, kind, build) {
       const codes = new Set([...this.ATTRS, ...this.ATTR_GROUPS.special]);
       const out = [];
       const pousser = (value, label) => out.push({ value, label: label ?? value });
@@ -964,6 +980,17 @@ Object.assign(EditionSR6, {
           o.startsWith("une compétence");
 
         if (!generique) {
+          /* « votre second attribut employé pour le Drain » (Alchimiste,
+             p.33) N'EST PLUS irréductible : depuis que la création demande la
+             TRADITION, son `drainAttr` donne la réponse. Je l'avais déclaré
+             insoluble en 1.163.0 — il ne l'était que faute d'avoir posé la
+             question. Sans tradition choisie, on retombe sur l'aveu. */
+          if (/drain/i.test(o)) {
+            const dr = build ? this.drainAttr(build) : null;
+            if (dr) pousser(dr, `${dr} — second attribut de Drain de votre tradition`);
+            else pousser("", `${opt} — choisissez d'abord votre tradition`);
+            continue;
+          }
           // Un nom de compétence est libre ; un attribut doit être un code.
           if (kind === "skills" || codes.has(opt)) pousser(opt);
           else pousser("", `${opt} — à appliquer vous-même`);
@@ -1161,6 +1188,27 @@ Object.assign(EditionSR6, {
         en priorités ; `awakened` pour les méthodes par points et à modules,
         où le choix se fait au Concept (et, pour les modules, à la Naissance
         — Compagnon p.31). */
+    /** Les traditions du livre, avec leur ATTRIBUT DE DRAIN. `Magic.traditions`
+        les porte depuis toujours — 18 en SR5, 16 en SR6 — la fiche les affiche
+        et les règles les lisent ; seule la création ne les demandait pas.
+
+        ⚠ C'est ce `drainAttr` qui rend enfin lisible le « second attribut
+        employé pour le Drain » de l'Alchimiste (module de vie SR6, p.33), que
+        j'avais déclaré irréductible en 1.163.0 : il n'est irréductible que
+        tant qu'on ignore la tradition du personnage. */
+    traditionCatalog() {
+      return (Magic.traditions?.sr6 || []).map((t) => ({
+        value: t.name,
+        label: `${t.name} — Drain : Volonté + ${Utils.attrFullName ? Utils.attrFullName(t.drainAttr) : t.drainAttr}`,
+      }));
+    }, 
+
+    /** L'attribut de Drain de la tradition retenue, ou null. */
+    drainAttr(build) {
+      const t = (Magic.traditions?.sr6 || []).find((x) => x.name === build.tradition);
+      return t ? t.drainAttr : null;
+    },
+
     magicProfile(build) {
       const fam = this.methods[build.method]?.family;
       if (fam === "priority") {
@@ -1653,6 +1701,8 @@ Object.assign(EditionSR6, {
         }),
         equip: (build.gear || []).map((g) => g.name),
         awakened: build.awakened || null,
+        // Lue par la fiche (section Tradition) et par les règles de Drain.
+        tradition: build.tradition || null,
         threatLevel: "forte",
         me,
         physMon,
