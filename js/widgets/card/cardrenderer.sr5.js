@@ -161,6 +161,15 @@ Object.assign(CardRenderer, {
     capBody += this._skillsSection(skills, malus5, { pnj });
     capBody += this._knowledgesSection(knowledges, pnj, malus5);
     // Pouvoirs d'adepte : vivent désormais dans le module Magie.
+    // Les GROUPES de compétences n'étaient affichés nulle part : achetés à la
+    // création (jusqu'à 10 points en priorité A), ils disparaissaient de la
+    // fiche. Seul `sr5.foundry.js` les connaissait, pour l'export.
+    if (pnj.skillGroups && pnj.skillGroups.length) {
+      capBody += this._listSection(
+        "Groupes de compétences",
+        pnj.skillGroups.map((g) => (typeof g === "string" ? g : `${g.name} ${g.val}`)),
+      );
+    }
     if (traits && traits.length) capBody += this._listSection("Traits", traits);
     if (pnj.infectedPowers && pnj.infectedPowers.length)
       capBody += this._listSection("Pouvoirs (Infecté)", pnj.infectedPowers);

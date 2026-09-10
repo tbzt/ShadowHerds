@@ -1902,6 +1902,13 @@ export const CardRenderer = {
    */
   _knowledgesSection(knowledges, pnj, malus = 0) {
     if (!knowledges || !knowledges.length) return "";
+    /* ⚠ Deux formes circulent : les modules SR émettent des OBJETS
+       `{name, val}`, les deux Anarchy des CHAÎNES. Cette section lisait
+       `k.name` et `k.val` sans se protéger, et rendait un tag « NaN » sans
+       nom dès qu'on lui passait des chaînes — visible sur la fiche de tout
+       personnage créé par l'assistant. On normalise ici, une fois, plutôt
+       que d'aligner quatre éditions sur une forme. */
+    knowledges = knowledges.map((k) => (typeof k === "string" ? { name: k } : k));
     // Bonus de pool applicable à toute connaissance (Amélioration
     // mnémonique). Blanket → résolu une fois, ajouté à chaque puce.
     const kContribs =
@@ -1937,7 +1944,12 @@ export const CardRenderer = {
           rollable,
           `tag skill-tag skill-tag-knowledge${rollable ? " rollable" : ""}`,
           rollAttrs,
-          `${this._esc(k.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>`,
+          /* Sans indice, PAS de nombre : les connaissances d'Anarchy « n'ont
+             pas de valeur chiffrée et ne sont jamais directement testées »
+             (V2 p.62). Afficher `${pool}` sans garde rendait « NaN ». */
+          Number.isFinite(pool)
+            ? `${this._esc(k.name)}&nbsp;<strong style="color:var(--text)">${pool}</strong>`
+            : this._esc(k.name),
         );
       })
       .join("");

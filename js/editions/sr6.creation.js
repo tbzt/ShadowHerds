@@ -1632,12 +1632,21 @@ Object.assign(EditionSR6, {
         priorities: { ...build.priorities },
         attrs,
         skills,
-        knowledges: parModules
-          ? [...grants.know]
-          : (build.knowledges || []).map((k) => k.name || k),
+        /* ⚠ Objets `{name, val}` : `_knowledgesSection` de la fiche lit
+           `k.name` et `k.val`. Les aplatir en chaînes affichait un tag
+           « NaN » sans nom — mesuré en SR5, même cause ici. */
+        knowledges: (parModules ? grants.know : build.knowledges || []).map((k) =>
+          typeof k === "string" ? { name: k, val: 1 } : { name: k.name, val: k.val ?? 1 },
+        ),
         spells: build.spells || [],
         complexForms: build.complexForms || [],
-        adeptPowers: build.adeptPowers || [],
+        /* ⚠ Le champ canonique de l'application est `powers` : la fiche,
+           l'impression et la modale d'édition le lisent tous. Émettre
+           `adeptPowers` créait un champ FANTÔME que personne ne relit — les
+           pouvoirs choisis à la création n'apparaissaient nulle part. Même
+           motif que `pnj.contacts` en septembre. Le brouillon garde
+           `adeptPowers` ; c'est la SORTIE qui doit parler la langue de l'app. */
+        powers: build.adeptPowers || [],
         traits: (build.traits || []).map((t) => {
           const ref = this.traitById(t.id);
           return ref ? `${ref.nom} (${t.karma ?? ref.karma})` : t.id;

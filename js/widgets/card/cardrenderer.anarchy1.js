@@ -26,6 +26,7 @@ Object.assign(CardRenderer, {
       stunFilled,
       skills,
       edges,
+      knowledges,
       spells,
       complexForms,
       equip,
@@ -90,6 +91,10 @@ Object.assign(CardRenderer, {
     // ---- ZONE CAPACITÉS ----
     let capBody = "";
     capBody += this._skillsSection(skills, malus, { pnj });
+    /* Les connaissances étaient stockées et jamais rendues : Anarchy 1
+       ressortait avec des mots-clés qui tiennent lieu de connaissances (p.78)
+       et rien ne les montrait. Anarchy 2 avait la section, pas la V1. */
+    capBody += this._knowledgesSection(knowledges, pnj, 0);
     if (edges && edges.length) capBody += this._listSection("Atouts", edges);
     const capSummary = skills && skills.length ? `${skills.length} compétence${skills.length > 1 ? "s" : ""}` : "";
     html += this._zoneShell(pnj, "capacites", capBody, capSummary);
