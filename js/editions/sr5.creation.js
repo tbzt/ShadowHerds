@@ -30,6 +30,7 @@
 import { Content } from "../rules/content.js";
 import { EditionSR5 } from "./sr5.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
+import { TraitsSR5 } from "./sr5.traits.js";
 import { Utils } from "../core/utils.js";
 
 Object.assign(EditionSR5, {
@@ -239,6 +240,7 @@ Object.assign(EditionSR5, {
          y monte ce qu'on veut aux coûts d'amélioration, et on n'en garde pas
          plus de 7. Les méthodes au karma et à modules n'en ont pas besoin :
          leur monnaie EST le karma, `karmaUsed` s'en charge déjà. */
+      out.push({ id: "traits", kind: "traits_sr5", label: "Traits" });
       if (fam === "priority") out.push({ id: "finition", kind: "finish_sr5", label: "Karma" });
       out.push(
         { id: "contacts", kind: "contacts", label: "Contacts" },
@@ -274,6 +276,9 @@ Object.assign(EditionSR5, {
             le lisait, si bien que les 13/25/35 karma annoncés en tête d'écran
             n'étaient dépensables NULLE PART. */
         karmaBuys: [],
+        /** Traits choisis : `{id, karma}` — le karma est CELUI QUE LE JOUEUR
+            RETIENT, parce que 39 traits ont un coût variable au livre. */
+        traits: [],
         karmaToNuyen: 0,
         // Méthode à modules : les modules choisis, dans l'ordre, chacun {id, sousligne}.
         lifePath: [],
@@ -892,6 +897,67 @@ Object.assign(EditionSR5, {
         spells: (b.spells || []).filter((x) => String(x || "").trim()),
         complexForms: (b.complexForms || []).filter((x) => String(x || "").trim()),
         adeptPowers: (b.adeptPowers || []).filter((x) => String(x || "").trim()),
+        traits: (b.traits || []).filter((t) => t && t.id),
+      };
+    },
+
+    /* ============================================================
+       TRAITS (p.72-91, Run Faster, Chrome Flesh, Data Trails)
+       ------------------------------------------------------------
+       Le barème portait un `QUALITY_CAP: 25` que rien ne lisait, et les
+       modules de vie du parcours listaient des traits sans qu'il existe un
+       endroit où les inscrire. Le catalogue vit dans `sr5.traits.js`.
+
+       ⚠ Le plafond de 25 karma vaut SÉPARÉMENT pour les avantages et pour
+       les défauts (p.73) : ce n'est pas un solde net. Un personnage à 25 de
+       défauts et 25 d'avantages est légal ; 30 d'avantages compensés par 30
+       de défauts ne l'est pas.
+
+       ⚠ Les avantages COÛTENT du karma, les défauts en RENDENT. Les deux
+       comptent positivement vers leur propre plafond, et c'est la différence
+       qui pèse sur la bourse de finition.
+       ============================================================ */
+
+    /** Catalogue groupé, prêt pour le sélecteur cherchable. */
+    traitCatalog() {
+      const par = { avantage: [], defaut: [] };
+      for (const t of TraitsSR5) {
+        const k = t.karma.length > 1
+          ? `${t.karma[0]} ${t.variable === "ou" ? "ou" : "à"} ${t.karma[1]}`
+          : `${t.karma[0]}`;
+        par[t.type].push({
+          id: t.id,
+          label: t.nom,
+          detail: `${k} karma · ${t.source}${t.parNiveau ? " · par niveau" : ""}${t.desc ? " — " + t.desc : ""}`,
+        });
+      }
+      return [
+        { category: "Avantages (coûtent du karma)", items: par.avantage },
+        { category: "Défauts (en rendent)", items: par.defaut },
+      ];
+    },
+
+    traitById(id) {
+      return TraitsSR5.find((t) => t.id === id) || null;
+    },
+
+    /** Bilan des traits : ce que les avantages coûtent, ce que les défauts
+        rendent, et les deux plafonds — séparés, pas nets. */
+    traitState(build) {
+      let coutAvantages = 0;
+      let bonusDefauts = 0;
+      for (const t of build.traits || []) {
+        const ref = this.traitById(t.id);
+        if (!ref) continue;
+        const k = Number(t.karma) || ref.karma[0] || 0;
+        if (ref.type === "avantage") coutAvantages += k;
+        else bonusDefauts += k;
+      }
+      return {
+        coutAvantages,
+        bonusDefauts,
+        net: coutAvantages - bonusDefauts,
+        cap: this.QUALITY_CAP,
       };
     },
 
@@ -930,7 +996,9 @@ Object.assign(EditionSR5, {
         autorise à en garder, mais pas plus de 7. */
     finishingKarma(build) {
       const total = this.gameLevels[build.gameLevel]?.karma || 0;
-      const used = (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0);
+      const tr = this.traitState(build);
+      // Les avantages se paient sur cette bourse, les défauts l'alimentent.
+      const used = (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) + tr.net;
       const nuyenKarma = this.karmaBought(build).nuyen;
       return {
         total,
@@ -1457,7 +1525,7 @@ Object.assign(EditionSR5, {
        VALIDATION — la checklist de création du livre (p.102)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], finition: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], traits: [], finition: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -1627,6 +1695,14 @@ Object.assign(EditionSR5, {
         }
       }
 
+      const tr = this.traitState(build);
+      if (tr.coutAvantages > tr.cap) {
+        out.traits.push(`Au plus ${tr.cap} karma d'Avantages à la création (${tr.coutAvantages}) — p.73.`);
+      }
+      if (tr.bonusDefauts > tr.cap) {
+        out.traits.push(`Au plus ${tr.cap} karma de Défauts à la création (${tr.bonusDefauts}) — p.73.`);
+      }
+
       if (method.family === "priority") {
         const kf = this.finishingKarma(build);
         if (kf.used > kf.total) out.finition.push(`Karma de finition dépassé (${kf.used}/${kf.total}).`);
@@ -1737,6 +1813,10 @@ Object.assign(EditionSR5, {
         spells: build.spells || [],
         complexForms: build.complexForms || [],
         adeptPowers: build.adeptPowers || [],
+        traits: (build.traits || []).map((t) => {
+          const ref = this.traitById(t.id);
+          return ref ? `${ref.nom} (${t.karma ?? ref.karma[0]})` : t.id;
+        }),
         equip: (build.gear || []).map((g) => g.name),
         awakened: build.awakened || null,
         threatLevel: "forte",

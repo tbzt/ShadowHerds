@@ -764,6 +764,52 @@ export const CharGen = {
      PNJ, sans prix) : on lui emprunte les noms canoniques et le joueur pose
      le prix lu au livre. Un catalogue chiffré serait un relevé à part
      entière (~80 pages de chapitre Équipement). */
+  /* ---- Étape : traits (SR5) ----
+     Le plafond de 25 karma vaut SÉPARÉMENT pour les avantages et pour les
+     défauts (p.73) — pas en net. Les deux compteurs sont donc affichés
+     côte à côte, et non fondus en un solde qui masquerait la règle.
+
+     Un coût variable (« 4 ou 8 », « 3 à 15 ») se saisit : 39 traits en ont
+     un, et l'application ne choisit pas à la place du joueur. */
+  _render_traits_sr5() {
+    const c = this._creation();
+    const b = this._build;
+    b.traits = b.traits || [];
+    const tr = c.traitState(b);
+
+    const rows = b.traits
+      .map((t, i) => {
+        const ref = c.traitById(t.id);
+        if (!ref) return "";
+        const variable = ref.karma.length > 1;
+        const borne = variable ? `${ref.karma[0]} ${ref.variable === "ou" ? "ou" : "à"} ${ref.karma[1]}` : `${ref.karma[0]}`;
+        return `<div class="cluster cg-list-row">
+          <span class="cg-pick-name">${this._esc(ref.nom)}</span>
+          <span class="tag">${ref.type === "avantage" ? "avantage" : "défaut"}</span>
+          <input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? ref.karma[0]}" style="width:4.5em" title="Karma retenu">
+          <span class="cg-section-note">karma (livre : ${this._esc(borne)})${ref.parNiveau ? " par niveau" : ""}</span>
+          <span class="cg-section-note">${this._esc(ref.source)}</span>
+          <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>
+        </div>`;
+      })
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("traits")}
+      <p class="cg-hint">Les Avantages coûtent du karma, les Défauts en rendent. <strong>Le plafond de ${tr.cap} karma s'applique séparément aux uns et aux autres</strong> (p.73) : ce n'est pas un solde net. La différence pèse ensuite sur le karma de finition.</p>
+      <div class="cg-section-label">Retenus
+        <span class="cg-section-note">${this._kitMeter(tr.coutAvantages, tr.cap, "avantages")} · ${this._kitMeter(tr.bonusDefauts, tr.cap, "défauts")} · net ${tr.net >= 0 ? "+" : ""}${tr.net} karma</span>
+      </div>
+      ${rows || '<p class="cg-hint">Aucun trait.</p>'}
+      ${this._catalogPicker({
+        id: "traits",
+        groups: c.traitCatalog(),
+        action: "pick-trait",
+        selected: b.traits.map((t) => (c.traitById(t.id) || {}).nom).filter(Boolean),
+      })}
+    </div>`;
+  },
+
   /* ---- Étape : karma de finition (SR5, familles à priorités) ----
      Le livre en fait une étape (« Karma restant », p.102) et l'assistant
      annonçait « 25 karma de finition » en tête d'écran depuis le début sans
@@ -1882,6 +1928,22 @@ export const CharGen = {
         afterMutate();
         break;
       }
+      case "pick-trait": {
+        const ref = (c.traitCatalog() || [])
+          .flatMap((g) => g.items)
+          .find((x) => x.label === el.dataset.name);
+        const t = ref && c.traitById(ref.id);
+        if (t) {
+          b.traits = b.traits || [];
+          if (!b.traits.some((x) => x.id === t.id)) b.traits.push({ id: t.id, karma: t.karma[0] });
+          afterMutate();
+        }
+        break;
+      }
+      case "remove-trait":
+        b.traits.splice(Number(el.dataset.idx), 1);
+        afterMutate();
+        break;
       case "karma-buy":
         c.applyKarmaBuy(b, el.dataset.kind, el.dataset.name);
         afterMutate();
