@@ -1236,6 +1236,80 @@ Object.assign(EditionSR6, {
        occupent le même point de fixation (Dessus, Dessous, Canon) ne se
        cumulent PAS sur une même arme. « — » = aucune monture, cumul libre.
        C'est cette contrainte, pas le prix, qui fait l'intérêt du choix. */
+    /* ============================================================
+       ÉCONOMIE D'EMPLACEMENTS DE MODS (« À tombeau ouvert » p.122)
+       ------------------------------------------------------------
+       « [Un véhicule dispose d'un nombre d']emplacements de mods égal à son
+       score de Résistance NON MODIFIÉ dans chacune des TROIS catégories :
+       Châssis, Motorisation, Électronique. Les emplacements non utilisés
+       peuvent être convertis d'une catégorie vers une autre avec un ratio de
+       2 POUR 1 (sans arrondi, certaines modifications coûtent 0,5
+       emplacement). »
+
+       ⚠ Trois réserves SÉPARÉES, pas une seule : c'est la règle qui donne son
+       intérêt au choix. Les additionner en un total unique effacerait la
+       conversion à 2:1, qui est précisément ce qui coûte au joueur.
+
+       ⚠ Les emplacements se comptent en DEMIS. Ne pas arrondir : le livre le
+       dit explicitement, et un arrondi rendrait gratuits deux mods à 0,5.
+
+       ⚠ Un ACCESSOIRE ne consomme AUCUN emplacement (p.123) — c'est ce qui le
+       distingue d'un mod, pas son prix.
+
+       ⚠ L'application ne connaît pas la Résistance d'un véhicule : son
+       catalogue d'équipement ne porte que des noms. Elle est donc SAISIE, et
+       l'écran le dit plutôt que d'inventer une valeur par défaut. */
+    MOD_FAMILIES: ["Châssis", "Motorisation", "Électronique"],
+    MOD_CONVERSION: 2,
+
+    /** Les trois réserves d'un véhicule, et ce qu'il en reste. */
+    vehicleModState(vehicule) {
+      const res = Number(vehicule && vehicule.resistance) || 0;
+      const pris = {};
+      for (const f of this.MOD_FAMILIES) pris[f] = 0;
+      for (const id of (vehicule && vehicule.mods) || []) {
+        const m = this.accessoryById(id);
+        if (!m || !m.famille) continue; // accessoire : aucun emplacement
+        pris[m.famille] = (pris[m.famille] || 0) + (m.emplacements || 0);
+      }
+      return this.MOD_FAMILIES.map((f) => ({
+        famille: f,
+        total: res,
+        utilises: pris[f] || 0,
+        reste: res - (pris[f] || 0),
+      }));
+    },
+
+    /** Ce qu'il faudrait convertir depuis les autres catégories pour combler
+        un dépassement, au ratio 2:1. `null` si rien ne dépasse. */
+    vehicleModDeficit(vehicule) {
+      const etat = this.vehicleModState(vehicule);
+      const manque = etat.filter((e) => e.reste < 0);
+      if (!manque.length) return null;
+      const dispo = etat.filter((e) => e.reste > 0).reduce((n, e) => n + e.reste, 0);
+      const besoin = manque.reduce((n, e) => n - e.reste, 0) * this.MOD_CONVERSION;
+      return {
+        manque: manque.map((e) => `${e.famille} : ${-e.reste} emplacement(s) de trop`),
+        besoin,
+        dispo,
+        possible: dispo >= besoin,
+      };
+    },
+
+    /** Le test d'installation, quand on s'en charge soi-même (p.123) :
+        Ingénierie + Logique [(emplacements × 8), (emplacements heures)], et
+        50 % du coût en moins — remise qui NE S'APPLIQUE PAS aux accessoires. */
+    vehicleModInstall(mod) {
+      if (!mod || !mod.famille) return null; // accessoire : pas d'installation
+      const e = mod.emplacements || 0;
+      const outil = e < 2 ? "trousse à outils" : e <= 5 ? "atelier" : "installation";
+      return {
+        test: `Ingénierie + Logique [${e * 8}, ${e} heure(s)]`,
+        outil,
+        remise: Math.round((mod.cout || 0) / 2),
+      };
+    },
+
     accessoryCatalog() {
       return [{
         category: "Modifications de véhicule",
