@@ -27,6 +27,7 @@
    augmenter un attribut de 1 », p.68) — l'inverse d'Anarchy 2, qui compte
    depuis 0 (p.85). Ne pas cloner attrPointsUsed() d'Anarchy ici.
    ============================================================ */
+import { VehiculeModsSR5 } from "./sr5.vehiculemods.js";
 import { AccessoiresSR5 } from "./sr5.accessoires.js";
 import { Content } from "../rules/content.js";
 import { Magic } from "../rules/magic.js";
@@ -1203,6 +1204,13 @@ Object.assign(EditionSR5, {
        C'est cette contrainte, pas le prix, qui fait l'intérêt du choix. */
     accessoryCatalog() {
       return [{
+        category: "Modifications de véhicule",
+        items: VehiculeModsSR5.map((m) => ({
+          id: m.id,
+          label: m.nom,
+          detail: `Disp. ${m.dispo} · ${m.supplement ? "+" : ""}${m.cout.toLocaleString("fr-FR")} ¥ · ${m.source}`,
+        })),
+      }, {
         category: "Accessoires d'armes",
         items: AccessoiresSR5.map((a) => ({
           id: a.id,
@@ -1215,7 +1223,7 @@ Object.assign(EditionSR5, {
     },
 
     accessoryById(id) {
-      return AccessoiresSR5.find((a) => a.id === id) || null;
+      return AccessoiresSR5.find((a) => a.id === id) || VehiculeModsSR5.find((m) => m.id === id) || null;
     },
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
@@ -1223,7 +1231,12 @@ Object.assign(EditionSR5, {
       const prises = new Map();
       for (const id of (arme && arme.mods) || []) {
         const a = this.accessoryById(id);
-        if (!a || a.monture === "—") continue;
+        /* ⚠ La règle des montures ne vaut QUE pour les accessoires d'armes.
+           Les modifications de véhicule n'ont pas de point de fixation : sans
+           ce garde, elles se retrouvaient toutes groupées sous « undefined »
+           et l'écran annonçait un conflit imaginaire entre une monture d'arme
+           et un module d'interface. */
+        if (!a || !a.monture || a.monture === "—") continue;
         prises.set(a.monture, [...(prises.get(a.monture) || []), a.nom]);
       }
       return [...prises.entries()]

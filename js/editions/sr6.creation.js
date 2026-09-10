@@ -27,6 +27,7 @@
       absent de A et B, elfe de A) — l'inverse de SR5, où le troll disparaît
       en bas de table.
    ============================================================ */
+import { VehiculeModsSR6 } from "./sr6.vehiculemods.js";
 import { AccessoiresSR6 } from "./sr6.accessoires.js";
 import { Content } from "../rules/content.js";
 import { Magic } from "../rules/magic.js";
@@ -1237,6 +1238,13 @@ Object.assign(EditionSR6, {
        C'est cette contrainte, pas le prix, qui fait l'intérêt du choix. */
     accessoryCatalog() {
       return [{
+        category: "Modifications de véhicule",
+        items: VehiculeModsSR6.map((m) => ({
+          id: m.id,
+          label: m.nom,
+          detail: `Disp. ${m.dispo} · ${m.supplement ? "+" : ""}${m.cout.toLocaleString("fr-FR")} ¥ · ${m.source}`,
+        })),
+      }, {
         category: "Accessoires d'armes",
         items: AccessoiresSR6.map((a) => ({
           id: a.id,
@@ -1249,7 +1257,7 @@ Object.assign(EditionSR6, {
     },
 
     accessoryById(id) {
-      return AccessoiresSR6.find((a) => a.id === id) || null;
+      return AccessoiresSR6.find((a) => a.id === id) || VehiculeModsSR6.find((m) => m.id === id) || null;
     },
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
@@ -1257,7 +1265,12 @@ Object.assign(EditionSR6, {
       const prises = new Map();
       for (const id of (arme && arme.mods) || []) {
         const a = this.accessoryById(id);
-        if (!a || a.monture === "—") continue;
+        /* ⚠ La règle des montures ne vaut QUE pour les accessoires d'armes.
+           Les modifications de véhicule n'ont pas de point de fixation : sans
+           ce garde, elles se retrouvaient toutes groupées sous « undefined »
+           et l'écran annonçait un conflit imaginaire entre une monture d'arme
+           et un module d'interface. */
+        if (!a || !a.monture || a.monture === "—") continue;
         prises.set(a.monture, [...(prises.get(a.monture) || []), a.nom]);
       }
       return [...prises.entries()]
