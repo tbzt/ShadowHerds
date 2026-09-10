@@ -27,6 +27,7 @@
    augmenter un attribut de 1 », p.68) — l'inverse d'Anarchy 2, qui compte
    depuis 0 (p.85). Ne pas cloner attrPointsUsed() d'Anarchy ici.
    ============================================================ */
+import { AccessoiresSR5 } from "./sr5.accessoires.js";
 import { Content } from "../rules/content.js";
 import { Magic } from "../rules/magic.js";
 import { EditionSR5 } from "./sr5.js";
@@ -392,7 +393,7 @@ Object.assign(EditionSR5, {
     nuyenUsed(build) {
       // ⚠ Le premier mois de style de vie est payé d'avance : il fait
       // partie des ressources dépensées, pas d'un budget à côté.
-      return this.lifestyleCost(build) + (build.gear || []).reduce((sum, g) => sum + (Number(g.cost) || 0), 0);
+      return this.lifestyleCost(build) + this.accessoryCost(build) + (build.gear || []).reduce((sum, g) => sum + (Number(g.cost) || 0), 0);
     },
 
     /** Karma de départ, corrigé du palier de campagne (p.66). */
@@ -1195,6 +1196,53 @@ Object.assign(EditionSR5, {
     ],
 
     /** Le catalogue, prêt pour un champ déclaré. */
+    /* ---- Accessoires d'armes ----
+       ⚠ La MONTURE est la règle à ne pas aplatir : deux accessoires qui
+       occupent le même point de fixation (Dessus, Dessous, Canon) ne se
+       cumulent PAS sur une même arme. « — » = aucune monture, cumul libre.
+       C'est cette contrainte, pas le prix, qui fait l'intérêt du choix. */
+    accessoryCatalog() {
+      return [{
+        category: "Accessoires d'armes",
+        items: AccessoiresSR5.map((a) => ({
+          id: a.id,
+          label: a.nom,
+          detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${
+            a.cout != null ? a.cout.toLocaleString("fr-FR") + " ¥" : a.coutNote || "coût au livre"
+          } · ${a.source}`,
+        })),
+      }];
+    },
+
+    accessoryById(id) {
+      return AccessoiresSR5.find((a) => a.id === id) || null;
+    },
+
+    /** Les montures déjà prises sur une arme, et donc les conflits. */
+    accessoryConflicts(arme) {
+      const prises = new Map();
+      for (const id of (arme && arme.mods) || []) {
+        const a = this.accessoryById(id);
+        if (!a || a.monture === "—") continue;
+        prises.set(a.monture, [...(prises.get(a.monture) || []), a.nom]);
+      }
+      return [...prises.entries()]
+        .filter(([, noms]) => noms.length > 1)
+        .map(([m, noms]) => `${noms.join(" et ")} occupent tous deux la monture « ${m} ».`);
+    },
+
+    /** Coût des accessoires montés sur tout l'équipement. */
+    accessoryCost(build) {
+      let n = 0;
+      for (const g of build.gear || []) {
+        for (const id of g.mods || []) {
+          const a = this.accessoryById(id);
+          if (a && a.cout != null) n += a.cout;
+        }
+      }
+      return n;
+    },
+
     lifestyleCatalog() {
       return this.lifestyles.map((l) => ({
         value: l.id,

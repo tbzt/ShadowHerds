@@ -1030,14 +1030,45 @@ export const CharGen = {
     const rows = (b.gear || [])
       .map(
         (g, i) =>
-          `<div class="cluster cg-list-row">
-        <span>${this._esc(g.name || "")}</span>
-        <input type="number" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" style="width:7em" title="Coût en nuyens">
-        <span class="cg-section-note">¥</span>
-        <input type="number" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" style="width:4.5em" title="Disponibilité">
-        <span class="cg-section-note">Disp.</span>
-        <button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
-      </div>`,
+          (() => {
+        /* Accessoires montés sur CET objet. Le conflit de monture est dit à
+           l'endroit où il se produit, pas dans un message global : deux
+           accessoires « Dessous » sur la même arme, c'est cette arme-là qui
+           est en faute. */
+        const mods = g.mods || [];
+        const conflits = c.accessoryConflicts ? c.accessoryConflicts(g) : [];
+        const tags = mods
+          .map((id) => {
+            const a = c.accessoryById(id);
+            return a
+              ? `<button class="cg-pick-tag" data-cg-action="remove-mod" data-idx="${i}" data-mod="${this._esc(id)}" title="Retirer">${this._esc(a.nom)}${a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""} ✕</button>`
+              : "";
+          })
+          .join("");
+        const opts = (c.accessoryCatalog ? c.accessoryCatalog()[0].items : [])
+          .map((a) => `<option value="${this._esc(a.id)}">${this._esc(a.label)}</option>`)
+          .join("");
+        return `<div class="stack cg-list-row">
+        <div class="cluster">
+          <span>${this._esc(g.name || "")}</span>
+          <input type="number" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" style="width:7em" title="Coût en nuyens">
+          <span class="cg-section-note">¥</span>
+          <input type="number" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" style="width:4.5em" title="Disponibilité">
+          <span class="cg-section-note">Disp.</span>
+          <button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
+        </div>
+        ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
+        ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
+        ${
+          opts
+            ? `<div class="cluster cg-add-row">
+                <select data-cg-mod-pick="${i}">${opts}</select>
+                <button class="btn-secondary btn-small" data-cg-action="add-mod" data-idx="${i}">＋ Accessoire</button>
+              </div>`
+            : ""
+        }
+      </div>`;
+      })(),
       )
       .join("");
 
@@ -1971,6 +2002,28 @@ export const CharGen = {
           for (const e of mod.effets) c.applyLifePathGain(b, e.gid);
         }
         afterMutate();
+        break;
+      }
+      case "add-mod": {
+        const i = Number(el.dataset.idx);
+        // ⚠ `overlay()` n'est pas dans la portée de `_handleAction` : les
+        // autres cas y passent tous par `document`. S'aligner, pas inventer.
+        const sel = document.querySelector(`[data-cg-mod-pick="${i}"]`);
+        const id = sel && sel.value;
+        const g = (b.gear || [])[i];
+        if (g && id) {
+          g.mods = g.mods || [];
+          if (!g.mods.includes(id)) g.mods.push(id);
+          afterMutate();
+        }
+        break;
+      }
+      case "remove-mod": {
+        const g = (b.gear || [])[Number(el.dataset.idx)];
+        if (g && g.mods) {
+          g.mods = g.mods.filter((x) => x !== el.dataset.mod);
+          afterMutate();
+        }
         break;
       }
       case "pick-gear": {
