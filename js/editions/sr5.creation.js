@@ -240,7 +240,7 @@ Object.assign(EditionSR5, {
          y monte ce qu'on veut aux coûts d'amélioration, et on n'en garde pas
          plus de 7. Les méthodes au karma et à modules n'en ont pas besoin :
          leur monnaie EST le karma, `karmaUsed` s'en charge déjà. */
-      out.push({ id: "traits", kind: "traits_sr5", label: "Traits" });
+      out.push({ id: "traits", kind: "traits_sr", label: "Traits" });
       if (fam === "priority") out.push({ id: "finition", kind: "finish_sr5", label: "Karma" });
       out.push(
         { id: "contacts", kind: "contacts", label: "Contacts" },
@@ -943,6 +943,25 @@ Object.assign(EditionSR5, {
 
     /** Bilan des traits : ce que les avantages coûtent, ce que les défauts
         rendent, et les deux plafonds — séparés, pas nets. */
+    /** Le RÉSUMÉ est déclaré par l'édition, pas dessiné par le contrôleur :
+        SR5 borne séparément avantages et défauts à 25 karma (p.73), SR6 borne
+        le NOMBRE de traits et l'écart net. Même écran, deux règles — c'est
+        l'accesseur qui les distingue. */
+    /** L'aide de l'écran est déclarée ici : SR5 borne SÉPARÉMENT avantages
+        et défauts, SR6 borne un nombre. Le contrôleur ne doit pas connaître
+        la différence. */
+    traitHint() {
+      return `Les Avantages coûtent du karma, les Défauts en rendent. Le plafond de ${this.QUALITY_CAP} karma s'applique SÉPARÉMENT aux uns et aux autres (p.73) : ce n'est pas un solde net. La différence pèse ensuite sur le karma de finition.`;
+    },
+
+    traitSummary(build) {
+      const t = this.traitState(build);
+      return [
+        { label: "avantages", used: t.coutAvantages, total: t.cap },
+        { label: "défauts", used: t.bonusDefauts, total: t.cap },
+      ];
+    },
+
     traitState(build) {
       let coutAvantages = 0;
       let bonusDefauts = 0;

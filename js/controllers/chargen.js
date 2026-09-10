@@ -771,7 +771,7 @@ export const CharGen = {
 
      Un coût variable (« 4 ou 8 », « 3 à 15 ») se saisit : 39 traits en ont
      un, et l'application ne choisit pas à la place du joueur. */
-  _render_traits_sr5() {
+  _render_traits_sr() {
     const c = this._creation();
     const b = this._build;
     b.traits = b.traits || [];
@@ -781,12 +781,13 @@ export const CharGen = {
       .map((t, i) => {
         const ref = c.traitById(t.id);
         if (!ref) return "";
-        const variable = ref.karma.length > 1;
-        const borne = variable ? `${ref.karma[0]} ${ref.variable === "ou" ? "ou" : "à"} ${ref.karma[1]}` : `${ref.karma[0]}`;
+        // SR5 porte un TABLEAU (coûts variables au livre), SR6 un nombre.
+        const k = Array.isArray(ref.karma) ? ref.karma : [ref.karma];
+        const borne = k.length > 1 ? `${k[0]} ${ref.variable === "ou" ? "ou" : "à"} ${k[1]}` : `${k[0]}`;
         return `<div class="cluster cg-list-row">
           <span class="cg-pick-name">${this._esc(ref.nom)}</span>
           <span class="tag">${ref.type === "avantage" ? "avantage" : "défaut"}</span>
-          <input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? ref.karma[0]}" style="width:4.5em" title="Karma retenu">
+          <input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? k[0]}" style="width:4.5em" title="Karma retenu">
           <span class="cg-section-note">karma (livre : ${this._esc(borne)})${ref.parNiveau ? " par niveau" : ""}</span>
           <span class="cg-section-note">${this._esc(ref.source)}</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>
@@ -796,9 +797,9 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("traits")}
-      <p class="cg-hint">Les Avantages coûtent du karma, les Défauts en rendent. <strong>Le plafond de ${tr.cap} karma s'applique séparément aux uns et aux autres</strong> (p.73) : ce n'est pas un solde net. La différence pèse ensuite sur le karma de finition.</p>
+      <p class="cg-hint">${this._esc(c.traitHint ? c.traitHint() : "")}</p>
       <div class="cg-section-label">Retenus
-        <span class="cg-section-note">${this._kitMeter(tr.coutAvantages, tr.cap, "avantages")} · ${this._kitMeter(tr.bonusDefauts, tr.cap, "défauts")} · net ${tr.net >= 0 ? "+" : ""}${tr.net} karma</span>
+        <span class="cg-section-note">${c.traitSummary(b).map((m) => this._kitMeter(m.used, m.total, m.label)).join(" · ")} · net ${tr.net >= 0 ? "+" : ""}${tr.net} karma</span>
       </div>
       ${rows || '<p class="cg-hint">Aucun trait.</p>'}
       ${this._catalogPicker({
@@ -807,6 +808,57 @@ export const CharGen = {
         action: "pick-trait",
         selected: b.traits.map((t) => (c.traitById(t.id) || {}).nom).filter(Boolean),
       })}
+    </div>`;
+  },
+
+  /* ---- Étape : traits Anarchy 1 ----
+     ⚠ Écran DISTINCT de `traits_sr`, et ce n'est pas de la duplication :
+     Anarchy ne tarife pas ses traits. Il n'y a ni karma à saisir, ni budget à
+     jauger — seulement un COMPTE (deux Avantages, un Défaut, p.70). Un
+     renderer commun aurait dû afficher une colonne de karma vide et un
+     plafond inexistant : ce serait mentir sur la règle. */
+  _render_traits_a1() {
+    const c = this._creation();
+    const b = this._build;
+    b.traits = b.traits || [];
+    const st = c.traitState(b);
+
+    const rows = b.traits
+      .map((t, i) => {
+        const ref = c.traitById(t.id);
+        const nom = ref ? ref.nom : t.nom || t.id;
+        const eff = ref ? ref.effet : t.effet || "";
+        const type = ref ? ref.type : t.type || "avantage";
+        return `<div class="cluster cg-list-row">
+          <span class="cg-pick-name">${this._esc(nom)}</span>
+          <span class="tag">${type === "defaut" ? "défaut" : "avantage"}</span>
+          <span class="cg-section-note">${this._esc(eff)}</span>
+          <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>
+        </div>`;
+      })
+      .join("");
+
+    return `<div class="stack">
+      ${this._stepErrorBox("traits")}
+      <p class="cg-hint">Anarchy ne fait pas payer ses traits : on en <strong>compte</strong>. ${st.maxAvantages} Avantage(s) et ${st.maxDefauts} Défaut(s) (p.70). Le livre invite à en inventer — le catalogue suggère, il ne ferme pas.</p>
+      <div class="cg-section-label">Retenus
+        <span class="cg-section-note">${this._kitMeter(st.avantages, st.maxAvantages, "avantages")} · ${this._kitMeter(st.defauts, st.maxDefauts, "défauts")}</span>
+      </div>
+      ${rows || '<p class="cg-hint">Aucun trait.</p>'}
+      ${this._catalogPicker({
+        id: "traits-a1",
+        groups: c.traitCatalog(),
+        action: "pick-trait",
+        selected: b.traits.map((t) => (c.traitById(t.id) || {}).nom).filter(Boolean),
+      })}
+      <div class="cluster cg-add-row">
+        <input type="text" id="cg-a1-trait-libre" placeholder="Trait inventé…">
+        <select id="cg-a1-trait-type">
+          <option value="avantage">Avantage</option>
+          <option value="defaut">Défaut</option>
+        </select>
+        <button class="btn-secondary btn-small" data-cg-action="add-trait-libre">＋ Ajouter</button>
+      </div>
     </div>`;
   },
 
@@ -1935,7 +1987,18 @@ export const CharGen = {
         const t = ref && c.traitById(ref.id);
         if (t) {
           b.traits = b.traits || [];
-          if (!b.traits.some((x) => x.id === t.id)) b.traits.push({ id: t.id, karma: t.karma[0] });
+          const k0 = Array.isArray(t.karma) ? t.karma[0] : t.karma;
+          if (!b.traits.some((x) => x.id === t.id)) b.traits.push({ id: t.id, karma: k0 });
+          afterMutate();
+        }
+        break;
+      }
+      case "add-trait-libre": {
+        const nom = document.getElementById("cg-a1-trait-libre")?.value?.trim();
+        const type = document.getElementById("cg-a1-trait-type")?.value || "avantage";
+        if (nom) {
+          b.traits = b.traits || [];
+          b.traits.push({ id: `libre_${nom.toLowerCase().replace(/\W+/g, "_")}`, nom, type, effet: "" });
           afterMutate();
         }
         break;

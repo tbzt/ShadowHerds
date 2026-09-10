@@ -31,6 +31,7 @@
    il ne peut donc pas servir ici.
    ============================================================ */
 import { EditionAnarchy1 } from "./anarchy1.js";
+import { TraitsAnarchy1 } from "./anarchy1.traits.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Utils } from "../core/utils.js";
 
@@ -183,6 +184,7 @@ Object.assign(EditionAnarchy1, {
       { id: "skills", kind: "skills_a1", label: "Compétences" },
       { id: "edges", kind: "edges_a1", label: "Atouts" },
       { id: "gear", kind: "gear_a1", label: "Équipement" },
+      { id: "traits", kind: "traits_a1", label: "Traits" },
       { id: "narrative", kind: "narrative", label: "Narratif" },
       { id: "contacts", kind: "contacts", label: "Contacts" },
       { id: "review", kind: "review", label: "Révision" },
@@ -408,6 +410,41 @@ Object.assign(EditionAnarchy1, {
       return EditionAnarchy1.edgeCatalog();
     },
 
+    /* ---- Traits (p.70-71) ----
+       ⚠ Anarchy ne TARIFE PAS ses traits : la règle est un COMPTE, pas un
+       budget — deux Avantages et un Défaut. Ne pas y plaquer le karma de SR5
+       ni de SR6, qui n'existe pas ici.
+
+       ⚠ Le livre invite à en inventer : « Vous pouvez choisir vos Traits
+       depuis la liste suivante, parmi ceux des personnages prétirés ou créer
+       les vôtres. » Le catalogue SUGGÈRE, il ne ferme pas — l'écran garde la
+       saisie libre, comme pour les Atouts. */
+    traitCatalog() {
+      const par = { avantage: [], defaut: [] };
+      for (const t of TraitsAnarchy1) {
+        par[t.type].push({ id: t.id, label: t.nom, detail: t.effet });
+      }
+      return [
+        { category: `Avantages (${this.TRAITS_POSITIVE} à choisir)`, items: par.avantage },
+        { category: `Défauts (${this.TRAITS_NEGATIVE} à choisir)`, items: par.defaut },
+      ];
+    },
+
+    traitById(id) {
+      return TraitsAnarchy1.find((t) => t.id === id) || null;
+    },
+
+    /** Le compte, par type — c'est la seule contrainte du livre. */
+    traitState(build) {
+      let av = 0, de = 0;
+      for (const t of build.traits || []) {
+        const ref = this.traitById(t.id);
+        const type = ref ? ref.type : t.type;
+        if (type === "defaut") de++; else av++;
+      }
+      return { avantages: av, defauts: de, maxAvantages: this.TRAITS_POSITIVE, maxDefauts: this.TRAITS_NEGATIVE };
+    },
+
     contactFields() {
       return [
         { key: "name", placeholder: "Nom" },
@@ -436,7 +473,7 @@ Object.assign(EditionAnarchy1, {
        VALIDATION (p.78)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], attrs: [], skills: [], edges: [], gear: [], contacts: [] };
+      const out = { concept: [], attrs: [], skills: [], edges: [], gear: [], traits: [], contacts: [] };
       const lvl = this.level(build);
       if (!this.metaEntry(build.meta)) {
         out.concept.push("Métatype inconnu.");

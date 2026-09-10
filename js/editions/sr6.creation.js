@@ -29,6 +29,7 @@
    ============================================================ */
 import { Content } from "../rules/content.js";
 import { EditionSR6 } from "./sr6.js";
+import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
@@ -411,6 +412,7 @@ Object.assign(EditionSR6, {
         );
       }
       if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
+      out.push({ id: "traits", kind: "traits_sr", label: "Traits" });
       out.push(
         { id: "gear", kind: "gear_nuyen", label: "Équipement" },
         { id: "contacts", kind: "contacts", label: "Contacts" },
@@ -438,6 +440,8 @@ Object.assign(EditionSR6, {
         /** Option retenue dans la colonne Magie (familles à priorités) ; les
             familles « points » et « modules » passent par `awakened`. */
         magicOption: "",
+        /** Traits retenus : `{id, karma}`. */
+        traits: [],
         gear: [],
         contacts: [],
         pcNuyen: 0, // PC investis en ressources (méthode par points)
@@ -1234,6 +1238,64 @@ Object.assign(EditionSR6, {
       return groups.length ? { hint: `${prof.label}.`, groups } : null;
     },
 
+    /* ---- Traits (Livre de base p.73-81, Compagnon) ----
+       Même forme qu'en SR5, MAIS SR6 n'impose pas de plafond de karma sur
+       les traits : le livre borne leur NOMBRE (six à la création, cf.
+       `TRAIT_MAX`) et le karma de personnalisation paie le reste. Ne pas y
+       plaquer le `QUALITY_CAP: 25` de SR5, qui n'existe pas ici. */
+    traitCatalog() {
+      const par = { avantage: [], defaut: [] };
+      for (const t of TraitsSR6) {
+        par[t.type].push({
+          id: t.id,
+          label: t.nom,
+          detail: `${t.karma} karma${t.parNiveau ? " par niveau" : ""} · ${t.source}${t.desc ? " — " + t.desc : ""}`,
+        });
+      }
+      return [
+        { category: "Traits positifs (coûtent du karma)", items: par.avantage },
+        { category: "Traits négatifs (en rendent)", items: par.defaut },
+      ];
+    },
+
+    traitById(id) {
+      return TraitsSR6.find((t) => t.id === id) || null;
+    },
+
+    /** Résumé déclaré — SR6 borne le NOMBRE et l'écart net, pas un budget
+        par catégorie comme SR5. */
+    traitHint() {
+      return `Les traits positifs coûtent du karma, les négatifs en rendent. SR6 ne borne pas un budget par catégorie comme SR5 : il borne le NOMBRE de traits (${this.TRAIT_MAX} à la création) et l'écart net entre positifs et négatifs (${this.TRAIT_KARMA_NET_MAX} karma).`;
+    },
+
+    traitSummary(build) {
+      const t = this.traitState(build);
+      return [
+        { label: "traits", used: t.nombre, total: t.max },
+        { label: "écart net", used: Math.abs(t.net), total: t.netMax },
+      ];
+    },
+
+    traitState(build) {
+      let coutAvantages = 0;
+      let bonusDefauts = 0;
+      for (const t of build.traits || []) {
+        const ref = this.traitById(t.id);
+        if (!ref) continue;
+        const k = Number(t.karma) || ref.karma || 0;
+        if (ref.type === "avantage") coutAvantages += k;
+        else bonusDefauts += k;
+      }
+      return {
+        coutAvantages,
+        bonusDefauts,
+        net: coutAvantages - bonusDefauts,
+        nombre: (build.traits || []).length,
+        max: this.TRAIT_MAX,
+        netMax: this.TRAIT_KARMA_NET_MAX,
+      };
+    },
+
     cleanBuild(b) {
       return {
         ...b,
@@ -1243,6 +1305,7 @@ Object.assign(EditionSR6, {
         spells: (b.spells || []).filter((x) => String(x || "").trim()),
         complexForms: (b.complexForms || []).filter((x) => String(x || "").trim()),
         adeptPowers: (b.adeptPowers || []).filter((x) => String(x || "").trim()),
+        traits: (b.traits || []).filter((t) => t && t.id),
       };
     },
 
@@ -1250,7 +1313,7 @@ Object.assign(EditionSR6, {
        VALIDATION (core p.66-69)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], traits: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -1461,6 +1524,14 @@ Object.assign(EditionSR6, {
          épuisé n'est pas signalé — je n'ai pas vérifié au livre que les
          formules non prises sont perdues, et inventer la règle serait pire
          que se taire. */
+      const tr = this.traitState(build);
+      if (tr.nombre > tr.max) {
+        out.traits.push(`Au plus ${tr.max} traits à la création (${tr.nombre}) — p.69.`);
+      }
+      if (Math.abs(tr.net) > tr.netMax) {
+        out.traits.push(`L'écart entre traits positifs et négatifs ne dépasse pas ${tr.netMax} karma (${tr.net}).`);
+      }
+
       const magie = this.magicStep(build);
       for (const g of magie ? magie.groups : []) {
         if (g.total != null && g.used > g.total) {
@@ -1567,6 +1638,10 @@ Object.assign(EditionSR6, {
         spells: build.spells || [],
         complexForms: build.complexForms || [],
         adeptPowers: build.adeptPowers || [],
+        traits: (build.traits || []).map((t) => {
+          const ref = this.traitById(t.id);
+          return ref ? `${ref.nom} (${t.karma ?? ref.karma})` : t.id;
+        }),
         equip: (build.gear || []).map((g) => g.name),
         awakened: build.awakened || null,
         threatLevel: "forte",
