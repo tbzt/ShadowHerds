@@ -1,47 +1,43 @@
 "use strict";
 
 /* ============================================================
-   SR5 — TRAITS (qualités), relevé du 2026-09-10, VÉRIFIÉ le 2026-09-10
+   SR5 — TRAITS, relevé du 2026-09-10, ÉLARGI À TOUS LES LIVRES
    ------------------------------------------------------------
-   282 traits : 59 du Livre de Règles, 154 de Run Faster,
-   26 de Chrome Flesh, 43 de Data Trails. Run & Gun n'en porte AUCUN,
-   vérifié page à page.
+   299 traits. Sources : Run Faster 161 · Livre de Règles 59 · Data Trails 43 · Chrome Flesh 26 · Grimoire des ombres 10.
+   Run & Gun, Fragmentation et Bloody Business n'en portent AUCUN — vérifié.
 
-   ⚠ CONTRÔLE D'EXHAUSTIVITÉ — c'est lui qui fait foi, pas le relevé :
-   pour CHAQUE page des quatre livres, on compte les étiquettes de coût
-   (« C : 4 K » / « B : 14 K ») et on vérifie que chacune a produit un trait.
-   Écart final : ZÉRO. Ce contrôle a fait passer le relevé de 232 à 282 —
-   50 traits manquaient EN SILENCE, et rien dans l'application ne l'aurait dit.
+   ⚠ CE QUI A FAIT PASSER LE RELEVÉ DE 232 À 299 :
 
-   Cinq causes, toutes des motifs trop étroits de ma part, toutes corrigées :
-   1. la classe des noms refusait le POINT (« M. TOUT LE MONDE »), la
-      LIGATURE (« DOUBLE CŒUR »), la BARRE (« … PATHOGÈNES / TOXINES ») et le
-      POINT D'EXCLAMATION (« HELLO WORLD ! ») ;
-   2. le coût peut porter TROIS valeurs séparées par une virgule —
-      « B : 3, 6 9 K » = « 3, 6 ou 9 points de Karma » ;
-   3. la hauteur du titre N'EST PAS CONSTANTE d'un livre à l'autre : 13,2 pt
-      au Livre de Règles, 15,8 pt dans Data Trails p.50, et 10,6 pt p.157 —
-      soit la hauteur EXACTE de ses lignes de coût. D'où la règle
-      STRUCTURELLE : un nom est la ligne qui précède une étiquette de coût.
-      À elle seule, elle a rendu 41 traits de Data Trails, livre que j'avais
-      conclu — à tort — ne porter que 2 traits ;
-   4. une ligne de PRÉREQUIS s'intercale parfois entre le nom et son coût ;
-   5. un regroupement de mots franchissant la GOUTTIÈRE (x≈290) fabrique des
-      noms et des descriptions chimériques.
+   1. Le contrôle d'exhaustivité (compter les ancres page à page) a rendu 50
+      traits — voir les cinq motifs trop étroits corrigés plus bas.
+   2. LE COÛT S'ÉCRIT DE DEUX FAÇONS. L'étiquette compacte « C : 4 K » du
+      Livre de Règles, MAIS le Grimoire des ombres n'emploie que la forme
+      longue « Coût : 14 points de Karma ». Tant que l'ancre ne couvrait que
+      la première, ce livre rendait ZÉRO trait — et Run Faster en cachait
+      sept de plus.
 
-   MÉTHODE — géométrique, jamais le flux texte. Coût compact 10,6 pt, coût
-   rédigé 7,4 pt (REDONDANT : cette police perd ses chiffres à l'extraction,
-   « oût points de arma »), corps 9,7 pt.
-   ⚠ La forme rédigée garde ses MINUSCULES : c'est elle qui a livré le
-   connecteur des coûts variables — « 4 ou 8 » n'est pas « 4 à 8 ».
+   ⚠ L'ANCRE ET LE TITRE SONT LIÉS : c'est en repérant les lignes de coût
+   qu'on trouve les noms (règle structurelle). Élargir la reconnaissance du
+   coût sans élargir celle qui bâtit les titres ne sert donc À RIEN — piège
+   rencontré, deux passes perdues.
 
-   `karma` porte TOUJOURS un tableau. Un seul élément = coût fixe ; plusieurs
-   = coût variable, et `variable` dit « a » (fourchette) ou « ou »
-   (alternatives). Le joueur tranche au livre, l'application ne choisit pas.
+   MÉTHODE — géométrique, jamais le flux texte (deux colonnes entrelacées).
+   Coût compact 10,6 pt, coût rédigé redondant 7,4 pt (police qui perd ses
+   chiffres : « oût points de arma », mais garde ses MINUSCULES, d'où la
+   récupération du connecteur « ou » / « à »), corps 9,7 pt.
 
-   ⚠ Des traits figurent dans PLUSIEURS livres avec des coûts DIFFÉRENTS
-   (« Illettré » : 8 au Livre de Règles, 5 dans Run Faster). Conservés en
-   double avec leur source : le corpus diverge, ce n'est pas un doublon.
+   ⚠ La hauteur du titre N'EST PAS CONSTANTE : 13,2 pt au Livre de Règles,
+   15,8 pt dans Data Trails p.50, 10,6 pt p.157 — soit la hauteur exacte de
+   ses lignes de coût. Seule la règle structurelle tient.
+
+   ⚠ La classe des noms doit rester LARGE : le point de « M. TOUT LE MONDE »,
+   la ligature de « DOUBLE CŒUR », la barre de « … PATHOGÈNES / TOXINES » et
+   le point d'exclamation de « HELLO WORLD ! » ont chacun coûté un trait.
+
+   `karma` porte TOUJOURS un tableau. Plusieurs valeurs = coût variable, et
+   `variable` dit « a » (fourchette) ou « ou » (alternatives).
+   Un même trait peut figurer dans plusieurs livres avec des coûts
+   DIFFÉRENTS : conservé en double avec sa source.
    ============================================================ */
 
 export const TraitsSR5 = [
@@ -104,10 +100,13 @@ export const TraitsSR5 = [
   { id: "esprit_analytique", nom: "Esprit analytique", type: "avantage", karma: [5], source: "Livre de Règles p.78", desc: "Esprit analytique décrit la capacité unique à analyser logiquement des informations, à déduire des solutions à des problèmes ou à distinguer les informations vitales des dis-" },
   { id: "esprit_mentor", nom: "Esprit mentor", type: "avantage", karma: [5], source: "Livre de Règles p.78", desc: "Tout le monde a besoin d’aide dans la vie, même si elle vient de quelqu’un de relativement diaphane et insubstantiel. L’Avantage Esprit mentor signifie que le personnage suit le" },
   { id: "estomac_d_ogre", nom: "Estomac d’ogre", type: "avantage", karma: [8], source: "Run Faster p.85", desc: "L’estomac du personnage, ses organes intestinaux et sa flore intestinale inhabituelle lui permettent de digérer une variété de substances que les métahumains normaux ne pourraient pas" },
+  { id: "faucheur", nom: "Faucheur", type: "avantage", karma: [29], source: "Run Faster p.111", desc: "Cet Avantage peut uniquement être sélectionné par les personnages elfes. La transformation les change considérablement. Ils deviennent plus musclés que des elfes normaux," },
   { id: "fondu_au_noir", nom: "Fondu au noir", type: "avantage", karma: [7], source: "Data Trails p.51", desc: "Lorsque vos adversaires commencent à poser des marks sur vous, vous savez que ça va bientôt faire mal. Cette sensation de l’étau qui se resserre qui vous fait dresser" },
   { id: "fou_du_volant", nom: "Fou du volant", type: "avantage", karma: [11], source: "Livre de Règles p.79", desc: "Le Fou du volant est celui que vous cherchez quand temps d’appuyer sur le champignon et de filer. C’est conducteur ou un pilote né. Une fois installé derrière le" },
   { id: "fureteuse", nom: "Fureteuse", type: "avantage", karma: [7], source: "Data Trails p.155", desc: "L’IA peut accéder aux flux de communication et les manipuler de manière très efficace. Elle reçoit un bonus de +2 dés à sa réserve quand elle utilise les actions" },
   { id: "felin", nom: "Félin", type: "avantage", karma: [7], source: "Livre de Règles p.78", desc: "Un personnage avec l’avantage Félin est doté d’une élégance unique, d’une démarche furtive et d’une capacité presque surnaturelle à se déplacer sans produire un seul son." },
+  { id: "goule", nom: "Goule", type: "avantage", karma: [29], source: "Run Faster p.110", desc: "Cet Avantage peut être sélectionné par les personnages de tous les métatypes. La peau de la goule devient dure et prend une teinte grisâtre, alors que les poils et les cheveux" },
+  { id: "grendel", nom: "Grendel", type: "avantage", karma: [32], source: "Run Faster p.110", desc: "Cet Avantage peut uniquement être sélectionné par les personnages orks. Leurs poils poussent abondamment et forment un manteau de fourrure composé de poils courts" },
   { id: "griffes", nom: "Griffes", type: "avantage", karma: [3, 5, 6], variable: "ou", source: "Run Faster p.85", desc: "Les ongles et les orteils du personnage se durcissent et s’allongent en griffes. ces griffes procurent Griffes pelles (3 points de Karma) :" },
   { id: "guerison_rapide", nom: "Guérison rapide", type: "avantage", karma: [3], source: "Livre de Règles p.79", desc: "Un personnage avec cet Avantage bénéficie d’un modificateur de réserve de dés de +2 à tous ses tests de guérison effectués sur / pour / par lui, soins magiques inclus." },
   { id: "guerison_etrange", nom: "Guérison étrange", type: "avantage", karma: [12], source: "Chrome Flesh p.58", desc: "Le personnage a toujours guéri rapidement, récupérant des blessures à une vitesse quasi surnaturelle. Les personnages qui choisissent d’être augmentés se rendent vite compte" },
@@ -116,10 +115,21 @@ export const TraitsSR5 = [
   { id: "immunite_naturelle", nom: "Immunité naturelle", type: "avantage", karma: [4, 10], variable: "ou", source: "Livre de Règles p.79", desc: "La capacité de siroter du poison avec indifférence n’a de prix. Un personnage doté d’Immunité naturelle bénéficie d’une immunité innée ou acquise envers une maladie ou" },
   { id: "inspire", nom: "Inspiré", type: "avantage", karma: [4], source: "Run Faster p.120", desc: "Lancer des couleurs sur une toile ou des mots sur du papier est facile et nécessite seulement du matériel… et une bouche pour vanter son incroyable talent. Mais faire quelque" },
   { id: "jambes_de_satyre", nom: "Jambes de satyre", type: "avantage", karma: [10], source: "Run Faster p.85", desc: "Les jambes du personnage ont la forme des pattes arrière d’un quadrupède, souvent terminées par des sabots fendus (mais d’autres options sont envisageables, comme des" },
+  { id: "la_voie_de_la_bete", nom: "La voie de la bête", type: "avantage", karma: [20], source: "Grimoire des ombres p.178", desc: "Les adeptes qui suivent cette voie sont guidés par un esprit mentor animal, auquel ils se réfèrent comme leur totem, de manière similaire aux chamans. À travers l’émulation de" },
+  { id: "la_voie_de_l_artisan", nom: "La voie de l’artisan", type: "avantage", karma: [20], source: "Grimoire des ombres p.178", desc: "Ayant gardé leur affinité pour la technologie, les adeptes suivant la voie de l’artisan sont capable d’altérer la métamagie Centrage d’adepte (p. 328, pour qu’elle s’applique SR5)" },
+  { id: "la_voie_de_l_artiste", nom: "La voie de l’artiste", type: "avantage", karma: [20], source: "Grimoire des ombres p.179", desc: "Artistes et créateurs de génie, ceux qui suivent la voie de l’artiste canalisent leur énergie pour inspirer les gens et leur montrer la beauté du Sixième Monde. De ce fait, ils peuvent" },
+  { id: "la_voie_de_l_athlete", nom: "La voie de l’athlète", type: "avantage", karma: [20], source: "Grimoire des ombres p.179", desc: "Les adeptes qui suivent cette voie ne concentrent leur énergie que sur une chose : affûter leur corps pour en tirer les meilleures performances afin de devenir les meilleurs dans" },
+  { id: "la_voie_de_l_invisible", nom: "La voie de l’invisible", type: "avantage", karma: [20], source: "Grimoire des ombres p.179", desc: "Maîtres espions, experts de l’infiltration et assassins, tous suivent généralement la voie de l’invisible. Que dire de plus Parce que ceux qui suivent cette voie préfèrent générale-" },
+  { id: "la_voie_de_l_orateur", nom: "La voie de l’orateur", type: "avantage", karma: [20], source: "Grimoire des ombres p.179", desc: "Souvent appelés adeptes sociaux, les orateurs sont parmi les meilleurs dans le business. Les adeptes qui faces ?" },
+  { id: "la_voie_des_esprits", nom: "La voie des esprits", type: "avantage", karma: [20], source: "Grimoire des ombres p.180", desc: "Ceux qui suivent cette voie sont guidés par un esprit mentor, de manière similaire aux chamans. À travers l’émulation de leur esprit mentor, ces adeptes cherchent à s’améliorer" },
+  { id: "la_voie_du_grille", nom: "La voie du grillé", type: "avantage", karma: [15], source: "Grimoire des ombres p.180", desc: "Ceux qui ont embrassé la technologie de toutes les mauvaises façons, ou qui ont ressenti le besoin de prendre des raccourcis pour atteindre la puissance et la performance se" },
+  { id: "la_voie_du_guerrier", nom: "La voie du guerrier", type: "avantage", karma: [20], source: "Grimoire des ombres p.180", desc: "Le guerrier est le type d’adepte que la plupart des nonÉveillés associe à tous les adeptes. Ces combattants d’élite dédient leur vie à forger leur corps pour en faire des armes" },
+  { id: "la_voie_du_magicien", nom: "La voie du magicien", type: "avantage", karma: [20], source: "Grimoire des ombres p.180", desc: "Une des plus populaires auprès des adeptes mystiques, la voie du magicien essaie de trouver l’équilibre entre les capacités physiques et magiques, ou en tout cas ce qui" },
   { id: "langue_de_crapaud", nom: "Langue de crapaud", type: "avantage", karma: [4], source: "Run Faster p.86", desc: "Le personnage possède une longue langue adhésive, qui peut s’allonger tel un ressort grâce à une impulsion musculaire. Lors de l’impulsion, elle s’allonge vers l’extérieur pour" },
   { id: "lecture_rapide", nom: "Lecture rapide", type: "avantage", karma: [2], source: "Run Faster p.121", desc: "Quand vous avez découvert que le professeur proposait un examen final avec documents autorisés qui compterait pour l’ensemble de la note, vous avez parié les frais" },
   { id: "lien_tenu", nom: "Lien ténu", type: "avantage", karma: [8], source: "Run Faster p.121", desc: "Il y a une brume autour de l’aura du personnage, ce qui rend les connexions distantes difficiles. Tous les rituels de Sorcellerie visant le personnage (même ceux qui lui sont" },
   { id: "linguiste", nom: "Linguiste", type: "avantage", karma: [4], source: "Run Faster p.121", desc: "Rien n’impressionne plus un Johnson étranger que de rencontrer quelqu’un qui négocie dans sa langue natale. comprendre quand il ordonne à ses hommes de main de" },
+  { id: "loup_garou", nom: "Loup-garou", type: "avantage", karma: [30], source: "Run Faster p.111", desc: "Cet Avantage peut uniquement être sélectionné par les personnages humains. La transformation est souvent brutale ; beaucoup de loups-garous se retrouvent à l’état sau-" },
   { id: "l_ecole_de_la_rue", nom: "L’école de la rue", type: "avantage", karma: [4], source: "Run Faster p.121", desc: "La rue était l’école du personnage. Grâce au temps passé être un ton au-dessus de ses camarades et au fait de savoir que la connaissance est le vrai pouvoir dans les rues, le per-" },
   { id: "m_tout_le_monde", nom: "M. tout le monde", type: "avantage", karma: [8], source: "Livre de Règles p.79", desc: "Le personnage se fond dans la foule : il est rarement remarqué et facilement oublié. Son apparence est ordinaire et ni caractéristiques physiques ni comportements distinctifs." },
   { id: "magnetoception", nom: "Magnétoception", type: "avantage", karma: [4], source: "Run Faster p.86", desc: "Similaire à Électrosens, Magnétoception permet au personnage de sentir les variations dans les champs magnétiques qui l’entourent. C’est rendu possible par un niveau élevé" },
@@ -129,8 +139,10 @@ export const TraitsSR5 = [
   { id: "mets_le_paquet", nom: "Mets le paquet", type: "avantage", karma: [6], source: "Data Trails p.51", desc: "Vous n’avez pas le temps de tergiverser. Si vous agissez, c’est pour faire mouche. Chaque fois que vous tentez de placer trois marks sur une cible en utilisant ou passer en force" },
   { id: "mieux_vaut_faire_peur_qu_etre_aime", nom: "Mieux vaut faire peur qu’être aimé", type: "avantage", karma: [5], source: "Chrome Flesh p.59", desc: "Vous ne parcourez pas les Ombres pour vous faire des amis. C’est un monde sans pitié et vous comptez bien faire la loi. Bien sûr, vous allez rencontrer des gens qui auront des choses" },
   { id: "multitache", nom: "Multitâche", type: "avantage", karma: [8], source: "Data Trails p.157", desc: "Multitâche confère à une IA en ligne la capacité de traiter simultanément les informations provenant de sources multiples. Le combat requiert toujours sa pleine attention," },
+  { id: "mutaqua", nom: "Mutaqua", type: "avantage", karma: [54], source: "Run Faster p.111", desc: "le déjà Éveillé) Cet Avantage peut uniquement être sélectionné par les" },
   { id: "memoire_photographique", nom: "Mémoire photographique", type: "avantage", karma: [6], source: "Livre de Règles p.79", desc: "Un personnage doté de Mémoire photographique peut se souvenir immédiatement des visages, des dates, des chiffres ou de tout ce qu’il a vu ou entendu. Le personnage bénéficie" },
   { id: "nom_de_famille_privilegie", nom: "Nom de famille privilégié", type: "avantage", karma: [7], source: "Run Faster p.121", desc: "le Avec cet Avantage, la famille du personnage est extrêmement bien connectée et son vrai nom a une influence signifi-" },
+  { id: "nosferatu", nom: "Nosferatu", type: "avantage", karma: [48], source: "Run Faster p.111", desc: "déjà Éveillé) Cet Avantage peut uniquement être sélectionné par les 2) personnages humains. La transformation est extrême : le" },
   { id: "ne_riche", nom: "Né riche", type: "avantage", karma: [5], source: "Run Faster p.121", desc: "à Richie Richard est tombé dans les Ombres. Le personnage vient d’un milieu aisé (fils d’un corporatiste de haut niveau," },
   { id: "optimisatrice", nom: "Optimisatrice", type: "avantage", karma: [6], source: "Data Trails p.157", desc: "Certaines IA sont des maîtresses de la restructuration de firmware et peuvent tirer le meilleur de leur matériel. Leur appareil de résidence, arrangé par leurs soins (voir" },
   { id: "organe_vomeronasal", nom: "Organe voméronasal", type: "avantage", karma: [3], source: "Run Faster p.86", desc: "Le nez du personnage contient des organes olfactifs supplémentaires qui augmentent son odorat, lui offrant une grande sensibilité en envoyant un signal neuronal, pas seulement aux" },
@@ -290,6 +302,7 @@ export const TraitsSR5 = [
   { id: "pigmentation_extraordinaire", nom: "Pigmentation extraordinaire", type: "defaut", karma: [4], source: "Run Faster p.93", desc: "La peau du personnage prend une couleur inhabituelle, entièrement ou en partie. Par exemple, un personnage peut se retrouver avec des taches de léopard brunes sur son cou, ses" },
   { id: "pilosite_etrange", nom: "Pilosité étrange", type: "defaut", karma: [3], source: "Run Faster p.93", desc: "Les cheveux du personnage sont d’une couleur ou d’une texture étrange, ou alors ils poussent d’une façon inhabituelle ou à un endroit inhabituel. Par exemple, les cheveux" },
   { id: "plumes", nom: "Plumes", type: "defaut", karma: [3], source: "Run Faster p.93", desc: "Le personnage a des plumes à la place des poils ou lui recouvrant d’autres parties du corps. Ces plumes peuvent être fines et duveteuses (et en partie résistantes à l’eau, comme" },
+  { id: "porteur", nom: "Porteur", type: "defaut", karma: [10], source: "Run Faster p.112", desc: "Ce personnage a survécu à l’attaque d’un Infecté par la souche II ou la souche III, mais ne s’en est pas sorti complètement indemne. Le virus est maintenant dans son corps et" },
   { id: "poseur_elfe", nom: "Poseur elfe", type: "defaut", karma: [6], source: "Livre de Règles p.87", desc: "Le Poseur elfe est un personnage humain qui veut être un elfe. -3 Il s’associe autant que possible avec des elfes, parle comme" },
   { id: "poseur_ork", nom: "Poseur ork", type: "defaut", karma: [6], source: "Livre de Règles p.87", desc: "du Influencé par le Goblin Rock ou la mode de l’orxploitation, le La" },
   { id: "problemes_de_maitrise_de_soi", nom: "Problèmes de maîtrise de soi", type: "defaut", karma: [4, 12], variable: "a", source: "Run Faster p.130", desc: "Qu’il soit un fanfaron, un accro à l’adrénaline ou juste quelqu’un qui ne supporte pas le désordre, le personnage qui possède ce trait a développé divers tics mentaux qui" },
