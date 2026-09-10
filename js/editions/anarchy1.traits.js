@@ -20,6 +20,12 @@
    11,9 pt (nom en gras), suite à 11,3 pt, colonnes x ≈ 51 et x ≈ 308.
    ⚠ Tout autre titre en capitales FERME la section : sans cette borne, le
    texte d'armure qui suit les Défauts s'y déversait.
+
+   ⚠ CONTRÔLE D'EXHAUSTIVITÉ (2026-09-10) : 59 lignes d'entrée repérées sur
+   les deux pages, 56 retenues. Les trois écartées le sont À BON DROIT —
+   « Esprit d'équipe » et « Touche-à-tout » relèvent des ATOUTS SPÉCIAUX, une
+   section qui précède les Traits, et la troisième est un fragment du texte
+   d'armure. Le catalogue est donc complet.
    ============================================================ */
 
 export const TraitsAnarchy1 = [

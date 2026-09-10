@@ -1,31 +1,38 @@
 "use strict";
 
 /* ============================================================
-   SR6 — TRAITS, relevé du 2026-09-10
+   SR6 — TRAITS, relevé du 2026-09-10, VÉRIFIÉ le 2026-09-10
    ------------------------------------------------------------
-   153 traits : 62 du Livre de base (p.73-81), 91 du Compagnon du Sixième
-   Monde. 94 positifs, 59 négatifs.
+   156 traits : 62 du Livre de base (p.73-81), 94 du Compagnon
+   du Sixième Monde. Pagination IMPRIMÉE (décalage −2 sur le PDF).
 
-   ⚠ GÉOMÉTRIE DIFFÉRENTE DE SR5 — ne pas réutiliser l'autre relevé :
-     nom ....... 15,9 pt dans le Livre de base, en casse normale
-                 (SR5 : 13,2 pt et CAPITALES)
-     coût ...... 11,1 pt, « • Coût : 10 points de Karma » — chiffres INTACTS,
-                 là où SR5 les perdait dans une police à part
-     corps ..... 11,1 pt aussi : c'est le préfixe Coût/Bonus qui distingue
-     gouttière . x ≈ 280 (SR5 : 290)
+   ⚠ CONTRÔLE D'EXHAUSTIVITÉ sur les DEUX livres ENTIERS, page à page : 163
+   lignes de coût relevées, 162 devenues des traits. Le seul écart restant est
+   « Électroception » (Compagnon p.120 imprimée), dont le nom en gras se fond
+   dans une ligne de corps — connu, assumé, pas ignoré.
 
-   ⚠ LE COMPAGNON N'AGRANDIT PAS SES TITRES, IL LES MET EN GRAS : 11,3 pt
-   contre 11,1 pour le corps, deux dixièmes de point. Se fier à cette seule
-   différence serait fragile, d'où la règle STRUCTURELLE retenue — un nom est
-   la ligne qui précède immédiatement une ligne de coût. Sans elle, le relevé
-   ne rendait que 28 traits du Compagnon au lieu de 91.
+   ⚠ Les pages 152-153 imprimées portent des lignes « Coût : N points de
+   Karma » qui ne sont PAS des traits : ce sont les OPTIONS d'un même trait,
+   énumérées en puces dans sa description. Les compter aurait gonflé le
+   catalogue de sept entrées fantômes.
+
+   GÉOMÉTRIE — DIFFÉRENTE DE SR5, ne pas réutiliser l'autre relevé :
+     nom (Livre de base) .. 15,9 pt, casse normale (SR5 : 13,2 pt CAPITALES)
+     nom (Compagnon) ...... 11,3 pt EN GRAS, contre 11,1 pour le corps
+     coût ................. 11,1 pt, phrase complète, chiffres INTACTS
+     gouttière ............ x ≈ 280 (SR5 : 290)
+
+   ⚠ Deux dixièmes de point séparent un titre du Compagnon de son corps de
+   texte. S'y fier seul est intenable, d'où la règle STRUCTURELLE : un nom est
+   la ligne en gras qui précède une ligne de coût, dans une fenêtre de six
+   lignes — des fragments de césure (« im‑ », « récu‑ ») s'intercalent.
+   Sans cette règle : 28 traits du Compagnon au lieu de 94.
+
+   ⚠ Une tolérance de fusion de 70 pt entre mots faisait ABSORBER un nom en
+   gras dans la ligne de corps voisine. Ramenée à 18 pt.
 
    Comme en SR5, « Coût » marque un trait positif et « Bonus » un négatif.
-   Quatre traits figurent dans les deux livres (Dépôts dermiques, Vision
-   nocturne, Vision thermographique, Balise astrale) : conservés en double
-   avec leur source, le corpus se répétant.
-
-   Pages ramenées à la PAGINATION IMPRIMÉE (décalage −2 sur le PDF).
+   Des traits figurent dans les deux livres : conservés avec leur source.
    ============================================================ */
 
 export const TraitsSR6 = [
@@ -51,7 +58,7 @@ export const TraitsSR6 = [
   { id: "concentration_accrue_1_a_3", nom: "Concentration accrue (1 à 3)", type: "avantage", karma: 12, parNiveau: true, source: "SR6 Livre de base p.73", desc: "Vous savez comment cloisonner votre esprit et com- ment maintenir des sorts et des formes complexes sans subir un trop grand stress." },
   { id: "contorsionniste", nom: "Contorsionniste", type: "avantage", karma: 12, source: "SR6 Livre de base p.74", desc: "Grâce à l’entraînement et à la génétique, vous pable de plier la plupart des vos articulations bien là des capacités métahumaines. Par exemple, vos" },
   { id: "cornes_perforantes", nom: "Cornes perforantes", type: "avantage", karma: 6, source: "Compagnon du Sixième Monde p.117", desc: "Ces cornes peuvent servir d’arme avec les caractéris‑ tiques suivantes : Combat rapproché (mains nues) avec une VD de 3P et un SO de 7+FOR/—/—/—/— ; la VD est" },
-  { id: "crachat_corrosif", nom: "Crachat corrosif", type: "avantage", karma: 4, parNiveau: true, source: "Compagnon du Sixième Monde p.120", desc: "Comme avec le pouvoir de créature Salive corrosive (p. 232, vous pouvez porter une attaque à distance SR6), avec Armes exotiques (crachat), VD 2P (chimique)" },
+  { id: "crachat_corrosif", nom: "Crachat corrosif", type: "avantage", karma: 4, parNiveau: true, source: "Compagnon du Sixième Monde p.120", desc: "Comme avec le pouvoir de créature Salive corrosive (p. 232, vous pouvez porter une attaque à distance SR6)," },
   { id: "crocs", nom: "Crocs", type: "avantage", karma: 4, source: "Compagnon du Sixième Monde p.117", desc: "Vos canines sont plus aiguisées et imposantes, comme celles d’un carnivore. Vous pouvez vous en servir en Combat rapproché (mains nues) avec une VD de 2P" },
   { id: "cuir_de_rhino", nom: "Cuir de rhino", type: "avantage", karma: 8, source: "Compagnon du Sixième Monde p.116", desc: "Votre peau est coriace, épaisse résistante et vous cure un bonus de +3 au SD, cumulable avec une armure." },
   { id: "celerite", nom: "Célérité", type: "avantage", karma: 5, source: "Compagnon du Sixième Monde p.117", desc: "Ce trait a pour effet de renforcer la musculature mise en jeu dans la course, les muscles des jambes de‑ viennent noueux et saillants. Vos vitesses de déplace‑" },
@@ -69,11 +76,12 @@ export const TraitsSR6 = [
   { id: "fomoraig", nom: "Fomóraig", type: "avantage", karma: 22, source: "Compagnon du Sixième Monde p.108" },
   { id: "fou_de_mecanique", nom: "Fou de mécanique", type: "avantage", karma: 10, source: "SR6 Livre de base p.74", desc: "Si c’est un engin prévu pour se déplacer, mais qu’il est dans un sale état, vous savez comment le rafistoler en un dis- clin d’œil." },
   { id: "fourrure_isolante", nom: "Fourrure isolante", type: "avantage", karma: 6, source: "Compagnon du Sixième Monde p.119", desc: "Votre corps est entièrement recouvert d’une épaisse fourrure isolante. Elle vous protège du froid et de l’eau, ce qui vous octroie une remise d’Atout situationnelle de" },
-  { id: "felin", nom: "Félin", type: "avantage", karma: 12, source: "SR6 Livre de base p.74", desc: "Vous avez une grâce naturelle qu’on ne retrouve géné- ralement que chez les ; tous vos mouvements sont félidés souples et vous avez tendance à toujours retomber sur" },
+  { id: "felin", nom: "Félin", type: "avantage", karma: 12, source: "SR6 Livre de base p.74", desc: "Vous avez une grâce naturelle qu’on ne retrouve géné- ralement que chez les ; tous vos mouvements sont félidés" },
   { id: "gobelin", nom: "Gobelin", type: "avantage", karma: 27, source: "Compagnon du Sixième Monde p.108" },
+  { id: "goule", nom: "Goule", type: "avantage", karma: 27, source: "Compagnon du Sixième Monde p.108" },
   { id: "granite", nom: "Granite", type: "avantage", karma: 15, source: "Compagnon du Sixième Monde p.116", desc: "Votre peau est couverte de formations de calcite kératine qui la rendent grise et dure comme de la Vous obtenez un bonus de +4 au SD et gagnez un" },
   { id: "grendel", nom: "Grendel", type: "avantage", karma: 32, source: "Compagnon du Sixième Monde p.108" },
-  { id: "guerison_rapide", nom: "Guérison rapide", type: "avantage", karma: 8, source: "SR6 Livre de base p.74", desc: "soit Vous récupérez de vos blessures plus rapidement que Quoi les autres, ce qui est extrêmement utile pour une profes- les sion dans laquelle vous vous exposez à des tirs ennemis." },
+  { id: "guerison_rapide", nom: "Guérison rapide", type: "avantage", karma: 8, source: "SR6 Livre de base p.74", desc: "soit Vous récupérez de vos blessures plus rapidement que Quoi les autres, ce qui est extrêmement utile pour une profes-" },
   { id: "indomptable", nom: "Indomptable", type: "avantage", karma: 12, source: "SR6 Livre de base p.74", desc: "vous Que ce soit à cause de la sélection naturelle, des études les dis- approfondies ou des entraînements intensifs, il est diffi-" },
   { id: "jabberwock", nom: "Jabberwock", type: "avantage", karma: 28, source: "Compagnon du Sixième Monde p.109" },
   { id: "lamia", nom: "Lamia", type: "avantage", karma: 40, source: "Compagnon du Sixième Monde p.109" },
@@ -82,6 +90,7 @@ export const TraitsSR6 = [
   { id: "m_tout_le_monde", nom: "M. Tout le monde", type: "avantage", karma: 8, source: "SR6 Livre de base p.75", desc: "Vous êtes la personne la moins intéressante du monde. Vous avez une taille moyenne, un poids moyen, une car- rure moyenne, vous êtes moyen dans tous les domaines." },
   { id: "magnetoception", nom: "Magnétoception", type: "avantage", karma: 6, source: "Compagnon du Sixième Monde p.121", desc: "Comme l’Électroception, la Magnétoception vous permet de percevoir les changements dans les champs magnétiques proches. Vous pouvez ressentir ces derniers," },
   { id: "manaception", nom: "Manaception", type: "avantage", karma: 8, source: "Compagnon du Sixième Monde p.121", desc: "Vous possédez la capacité de ressentir toute énergie éthérique (magique) active ou passive à proximité, y com‑ pris l’usage de sorts. Faites un test d’Astral + Intuition" },
+  { id: "mauvaises_vibrations", nom: "Mauvaises vibrations", type: "avantage", karma: 6, source: "Compagnon du Sixième Monde p.122", desc: "avoir récu‑ Vous émettez des ondes hautement négatives, voire" },
   { id: "membres_allonges", nom: "Membres allongés", type: "avantage", karma: 12, source: "Compagnon du Sixième Monde p.118", desc: "Allonge, Voir p. 73, SR6." },
   { id: "mutaqua", nom: "Mutaqua", type: "avantage", karma: 54, source: "Compagnon du Sixième Monde p.109" },
   { id: "memoire_photographique", nom: "Mémoire photographique", type: "avantage", karma: 12, source: "SR6 Livre de base p.75", desc: "Si la plupart des gens enregistrent leur vie dans des vi- déos, vous ne cessez jamais vos enregistrements. Cela fait des tonnes de données à traiter en permanence, mais vous" },
@@ -158,7 +167,7 @@ export const TraitsSR6 = [
   { id: "nevralgie", nom: "Névralgie", type: "defaut", karma: 6, source: "Compagnon du Sixième Monde p.123", desc: "Vous souffrez de douleurs intermittentes le long de vos nerfs, le plus souvent localisées dans la tête et le visage. Cela se produit généralement quand vous êtes totalement" },
   { id: "oeil_cyclopeen", nom: "Oeil cyclopéen", type: "defaut", karma: 8, source: "Compagnon du Sixième Monde p.125", desc: "Votre œil unique peut compliquer vos tests de coordi‑ nation œil‑main ; vous ne pouvez pas gagner d’Atout sur les actions impliquant un test d’Athlétisme lié à des objets" },
   { id: "organisme_sensible", nom: "Organisme sensible", type: "defaut", karma: 8, source: "SR6 Livre de base p.80", desc: "Il peut s’agir d’un talent arcanique latent qui ne s’est encore manifesté ou juste d’un système immunitaire actif, mais le résultat est le même. Votre corps ne tolère" },
-  { id: "paralysie_en_combat", nom: "Paralysie en combat", type: "defaut", karma: 8, source: "SR6 Livre de base p.80", desc: "trente- Quel que soit le nombre de fois que votre samouraï des coups. rues vous a amené au stand de tir, vous ne pouvez pas vous empêcher de rester paralysé dès que ça commence à tirer." },
+  { id: "paralysie_en_combat", nom: "Paralysie en combat", type: "defaut", karma: 8, source: "SR6 Livre de base p.80", desc: "trente- Quel que soit le nombre de fois que votre samouraï des coups. rues vous a amené au stand de tir, vous ne pouvez pas vous" },
   { id: "personne_s_a_charge_1_a_3", nom: "Personne(s) à charge (1 à 3)", type: "defaut", karma: 4, parNiveau: true, source: "SR6 Livre de base p.80", desc: "de Qu’il s’agisse d’enfants, d’amants ou d’autre chose, des Vous" },
   { id: "petits_bras", nom: "Petits bras", type: "defaut", karma: 10, source: "Compagnon du Sixième Monde p.125", desc: "À cause d’une dysplasie squelettique, vos bras sont plus courts que la normale pour votre métatype. En combat rapproché, cette perte d’Allonge impose un malus de −1" },
   { id: "peur_animale", nom: "Peur animale", type: "defaut", karma: 6, source: "Compagnon du Sixième Monde p.124", desc: "Quelque chose dans votre présence ou votre semble menacer les animaux et les paracréatures, réagissent avec peur et hostilité dans un rayon" },
@@ -178,6 +187,7 @@ export const TraitsSR6 = [
   { id: "traits_insectoides", nom: "Traits Insectoïdes", type: "defaut", karma: 6, source: "Compagnon du Sixième Monde p.126", desc: "Vous présentez des traits insectoïdes comme des yeux composés, une peau chitineuse ou des ailes vestigiales. au Ceux‑ci ne restent que cosmétiques, vous n’en tirez rien" },
   { id: "traumatisme", nom: "Traumatisme", type: "defaut", karma: 8, source: "SR6 Livre de base p.81", desc: "Il y a une situation sociale que vous ne supportez pas, comme vous retrouver avec de nombreuses personnes, parler à des inconnus, attirer tous les regards, ne pas être" },
   { id: "tremblements_des_mains", nom: "Tremblements des mains", type: "defaut", karma: 4, source: "SR6 Livre de base p.81", desc: "Tics nerveux, caféinomanie ou maladresse congénitale, peu importe la raison : vous seriez incapable de tracer une ligne droite même si votre vie en dépendait. Vous" },
+  { id: "troisieme_oeil", nom: "Troisième oeil", type: "defaut", karma: 5, source: "Compagnon du Sixième Monde p.125", desc: "Vous possédez un troisième œil placé au milieu de votre front. Il est semblable en tout point à un œil standard pour votre espèce. Même s’il est fermé il est possible" },
   { id: "vertiges_ra", nom: "Vertiges RA", type: "defaut", karma: 10, source: "SR6 Livre de base p.81", desc: "Que ce soit à cause de la surcharge d’informations, d’un problème de focalisation dans votre champ de vi- sion ou juste d’une incapacité à vous concentrer quand il" },
   { id: "yeux_reflechissants", nom: "Yeux réfléchissants", type: "defaut", karma: 4, source: "Compagnon du Sixième Monde p.125", desc: "Vos yeux reflètent toute lumière pointée sur eux, comme chez les chats, les rats et certains reptiles. Cela vous rend plus facile à détecter dans le noir, ce qui offre à" },
   { id: "ecailles", nom: "Écailles", type: "defaut", karma: 6, source: "Compagnon du Sixième Monde p.126", desc: "Votre corps est recouvert à soixante pour cent moins d’une peau écailleuse comme celle d’un d’un serpent ou d’un poisson, y compris les parties" },
