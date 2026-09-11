@@ -1261,6 +1261,9 @@ Object.assign(EditionSR6, {
        l'écran le dit plutôt que d'inventer une valeur par défaut. */
     MOD_FAMILIES: ["Châssis", "Motorisation", "Électronique"],
     MOD_CONVERSION: 2,
+    /* Le champ saisi et son étiquette : le contrôleur les lit ici, il ne
+       code ni « Résistance » (SR6) ni « Structure » (SR5). */
+    MOD_RESERVE: { key: "resistance", label: "Résistance", hint: "Résistance non modifiée du véhicule (p.122) : chaque réserve d'emplacements en vaut autant." },
 
     /** Les trois réserves d'un véhicule, ce qu'il en reste, et les mods
         qu'on NE PEUT PAS compter.
@@ -1270,7 +1273,7 @@ Object.assign(EditionSR6, {
         compter 0 rendrait une réserve verte à tort — le « faux vert ». Ils
         sont rendus à part, et l'écran doit les nommer. */
     vehicleModState(vehicule) {
-      const res = Number(vehicule && vehicule.resistance) || 0;
+      const res = Number(vehicule && vehicule[this.MOD_RESERVE.key]) || 0;
       const pris = {};
       const indetermines = [];
       for (const f of this.MOD_FAMILIES) pris[f] = 0;
@@ -1304,6 +1307,7 @@ Object.assign(EditionSR6, {
       const besoin = manque.reduce((n, e) => n - e.reste, 0) * this.MOD_CONVERSION;
       return {
         manque: manque.map((e) => `${e.famille} : ${-e.reste} emplacement(s) de trop`),
+        conversion: true, // SR6 convertit à 2:1 ; Rigger 5 (SR5) ne convertit pas
         besoin,
         dispo,
         possible: dispo >= besoin,

@@ -1103,33 +1103,48 @@ export const CharGen = {
     </div>`;
   },
 
-  /* Les trois réserves d'emplacements d'un véhicule, quand l'édition en a
-     (SR6, « À tombeau ouvert ») et que l'objet porte au moins un mod de
-     véhicule. La Résistance est SAISIE : le catalogue d'équipement ne la
-     connaît pas, et l'écran le dit plutôt qu'inventer une valeur.
+  /* Les réserves d'emplacements d'un véhicule, quand l'édition en a et que
+     l'objet porte au moins un mod de véhicule. Trois réserves en SR6 (« À
+     tombeau ouvert »), six en SR5 (Rigger 5.0) : le contrôleur ne compte pas,
+     il rend ce que `vehicleModState()` lui donne. La valeur de base est
+     SAISIE — Résistance ici, Structure là — et son nom vient de
+     `MOD_RESERVE`, jamais d'ici.
 
      ⚠ Un mod aux emplacements indéterminés (formule au livre) est NOMMÉ, pas
      compté 0 : une réserve qui semble libre alors qu'un « 1 × Indice » y
-     dort serait un faux vert. */
+     dort serait un faux vert.
+
+     ⚠ Un dépassement n'a pas le même sens partout : SR6 le rachète à 2:1 sur
+     les autres réserves, Rigger 5 l'interdit tout court. `deficit.conversion`
+     le dit ; l'écran ne promet une conversion que si le module l'offre. */
   _vehicleReserves(c, g, i) {
-    if (!c.vehicleModState) return "";
+    if (!c.vehicleModState || !c.MOD_RESERVE) return "";
     const deVehicule = (g.mods || []).some((id) => {
       const a = c.accessoryById(id);
       return a && a.monture === undefined; // un accessoire d'arme a toujours une monture
     });
     if (!deVehicule) return "";
+    const base = c.MOD_RESERVE;
+    const val = g[base.key];
     const etat = c.vehicleModState(g);
     const deficit = c.vehicleModDeficit ? c.vehicleModDeficit(g) : null;
     const puces = etat.reserves
       .map((r) => `<span class="cg-pick-tag${r.reste < 0 ? " cg-tag-over" : ""}" title="${this._esc(r.famille)} : ${r.utilises} sur ${r.total}">${this._esc(r.famille)} ${r.utilises}/${r.total}</span>`)
       .join("");
+    let ligneDeficit = "";
+    if (deficit && val != null) {
+      const suite = deficit.conversion
+        ? ` Conversion 2 pour 1 : il faut ${deficit.besoin} emplacement(s) libres ailleurs, il y en a ${deficit.dispo}${deficit.possible ? "" : " — pas assez"}.`
+        : " Aucune conversion entre catégories dans cette édition : il faut retirer un mod.";
+      ligneDeficit = `<p class="cg-hint">⚑ ${this._esc(deficit.manque.join(" ; "))}.${this._esc(suite)}</p>`;
+    }
     return `<div class="cluster cg-add-row">
-      <span class="cg-section-note">Résistance</span>
-      <input type="number" min="0" data-cg="gear.${i}.resistance" value="${g.resistance ?? ""}" style="width:4.5em" title="Résistance non modifiée du véhicule (p.122) — à saisir">
+      <span class="cg-section-note">${this._esc(base.label)}</span>
+      <input type="number" min="0" data-cg="gear.${i}.${this._esc(base.key)}" value="${val ?? ""}" style="width:4.5em" title="${this._esc(base.hint)} — à saisir">
       ${puces}
     </div>
-    ${g.resistance == null ? `<p class="cg-hint">Saisis la Résistance du véhicule : chaque réserve d'emplacements en vaut autant (p.122).</p>` : ""}
-    ${deficit && g.resistance != null ? `<p class="cg-hint">⚑ ${this._esc(deficit.manque.join(" ; "))}. Conversion 2 pour 1 : il faut ${deficit.besoin} emplacement(s) libres ailleurs, il y en a ${deficit.dispo}${deficit.possible ? "" : " — pas assez"}.</p>` : ""}
+    ${val == null ? `<p class="cg-hint">Saisis la ${this._esc(base.label)} du véhicule : ${this._esc(base.hint)}</p>` : ""}
+    ${ligneDeficit}
     ${etat.indetermines.map((m) => `<p class="cg-hint">⚑ ${this._esc(m.nom)} : emplacements ${this._esc(m.note)} — non comptés dans ${this._esc(m.famille)}.</p>`).join("")}`;
   },
 

@@ -1202,27 +1202,109 @@ Object.assign(EditionSR5, {
        occupent le même point de fixation (Dessus, Dessous, Canon) ne se
        cumulent PAS sur une même arme. « — » = aucune monture, cumul libre.
        C'est cette contrainte, pas le prix, qui fait l'intérêt du choix. */
-    /** Les accessoires d'armes d'abord, les mods de véhicule ensuite — le
-        même ordre qu'en SR6, et le contrôleur rend CHAQUE groupe, pas le
-        premier seul. */
+    /* ---- Mods de véhicule : ÉCONOMIE D'EMPLACEMENTS DE RIGGER 5.0 (p.151) ----
+       « Each vehicle [has] a number of Modification Slots equal to its Body
+       in each Modification Category. There are six Modification Categories:
+       Power Train, Protection, Weapons, Body, Electromagnetic, and Cosmetic.
+       […] A vehicle cannot exceed its Modification Slots in any category.
+       Not even a little. »
+
+       ⚠ Ce N'EST PAS l'économie SR6 : six réserves et non trois, et AUCUNE
+       conversion entre catégories — un dépassement est interdit, pas
+       convertible. `vehicleModDeficit` le dit avec `conversion: false` ; le
+       contrôleur n'a pas à savoir quelle édition il sert.
+
+       ⚠ La réserve se mesure sur la STRUCTURE (Body), que l'app ne connaît
+       pas : elle est saisie. `MOD_RESERVE` nomme le champ et l'étiquette,
+       pour que le contrôleur ne code ni « Structure » ni « Résistance ». */
+    MOD_FAMILIES: ["Motorisation", "Protection", "Armement", "Châssis", "Électronique", "Habillage"],
+    MOD_RESERVE: { key: "structure", label: "Structure", hint: "Structure du véhicule (Rigger 5.0 p.151) : chacune des six réserves d'emplacements en vaut autant." },
+
+    /** Les six réserves, ce qu'il en reste, et les mods qu'on ne peut pas
+        compter (emplacements en formule : « Indice × 2 », « [Indice] »). */
+    vehicleModState(vehicule) {
+      const base = Number(vehicule && vehicule[this.MOD_RESERVE.key]) || 0;
+      const pris = {};
+      const indetermines = [];
+      for (const f of this.MOD_FAMILIES) pris[f] = 0;
+      for (const id of (vehicule && vehicule.mods) || []) {
+        const m = this.accessoryById(id);
+        if (!m || !m.famille) continue; // entrée du Livre de Règles sans catégorie, ou accessoire d'arme
+        if (m.emplacements == null) {
+          indetermines.push({ nom: m.nom, famille: m.famille, note: m.emplacementsNote || "non précisé au livre" });
+          continue;
+        }
+        pris[m.famille] = (pris[m.famille] || 0) + m.emplacements;
+      }
+      return {
+        reserves: this.MOD_FAMILIES.map((f) => ({ famille: f, total: base, utilises: pris[f] || 0, reste: base - (pris[f] || 0) })),
+        indetermines,
+      };
+    },
+
+    /** Un dépassement, en Rigger 5, ne se rachète pas : `possible` est
+        toujours faux et `conversion` dit pourquoi. `null` si rien ne dépasse. */
+    vehicleModDeficit(vehicule) {
+      const manque = this.vehicleModState(vehicule).reserves.filter((e) => e.reste < 0);
+      if (!manque.length) return null;
+      return {
+        manque: manque.map((e) => `${e.famille} : ${-e.reste} emplacement(s) de trop`),
+        conversion: false,
+        possible: false,
+      };
+    },
+
+    /** L'installation (p.150-151) : test ÉTENDU (Mécanique du véhicule) +
+        Logique [Logique] (seuil, 1 heure), avec l'outillage de la ligne ; si
+        une compétence spéciale est listée, un test (Compétence) + Logique (4)
+        en plus. Le livre ne donne AUCUNE remise pour l'auto-installation. */
+    vehicleModInstall(mod) {
+      if (!mod || !mod.famille) return null;
+      const seuil = mod.seuil || "?";
+      const test = `Mécanique (du véhicule) + Logique [Logique] (${seuil}, 1 heure), test étendu`;
+      return {
+        test,
+        outil: mod.outil || null,
+        note: [
+          mod.competence ? `puis ${mod.competence} + Logique [Logique] (4)` : "",
+          mod.emplacements == null && mod.emplacementsNote ? `emplacements : ${mod.emplacementsNote}` : "",
+        ].filter(Boolean).join(" · ") || null,
+        remise: null,
+      };
+    },
+
+    /** Les accessoires d'armes d'abord, puis les mods de véhicule groupés par
+        catégorie de Rigger 5.0. Une entrée sans nombre (formule au livre)
+        s'affiche par sa note ; une traduction proposée le dit. */
     accessoryCatalog() {
+      const argent = (x) => (x.cout != null ? `${x.supplement ? "+" : ""}${x.cout.toLocaleString("fr-FR")} ¥` : x.coutNote || "coût au livre");
+      const places = (m) => {
+        if (!m.famille) return "";
+        if (m.emplacements != null) return `${m.emplacements} empl. ${m.famille}`;
+        return `${m.famille} · empl. ${m.emplacementsNote}`;
+      };
+      const ORDRE = [...this.MOD_FAMILIES, ""];
+      const sections = ORDRE.map((sec) => ({ category: sec ? `Mods de véhicule — ${sec}` : "Mods de véhicule (Livre de Règles)", items: [] }));
+      for (const m of VehiculeModsSR5) {
+        const g = sections[Math.max(0, ORDRE.indexOf(m.famille || ""))];
+        g.items.push({
+          id: m.id,
+          label: m.statut === "proposé" ? `${m.nom} *` : m.nom,
+          detail: [
+            places(m), m.indice ? `indice ${m.indice}` : "", m.seuil ? `seuil ${m.seuil}` : "", m.outil || "",
+            m.competence ? `+ ${m.competence}` : "", `Disp. ${m.dispo}`, argent(m), m.note || "",
+            m.statut === "proposé" ? `* traduction proposée (VO : ${m.sourceVO})` : "", m.errata ? "errata" : "", m.source,
+          ].filter(Boolean).join(" · "),
+        });
+      }
       return [{
         category: "Accessoires d'armes",
         items: AccessoiresSR5.map((a) => ({
           id: a.id,
           label: a.nom,
-          detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${
-            a.cout != null ? a.cout.toLocaleString("fr-FR") + " ¥" : a.coutNote || "coût au livre"
-          } · ${a.source}`,
+          detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${argent(a)} · ${a.source}`,
         })),
-      }, {
-        category: "Modifications de véhicule",
-        items: VehiculeModsSR5.map((m) => ({
-          id: m.id,
-          label: m.nom,
-          detail: `Disp. ${m.dispo} · ${m.supplement ? "+" : ""}${m.cout.toLocaleString("fr-FR")} ¥ · ${m.source}`,
-        })),
-      }];
+      }, ...sections.filter((g) => g.items.length)];
     },
 
     accessoryById(id) {
