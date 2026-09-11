@@ -802,6 +802,11 @@
   font-size: var(--fs-xs);
   cursor: pointer;
 }
+/* Réserve d'emplacements dépassée : la puce le dit, pas seulement le texte. */
+.cg-tag-over {
+  border-color: var(--danger);
+  color: var(--danger);
+}
 @media (max-width: 700px) {
   .cg-pick-list { max-height: 50vh; }
   .cg-pick-cat { display: none; }

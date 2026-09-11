@@ -1041,13 +1041,25 @@ export const CharGen = {
           .map((id) => {
             const a = c.accessoryById(id);
             return a
-              ? `<button class="cg-pick-tag" data-cg-action="remove-mod" data-idx="${i}" data-mod="${this._esc(id)}" title="Retirer">${this._esc(a.nom)}${a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""} ✕</button>`
+              ? `<button class="cg-pick-tag" data-cg-action="remove-mod" data-idx="${i}" data-mod="${this._esc(id)}" title="Retirer">${this._esc(a.nom)}${a.monture && a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""} ✕</button>`
               : "";
           })
           .join("");
-        const opts = (c.accessoryCatalog ? c.accessoryCatalog()[0].items : [])
-          .map((a) => `<option value="${this._esc(a.id)}">${this._esc(a.label)}</option>`)
+        /* ⚠ TOUS les groupes du catalogue, chacun dans son <optgroup>. Ne
+           prendre que le premier (`[0]`) a fait disparaître les accessoires
+           d'armes de tous les menus le jour où les mods de véhicule ont été
+           mis en tête — une régression silencieuse : rien ne cassait, il
+           manquait juste la moitié du choix. */
+        const opts = (c.accessoryCatalog ? c.accessoryCatalog() : [])
+          .filter((grp) => grp.items.length)
+          .map(
+            (grp) =>
+              `<optgroup label="${this._esc(grp.category)}">${grp.items
+                .map((a) => `<option value="${this._esc(a.id)}" title="${this._esc(a.detail || "")}">${this._esc(a.label)}</option>`)
+                .join("")}</optgroup>`,
+          )
           .join("");
+        const reserves = this._vehicleReserves(c, g, i);
         return `<div class="stack cg-list-row">
         <div class="cluster">
           <span>${this._esc(g.name || "")}</span>
@@ -1059,6 +1071,7 @@ export const CharGen = {
         </div>
         ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
         ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
+        ${reserves}
         ${
           opts
             ? `<div class="cluster cg-add-row">
@@ -1088,6 +1101,36 @@ export const CharGen = {
         <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
       </div>
     </div>`;
+  },
+
+  /* Les trois réserves d'emplacements d'un véhicule, quand l'édition en a
+     (SR6, « À tombeau ouvert ») et que l'objet porte au moins un mod de
+     véhicule. La Résistance est SAISIE : le catalogue d'équipement ne la
+     connaît pas, et l'écran le dit plutôt qu'inventer une valeur.
+
+     ⚠ Un mod aux emplacements indéterminés (formule au livre) est NOMMÉ, pas
+     compté 0 : une réserve qui semble libre alors qu'un « 1 × Indice » y
+     dort serait un faux vert. */
+  _vehicleReserves(c, g, i) {
+    if (!c.vehicleModState) return "";
+    const deVehicule = (g.mods || []).some((id) => {
+      const a = c.accessoryById(id);
+      return a && a.monture === undefined; // un accessoire d'arme a toujours une monture
+    });
+    if (!deVehicule) return "";
+    const etat = c.vehicleModState(g);
+    const deficit = c.vehicleModDeficit ? c.vehicleModDeficit(g) : null;
+    const puces = etat.reserves
+      .map((r) => `<span class="cg-pick-tag${r.reste < 0 ? " cg-tag-over" : ""}" title="${this._esc(r.famille)} : ${r.utilises} sur ${r.total}">${this._esc(r.famille)} ${r.utilises}/${r.total}</span>`)
+      .join("");
+    return `<div class="cluster cg-add-row">
+      <span class="cg-section-note">Résistance</span>
+      <input type="number" min="0" data-cg="gear.${i}.resistance" value="${g.resistance ?? ""}" style="width:4.5em" title="Résistance non modifiée du véhicule (p.122) — à saisir">
+      ${puces}
+    </div>
+    ${g.resistance == null ? `<p class="cg-hint">Saisis la Résistance du véhicule : chaque réserve d'emplacements en vaut autant (p.122).</p>` : ""}
+    ${deficit && g.resistance != null ? `<p class="cg-hint">⚑ ${this._esc(deficit.manque.join(" ; "))}. Conversion 2 pour 1 : il faut ${deficit.besoin} emplacement(s) libres ailleurs, il y en a ${deficit.dispo}${deficit.possible ? "" : " — pas assez"}.</p>` : ""}
+    ${etat.indetermines.map((m) => `<p class="cg-hint">⚑ ${this._esc(m.nom)} : emplacements ${this._esc(m.note)} — non comptés dans ${this._esc(m.famille)}.</p>`).join("")}`;
   },
 
   /* ---- Étape : compétences Anarchy 1 ----

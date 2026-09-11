@@ -1262,28 +1262,42 @@ Object.assign(EditionSR6, {
     MOD_FAMILIES: ["Châssis", "Motorisation", "Électronique"],
     MOD_CONVERSION: 2,
 
-    /** Les trois réserves d'un véhicule, et ce qu'il en reste. */
+    /** Les trois réserves d'un véhicule, ce qu'il en reste, et les mods
+        qu'on NE PEUT PAS compter.
+
+        ⚠ `emplacements: null` n'est pas zéro (voir sr6.vehiculemods.js) : une
+        formule (« 1 × Indice ») que l'app ne résout pas, ou rien au livre. Les
+        compter 0 rendrait une réserve verte à tort — le « faux vert ». Ils
+        sont rendus à part, et l'écran doit les nommer. */
     vehicleModState(vehicule) {
       const res = Number(vehicule && vehicule.resistance) || 0;
       const pris = {};
+      const indetermines = [];
       for (const f of this.MOD_FAMILIES) pris[f] = 0;
       for (const id of (vehicule && vehicule.mods) || []) {
         const m = this.accessoryById(id);
         if (!m || !m.famille) continue; // accessoire : aucun emplacement
-        pris[m.famille] = (pris[m.famille] || 0) + (m.emplacements || 0);
+        if (m.emplacements == null) {
+          indetermines.push({ nom: m.nom, famille: m.famille, note: m.emplacementsNote || "non précisé au livre" });
+          continue;
+        }
+        pris[m.famille] = (pris[m.famille] || 0) + m.emplacements;
       }
-      return this.MOD_FAMILIES.map((f) => ({
-        famille: f,
-        total: res,
-        utilises: pris[f] || 0,
-        reste: res - (pris[f] || 0),
-      }));
+      return {
+        reserves: this.MOD_FAMILIES.map((f) => ({
+          famille: f,
+          total: res,
+          utilises: pris[f] || 0,
+          reste: res - (pris[f] || 0),
+        })),
+        indetermines,
+      };
     },
 
     /** Ce qu'il faudrait convertir depuis les autres catégories pour combler
         un dépassement, au ratio 2:1. `null` si rien ne dépasse. */
     vehicleModDeficit(vehicule) {
-      const etat = this.vehicleModState(vehicule);
+      const etat = this.vehicleModState(vehicule).reserves;
       const manque = etat.filter((e) => e.reste < 0);
       if (!manque.length) return null;
       const dispo = etat.filter((e) => e.reste > 0).reduce((n, e) => n + e.reste, 0);
@@ -1301,33 +1315,55 @@ Object.assign(EditionSR6, {
         50 % du coût en moins — remise qui NE S'APPLIQUE PAS aux accessoires. */
     vehicleModInstall(mod) {
       if (!mod || !mod.famille) return null; // accessoire : pas d'installation
-      const e = mod.emplacements || 0;
+      /* ⚠ Emplacements en formule : le seuil dépend de l'indice choisi, que
+         l'app ne connaît pas. On le dit, on ne calcule pas sur 0.
+         Emplacements absents du livre : règle p.123, « considérez que le
+         multiplicateur de seuil et d'intervalle est de 1 ». */
+      if (mod.emplacements == null && mod.emplacementsNote) {
+        return { test: null, note: `seuil et durée selon l'indice (${mod.emplacementsNote})`, outil: null, remise: null };
+      }
+      const presume = mod.emplacements == null;
+      const e = presume ? 1 : mod.emplacements;
       const outil = e < 2 ? "trousse à outils" : e <= 5 ? "atelier" : "installation";
       return {
         test: `Ingénierie + Logique [${e * 8}, ${e} heure(s)]`,
+        note: presume ? "aucun emplacement précisé : multiplicateur 1 (p.123)" : null,
         outil,
-        remise: Math.round((mod.cout || 0) / 2),
+        remise: mod.cout == null ? null : Math.round(mod.cout / 2),
       };
     },
 
+    /** Les accessoires d'armes d'abord, puis les mods de véhicule groupés par
+        section du livre. L'ordre n'est pas décoratif : le contrôleur prend
+        les groupes tels quels, et une entrée sans nombre (formule au livre)
+        s'affiche par sa note — jamais par un `toLocaleString` sur null. */
     accessoryCatalog() {
-      return [{
-        category: "Modifications de véhicule",
-        items: VehiculeModsSR6.map((m) => ({
+      const argent = (x) => (x.cout != null ? `${x.supplement ? "+" : ""}${x.cout.toLocaleString("fr-FR")} ¥` : x.coutNote || "coût au livre");
+      const places = (m) => {
+        if (!m.famille) return "accessoire, aucun emplacement";
+        if (m.emplacements != null) return `${m.emplacements} empl. ${m.famille}`;
+        return `${m.famille} · empl. ${m.emplacementsNote || "non précisés (p.123 : ×1)"}`;
+      };
+      // Dans l'ordre du livre ; les entrées du livre de base sans section
+      // (montures p.303) ferment la marche.
+      const ORDRE = ["Accessoires", "Châssis", "Habillage", "Motorisation", "Électronique", ""];
+      const sections = ORDRE.map((sec) => ({ category: sec ? `Mods de véhicule — ${sec}` : "Mods de véhicule (livre de base)", items: [] }));
+      for (const m of VehiculeModsSR6) {
+        const g = sections[Math.max(0, ORDRE.indexOf(m.section || ""))];
+        g.items.push({
           id: m.id,
           label: m.nom,
-          detail: `Disp. ${m.dispo} · ${m.supplement ? "+" : ""}${m.cout.toLocaleString("fr-FR")} ¥ · ${m.source}`,
-        })),
-      }, {
+          detail: [places(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m), m.note || "", m.source].filter(Boolean).join(" · "),
+        });
+      }
+      return [{
         category: "Accessoires d'armes",
         items: AccessoiresSR6.map((a) => ({
           id: a.id,
           label: a.nom,
-          detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${
-            a.cout != null ? a.cout.toLocaleString("fr-FR") + " ¥" : a.coutNote || "coût au livre"
-          } · ${a.source}`,
+          detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${argent(a)} · ${a.source}`,
         })),
-      }];
+      }, ...sections.filter((g) => g.items.length)];
     },
 
     accessoryById(id) {

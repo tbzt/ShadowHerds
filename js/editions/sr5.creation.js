@@ -1202,15 +1202,11 @@ Object.assign(EditionSR5, {
        occupent le même point de fixation (Dessus, Dessous, Canon) ne se
        cumulent PAS sur une même arme. « — » = aucune monture, cumul libre.
        C'est cette contrainte, pas le prix, qui fait l'intérêt du choix. */
+    /** Les accessoires d'armes d'abord, les mods de véhicule ensuite — le
+        même ordre qu'en SR6, et le contrôleur rend CHAQUE groupe, pas le
+        premier seul. */
     accessoryCatalog() {
       return [{
-        category: "Modifications de véhicule",
-        items: VehiculeModsSR5.map((m) => ({
-          id: m.id,
-          label: m.nom,
-          detail: `Disp. ${m.dispo} · ${m.supplement ? "+" : ""}${m.cout.toLocaleString("fr-FR")} ¥ · ${m.source}`,
-        })),
-      }, {
         category: "Accessoires d'armes",
         items: AccessoiresSR5.map((a) => ({
           id: a.id,
@@ -1218,6 +1214,13 @@ Object.assign(EditionSR5, {
           detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${
             a.cout != null ? a.cout.toLocaleString("fr-FR") + " ¥" : a.coutNote || "coût au livre"
           } · ${a.source}`,
+        })),
+      }, {
+        category: "Modifications de véhicule",
+        items: VehiculeModsSR5.map((m) => ({
+          id: m.id,
+          label: m.nom,
+          detail: `Disp. ${m.dispo} · ${m.supplement ? "+" : ""}${m.cout.toLocaleString("fr-FR")} ¥ · ${m.source}`,
         })),
       }];
     },
