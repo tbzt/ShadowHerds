@@ -1059,7 +1059,7 @@ export const CharGen = {
                 .join("")}</optgroup>`,
           )
           .join("");
-        const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g);
+        const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g) + this._armorCapacity(c, g, i);
         return `<div class="stack cg-list-row">
         <div class="cluster">
           <span>${this._esc(g.name || "")}</span>
@@ -1101,6 +1101,31 @@ export const CharGen = {
         <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
       </div>
     </div>`;
+  },
+
+  /* La CAPACITÉ d'une armure (SR5, Livre de Règles p.437 ; Run & Gun p.100),
+     quand l'objet porte au moins une modification d'armure ou du matériel
+     installé. L'indice d'Armure est la réserve ; il vient du catalogue au
+     choix, ou se saisit. Un coût « [Indice] » est nommé, pas compté 0. */
+  _armorCapacity(c, g, i) {
+    if (!c.armorCapacityState || !c.ARMOR_RESERVE) return "";
+    const armure = (g.mods || []).some((id) => {
+      const a = c.accessoryById(id);
+      return a && Object.prototype.hasOwnProperty.call(a, "capacite");
+    });
+    if (!armure) return "";
+    const base = c.ARMOR_RESERVE;
+    const val = g[base.key];
+    const e = c.armorCapacityState(g);
+    const over = e.total != null && e.utilises > e.total;
+    return `<div class="cluster cg-add-row">
+      <span class="cg-section-note">${this._esc(base.label)}</span>
+      <input type="number" min="0" data-cg="gear.${i}.${this._esc(base.key)}" value="${val ?? ""}" style="width:4.5em" title="${this._esc(base.hint)}">
+      <span class="cg-pick-tag${over ? " cg-tag-over" : ""}" title="${this._esc(e.pris.join(", ") || "rien d'installé")}">Capacité ${e.utilises}/${e.total == null ? "?" : e.total}</span>
+    </div>
+    ${val == null ? `<p class="cg-hint">Saisis l'indice d'Armure : ${this._esc(base.hint)}</p>` : ""}
+    ${over ? `<p class="cg-hint">⚑ ${e.utilises - e.total} point(s) de capacité de trop pour cette protection.</p>` : ""}
+    ${e.indetermines.map((m) => `<p class="cg-hint">⚑ ${this._esc(m.nom)} : capacité ${this._esc(m.note)} — non comptée.</p>`).join("")}`;
   },
 
   /* Les emplacements de modification d'une ARME, quand l'édition en compte
@@ -1152,9 +1177,13 @@ export const CharGen = {
      le dit ; l'écran ne promet une conversion que si le module l'offre. */
   _vehicleReserves(c, g, i) {
     if (!c.vehicleModState || !c.MOD_RESERVE) return "";
+    /* Trois familles d'objets, reconnues à leur FORME : une monture (arme),
+       une capacité (armure), sinon un mod de véhicule. « Pas de monture »
+       seul faisait passer une modification d'armure pour un mod de véhicule,
+       et l'écran alignait six réserves à 0/0 sous une veste pare-balles. */
     const deVehicule = (g.mods || []).some((id) => {
       const a = c.accessoryById(id);
-      return a && a.monture === undefined; // un accessoire d'arme a toujours une monture
+      return a && a.montures === undefined && !Object.prototype.hasOwnProperty.call(a, "capacite");
     });
     if (!deVehicule) return "";
     const base = c.MOD_RESERVE;
@@ -2122,7 +2151,18 @@ export const CharGen = {
         b.gear = b.gear || [];
         // `kind` = la clé du catalogue (« pistoletsLourds ») : c'est elle qui
         // dit le TYPE de l'arme, donc ses emplacements de modification.
-        if (!b.gear.some((g) => g.name === nom)) b.gear.push({ name: nom, cost: 0, ...(el.dataset.kind ? { kind: el.dataset.kind } : {}) });
+        if (!b.gear.some((g) => g.name === nom)) {
+          const item = { name: nom, cost: 0, ...(el.dataset.kind ? { kind: el.dataset.kind } : {}) };
+          /* Une armure porte son indice dans la ligne de stats du catalogue
+             (« Veste pare-balles [9] ») : on le garde, c'est sa Capacité. Un
+             détail qui n'est pas un simple nombre (« 4/6/8/10/12 ») reste à
+             saisir — on n'invente pas. */
+          if (c.ARMOR_RESERVE && el.dataset.kind === "armures") {
+            const ref = (c.gearCatalog() || []).flatMap((g) => g.items).find((x) => x.label === nom);
+            if (ref && /^\d+$/.test(String(ref.detail || "").trim())) item[c.ARMOR_RESERVE.key] = Number(ref.detail);
+          }
+          b.gear.push(item);
+        }
         afterMutate();
         break;
       }

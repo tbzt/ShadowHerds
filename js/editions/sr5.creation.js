@@ -29,6 +29,7 @@
    ============================================================ */
 import { VehiculeModsSR5 } from "./sr5.vehiculemods.js";
 import { AccessoiresSR5 } from "./sr5.accessoires.js";
+import { ArmureModsSR5, ArmureCapaciteSR5 } from "./sr5.armuremods.js";
 import { Content } from "../rules/content.js";
 import { Mounts } from "../rules/mounts.js";
 import { Magic } from "../rules/magic.js";
@@ -1339,6 +1340,14 @@ Object.assign(EditionSR5, {
         category: nom,
         items: AccessoiresSR5.filter((a) => a.type === t).map((a) => ({ id: a.id, label: a.nom, detail: arme(a) })),
       })).filter((g) => g.items.length);
+      const capa = (m) => (m.capacite == null ? `capacité ${m.capaciteNote}` : m.capacite ? `capacité ${m.capacite}` : "aucune capacité");
+      const groupesArmure = [{
+        category: "Modifications d'armure",
+        items: ArmureModsSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m), m.source].filter(Boolean).join(" · ") })),
+      }, {
+        category: "Matériel installé dans une armure",
+        items: ArmureCapaciteSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.groupe, m.note || "", m.source].filter(Boolean).join(" · ") })),
+      }];
       const places = (m) => {
         if (!m.famille) return "";
         if (m.emplacements != null) return `${m.emplacements} empl. ${m.famille}`;
@@ -1358,12 +1367,45 @@ Object.assign(EditionSR5, {
           ].filter(Boolean).join(" · "),
         });
       }
-      return [...groupesArmes, ...sections.filter((g) => g.items.length)];
+      return [...groupesArmes, ...groupesArmure, ...sections.filter((g) => g.items.length)];
     },
 
     accessoryById(id) {
-      return AccessoiresSR5.find((a) => a.id === id) || VehiculeModsSR5.find((m) => m.id === id) || null;
+      return (
+        AccessoiresSR5.find((a) => a.id === id) ||
+        VehiculeModsSR5.find((m) => m.id === id) ||
+        ArmureModsSR5.find((m) => m.id === id) ||
+        ArmureCapaciteSR5.find((m) => m.id === id) ||
+        null
+      );
     },
+
+    /* ---- Modifications d'armure : CAPACITÉ (Livre de Règles p.437) ----
+       « La Capacité d'une protection est égale à son indice d'Armure. Les
+       modifications d'armure ont un coût en capacité variable. » Run & Gun
+       p.100 y loge aussi le matériel (holster, médikit, senseurs…).
+
+       ⚠ L'indice d'Armure est lu sur le catalogue au moment du choix
+       (« Veste pare-balles [9] ») quand il est un nombre, saisi sinon.
+       ⚠ Un coût en capacité « [Indice] » dépend de l'indice choisi, que
+       l'app ne porte pas par objet : NOMMÉ, pas compté 0. */
+    ARMOR_RESERVE: { key: "armure", label: "Armure", hint: "sa Capacité en vaut autant (Livre de Règles p.437)" },
+
+    armorCapacityState(armure) {
+      const total = Number(armure && armure[this.ARMOR_RESERVE.key]);
+      let utilises = 0;
+      const pris = [];
+      const indetermines = [];
+      for (const id of (armure && armure.mods) || []) {
+        const a = this.accessoryById(id);
+        if (!a || !Object.prototype.hasOwnProperty.call(a, "capacite")) continue; // pas un objet d'armure
+        if (a.capacite == null) { indetermines.push({ nom: a.nom, note: a.capaciteNote || "non précisé" }); continue; }
+        utilises += a.capacite;
+        if (a.capacite) pris.push(a.nom);
+      }
+      return { total: Number.isFinite(total) && armure[this.ARMOR_RESERVE.key] != null ? total : null, utilises, pris, indetermines };
+    },
+
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
     /** L'affectation des accessoires d'une arme à ses montures : ce que
