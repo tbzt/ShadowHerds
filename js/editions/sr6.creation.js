@@ -1368,7 +1368,9 @@ Object.assign(EditionSR6, {
        armes d'épaule (mitraillettes, shotguns, fusils, mitrailleuses) par
        DÉDUCTION, marquée `deduit`. Ce n'est pas une phrase du livre.
 
-       ⚠ Arcs et armes de jet : le livre ne dit rien → null. Armes des
+       Arcs et arbalètes : « deux montures d'accessoires, au-dessus et
+       au-dessous de l'arme (bien que pour les arcs leur emplacement exact
+       diffère) » — Feu nourri p.54. Armes de jet : aucune. Armes des
        suppléments : le catalogue ne connaît pas leur type → null. */
     WEAPON_MOUNTS_BY_KIND: {
       tasers: ["Dessus"],
@@ -1378,7 +1380,7 @@ Object.assign(EditionSR6, {
       shotguns: ["Dessus", "Canon", "Dessous", "Crosse"], fusils: ["Dessus", "Canon", "Dessous", "Crosse"],
       snipersLourds: ["Dessus", "Canon", "Dessous", "Crosse"],
       armesSpeciales: ["Dessus", "Dessous"],
-      armesJet: null, armesSupplement: null, meleeWeapons: [],
+      armesTrait: ["Dessus", "Dessous"], armesJet: [], armesSupplement: null, meleeWeapons: [],
     },
     WEAPON_MOUNTS_DEDUITS: ["Crosse"],
     /* Exceptions NOMMÉES par le livre. « Le M23 peut accepter deux autres
@@ -1390,7 +1392,8 @@ Object.assign(EditionSR6, {
     WEAPON_MOUNTS_NOTES: {
       pistoletsPoche: "ni modification ni accessoire (Livre de base p.262)",
       armesSpeciales: "lanceurs : au-dessus et en dessous du canon (p.268)",
-      armesJet: "le Livre de base ne précise pas les montures des arcs — les quatre sont supposées",
+      armesTrait: "arcs et arbalètes : au-dessus et au-dessous (Feu nourri p.54) — sur un arc, l'emplacement exact diffère",
+      armesJet: "une arme de jet n'offre aucune monture",
       meleeWeapons: "pas de monture : les accessoires de mêlée de Feu nourri n'en occupent aucune",
     },
 
@@ -1412,12 +1415,12 @@ Object.assign(EditionSR6, {
       };
     },
     WEAPON_MOD_SLOTS: {
-      meleeWeapons: 2, armesJet: null, tasers: 2,
+      meleeWeapons: 2, armesTrait: 2, armesJet: 0, tasers: 2,
       pistoletsPoche: 0, pistoletsLegers: 3, pistoletsAutomatiques: 3, pistoletsLourds: 3,
       mitraillettes: 4, shotguns: 5, snipersLourds: 5, fusils: 6, armesSpeciales: 2,
     },
     WEAPON_MOD_SLOTS_NOTES: {
-      armesJet: "arcs et arbalètes 2, armes de jet 0 — le catalogue ne les distingue pas",
+      armesJet: "aucun emplacement de modification (Feu nourri p.41)",
       pistoletsPoche: "ni modification ni accessoire (Feu nourri p.41)",
       armesSpeciales: "armes exotiques : 2 (p.41)",
     },

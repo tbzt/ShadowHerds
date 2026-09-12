@@ -2579,6 +2579,7 @@ export const EditionSR6 = {
   _WEAPON_CATEGORY_ORDER: [
     "meleeWeapons",
     "armesJet",
+    "armesTrait",
     "pistoletsPoche",
     "pistoletsLegers",
     "pistoletsAutomatiques",
@@ -2633,6 +2634,7 @@ export const EditionSR6 = {
       mitraillettes: false,
       shotguns: false,
       armesJet: false,
+      armesTrait: false,
       armesSpeciales: false,
       fusils: false,
       snipersLourds: false,
@@ -4279,12 +4281,20 @@ export const EditionSR6 = {
     // ⚠ Ne pas confondre avec les `(m)` LÉGITIMES des armes à feu (Defiance
     // T-250 5(m), Remington Roomsweeper 8(m), Yamaha Pulsar 4(m), Remington
     // 900 5(m)) : ceux-là sont dans la colonne MUNITIONS du livre, vérifiés.
-    armesJet: [
+    /* Le Livre de base (p.261) range arcs, arbalètes, couteaux et shuriken
+       sous un même titre « Armes de jet/de trait ». Feu nourri les DISTINGUE
+       là où ça compte : arcs et arbalètes ont deux emplacements de
+       modification et deux montures (p.41, p.54) ; les armes de jet, rien.
+       Deux pools, donc — une seule liste faisait rendre « inconnu » pour
+       les deux. */
+    armesTrait: [
       "Arbalète légère [VD 2P, SO 6/8/2/—/—]",
       "Arbalète standard [VD 3P, SO 2/10/4/2/—]",
       // SO corrigé au livre : la 3ᵉ bande vaut 6, pas 4 (transcription fautive).
       "Arbalète lourde [VD 4P, SO 2/8/6/4/—]",
       "Arc [VD 2P-4P selon indice, SO variable]",
+    ],
+    armesJet: [
       "Couteau de lancer [VD 2P, SO 10/9/3/—/—]",
       "Shuriken [VD 2P, SO 9/11/5/—/—]",
     ],
@@ -4951,7 +4961,8 @@ export const EditionSR6 = {
     armesSpeciales: "Armes spéciales",
     armesSupplement: "Armes (suppléments)",
     meleeWeapons: "Corps à corps",
-    armesJet: "Armes de jet/trait",
+    armesTrait: "Armes de trait",
+    armesJet: "Armes de jet",
     armures: "Armures",
     grenades: "Grenades",
     roquettes: "Roquettes/Missiles",
