@@ -994,7 +994,7 @@ export const CharGen = {
           n++;
           const dejaPris = sel.has(it.label);
           return `<button class="cg-pick-item${dejaPris ? " pris" : ""}" data-cg-action="${this._esc(action)}"
-            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}"
+            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}
             data-hay="${this._esc(`${it.label} ${it.detail || ""} ${g.category}`.toLowerCase())}">
             <span class="cg-pick-name">${dejaPris ? "✓ " : ""}${this._esc(it.label)}</span>
             ${it.detail ? `<span class="cg-pick-detail">${this._esc(it.detail)}</span>` : ""}
@@ -1059,7 +1059,7 @@ export const CharGen = {
                 .join("")}</optgroup>`,
           )
           .join("");
-        const reserves = this._vehicleReserves(c, g, i);
+        const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g);
         return `<div class="stack cg-list-row">
         <div class="cluster">
           <span>${this._esc(g.name || "")}</span>
@@ -1101,6 +1101,30 @@ export const CharGen = {
         <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
       </div>
     </div>`;
+  },
+
+  /* Les emplacements de modification d'une ARME, quand l'édition en compte
+     (SR6, Feu nourri p.41 : un budget par type d'arme) et que l'objet porte
+     au moins un accessoire d'arme. Le budget vient du module ; `null` veut
+     dire « le livre ne le donne pas pour ce type », et l'écran le dit au
+     lieu d'afficher 0/0. Le rappel sur les montures vient aussi du module :
+     l'app suppose toutes les montures libres, ce qui n'est pas la règle. */
+  _weaponSlots(c, g) {
+    const armes = (g.mods || []).map((id) => c.accessoryById(id)).filter((a) => a && a.montures !== undefined);
+    if (!armes.length) return "";
+    const morceaux = [];
+    if (c.weaponModState) {
+      const e = c.weaponModState(g);
+      const sur = e.total == null ? "?" : e.total;
+      const over = e.total != null && e.utilises > e.total;
+      morceaux.push(`<span class="cg-pick-tag${over ? " cg-tag-over" : ""}" title="${this._esc(e.pris.join(", ") || "aucune modification")}">Modifications ${e.utilises}/${sur}</span>`);
+      if (e.note) morceaux.push(`<span class="cg-section-note">${this._esc(e.note)}</span>`);
+      if (over) morceaux.push(`<p class="cg-hint">⚑ ${e.utilises - e.total} modification(s) de trop pour ce type d'arme.</p>`);
+    }
+    if (c.WEAPON_MOUNTS_HINT && armes.some((a) => a.montures === "*" || (a.montures && a.montures.length))) {
+      morceaux.push(`<span class="cg-section-note">${this._esc(c.WEAPON_MOUNTS_HINT)}</span>`);
+    }
+    return morceaux.length ? `<div class="cluster cg-add-row">${morceaux.join("")}</div>` : "";
   },
 
   /* Les réserves d'emplacements d'un véhicule, quand l'édition en a et que
@@ -2087,7 +2111,9 @@ export const CharGen = {
       case "pick-gear": {
         const nom = el.dataset.name;
         b.gear = b.gear || [];
-        if (!b.gear.some((g) => g.name === nom)) b.gear.push({ name: nom, cost: 0 });
+        // `kind` = la clé du catalogue (« pistoletsLourds ») : c'est elle qui
+        // dit le TYPE de l'arme, donc ses emplacements de modification.
+        if (!b.gear.some((g) => g.name === nom)) b.gear.push({ name: nom, cost: 0, ...(el.dataset.kind ? { kind: el.dataset.kind } : {}) });
         afterMutate();
         break;
       }

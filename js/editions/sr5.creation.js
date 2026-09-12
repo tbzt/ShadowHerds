@@ -30,6 +30,7 @@
 import { VehiculeModsSR5 } from "./sr5.vehiculemods.js";
 import { AccessoiresSR5 } from "./sr5.accessoires.js";
 import { Content } from "../rules/content.js";
+import { Mounts } from "../rules/mounts.js";
 import { Magic } from "../rules/magic.js";
 import { EditionSR5 } from "./sr5.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
@@ -527,8 +528,10 @@ Object.assign(EditionSR5, {
       return (EditionSR5.equipCatalog() || []).map((g) => ({
         category: g.category,
         // `detail` porte la ligne de stats du livre ; l'écran la montre.
+        // `kind` est la clé du pool (« pistoletsLourds ») : c'est elle qui
+        // dit à quel TYPE d'arme on a affaire, et donc ses emplacements.
         items: (g.items || [])
-          .map((it) => ({ label: it.label, detail: it.detail || "" }))
+          .map((it) => ({ label: it.label, detail: it.detail || "", kind: String(it.id || "").split("::")[0] }))
           .filter((it) => it.label),
       }));
     },
@@ -1273,11 +1276,32 @@ Object.assign(EditionSR5, {
       };
     },
 
-    /** Les accessoires d'armes d'abord, puis les mods de véhicule groupés par
-        catégorie de Rigger 5.0. Une entrée sans nombre (formule au livre)
-        s'affiche par sa note ; une traduction proposée le dit. */
+    /* ---- Accessoires et modifications d'armes : RUN & GUN p.68 ----
+       Six emplacements — « Chaque emplacement ne peut accueillir qu'un
+       accessoire ou qu'une modification » — et un objet qui en accepte
+       plusieurs n'en occupe qu'UN, au choix. Le conflit se résout donc par
+       AFFECTATION (js/rules/mounts.js), pas en comparant des chaînes.
+
+       ⚠ Run & Gun p.69 donne, arme par arme, les emplacements réellement
+       disponibles. L'app ne porte pas cette table : le résolveur suppose les
+       six — l'écran le dit, il ne le cache pas. */
+    WEAPON_MOUNTS: ["Dessus", "Dessous", "Canon", "Côté", "Interne", "Crosse"],
+    WEAPON_MOUNTS_HINT: "Run & Gun p.69 réserve certains emplacements selon l'arme ; ici les six sont supposés libres.",
+
+    /** Les accessoires d'armes en trois groupes (accessoires, modifications,
+        options), puis les mods de véhicule par catégorie de Rigger 5.0. Une
+        entrée sans nombre (formule au livre) s'affiche par sa note. */
     accessoryCatalog() {
       const argent = (x) => (x.cout != null ? `${x.supplement ? "+" : ""}${x.cout.toLocaleString("fr-FR")} ¥` : x.coutNote || "coût au livre");
+      const arme = (a) => [
+        a.montures === "*" ? "toute monture" : a.montures && a.montures.length ? "monture : " + a.montures.join(" ou ") : "sans monture",
+        `Disp. ${a.dispo}`, argent(a), a.note || "", a.source,
+      ].filter(Boolean).join(" · ");
+      const TYPES = [["accessoire", "Accessoires d'armes"], ["modification", "Modifications d'armes"], ["option", "Options d'accessoires"]];
+      const groupesArmes = TYPES.map(([t, nom]) => ({
+        category: nom,
+        items: AccessoiresSR5.filter((a) => a.type === t).map((a) => ({ id: a.id, label: a.nom, detail: arme(a) })),
+      })).filter((g) => g.items.length);
       const places = (m) => {
         if (!m.famille) return "";
         if (m.emplacements != null) return `${m.emplacements} empl. ${m.famille}`;
@@ -1297,14 +1321,7 @@ Object.assign(EditionSR5, {
           ].filter(Boolean).join(" · "),
         });
       }
-      return [{
-        category: "Accessoires d'armes",
-        items: AccessoiresSR5.map((a) => ({
-          id: a.id,
-          label: a.nom,
-          detail: `${a.monture === "—" ? "sans monture" : "monture : " + a.monture} · Disp. ${a.dispo} · ${argent(a)} · ${a.source}`,
-        })),
-      }, ...sections.filter((g) => g.items.length)];
+      return [...groupesArmes, ...sections.filter((g) => g.items.length)];
     },
 
     accessoryById(id) {
@@ -1313,20 +1330,18 @@ Object.assign(EditionSR5, {
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
     accessoryConflicts(arme) {
-      const prises = new Map();
+      const objets = [];
       for (const id of (arme && arme.mods) || []) {
         const a = this.accessoryById(id);
         /* ⚠ La règle des montures ne vaut QUE pour les accessoires d'armes.
-           Les modifications de véhicule n'ont pas de point de fixation : sans
-           ce garde, elles se retrouvaient toutes groupées sous « undefined »
-           et l'écran annonçait un conflit imaginaire entre une monture d'arme
-           et un module d'interface. */
-        if (!a || !a.monture || a.monture === "—") continue;
-        prises.set(a.monture, [...(prises.get(a.monture) || []), a.nom]);
+           Les modifications de véhicule n'ont pas de point de fixation. */
+        if (!a || a.montures === undefined) continue;
+        objets.push({ id: a.id + "#" + objets.length, nom: a.nom, montures: a.montures });
       }
-      return [...prises.entries()]
-        .filter(([, noms]) => noms.length > 1)
-        .map(([m, noms]) => `${noms.join(" et ")} occupent tous deux la monture « ${m} ».`);
+      const r = Mounts.resolve(objets, this.WEAPON_MOUNTS);
+      if (r.ok) return [];
+      const prises = Object.entries(r.affectation).map(([id, m]) => `${m} (${objets.find((o) => o.id === id).nom})`);
+      return r.restants.map((o) => `${o.nom} ne trouve pas de monture libre — ${prises.length ? "prises : " + prises.join(", ") : "aucune monture disponible"}.`);
     },
 
     /** Coût des accessoires montés sur tout l'équipement. */
