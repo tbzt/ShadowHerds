@@ -1355,7 +1355,62 @@ Object.assign(EditionSR6, {
        dit, on ne compte pas 0. « Pistolets de poche : ni modification ni
        accessoire » (p.41). */
     WEAPON_MOUNTS: ["Dessus", "Dessous", "Canon", "Crosse"],
-    WEAPON_MOUNTS_HINT: "Les montures dépendent de l'arme (Livre de base pp.261-267) ; ici les quatre sont supposées libres.",
+
+    /* Les montures PAR CATÉGORIE, lues dans la description de chaque
+       catégorie du Livre de base (p.261-268 imprimées) : « Les pistolets
+       lourds peuvent être équipés d'accessoires sur le dessus de l'arme et
+       sur le canon », « Les fusils […] sur le dessus de l'arme et sur et sous
+       le canon », « Les tasers […] au-dessus du canon », « Les pistolets de
+       poche ne peuvent être modifiés ou équipés d'accessoires ».
+
+       ⚠ CROSSE : aucune catégorie du Livre de base ne l'offre — et Feu nourri
+       p.58 vend un « Harnais de hanche » qui s'y monte. Elle est AJOUTÉE aux
+       armes d'épaule (mitraillettes, shotguns, fusils, mitrailleuses) par
+       DÉDUCTION, marquée `deduit`. Ce n'est pas une phrase du livre.
+
+       ⚠ Arcs et armes de jet : le livre ne dit rien → null. Armes des
+       suppléments : le catalogue ne connaît pas leur type → null. */
+    WEAPON_MOUNTS_BY_KIND: {
+      tasers: ["Dessus"],
+      pistoletsPoche: [],
+      pistoletsLegers: ["Dessus", "Canon"], pistoletsAutomatiques: ["Dessus", "Canon"], pistoletsLourds: ["Dessus", "Canon"],
+      mitraillettes: ["Dessus", "Canon", "Crosse"],
+      shotguns: ["Dessus", "Canon", "Dessous", "Crosse"], fusils: ["Dessus", "Canon", "Dessous", "Crosse"],
+      snipersLourds: ["Dessus", "Canon", "Dessous", "Crosse"],
+      armesSpeciales: ["Dessus", "Dessous"],
+      armesJet: null, armesSupplement: null, meleeWeapons: [],
+    },
+    WEAPON_MOUNTS_DEDUITS: ["Crosse"],
+    /* Exceptions NOMMÉES par le livre. « Le M23 peut accepter deux autres
+       accessoires à monter sous le canon pour un total de trois » (p.266). Les
+       deux Parashield (p.268) ne sont pas au catalogue. */
+    WEAPON_MOUNTS_BY_NAME: {
+      "Colt M23": ["Dessus", "Canon", "Dessous", "Dessous", "Dessous", "Crosse"],
+    },
+    WEAPON_MOUNTS_NOTES: {
+      pistoletsPoche: "ni modification ni accessoire (Livre de base p.262)",
+      armesSpeciales: "lanceurs : au-dessus et en dessous du canon (p.268)",
+      armesJet: "le Livre de base ne précise pas les montures des arcs — les quatre sont supposées",
+      meleeWeapons: "pas de monture : les accessoires de mêlée de Feu nourri n'en occupent aucune",
+    },
+
+    /** Les montures qu'une arme offre — par nom d'abord (exceptions du
+        livre), par catégorie sinon. `montures: null` = non précisé : le
+        résolveur suppose les quatre, et l'écran le dit. */
+    weaponMounts(arme) {
+      const nom = String((arme && arme.name) || "").trim();
+      const kind = arme && arme.kind;
+      const parNom = Object.keys(this.WEAPON_MOUNTS_BY_NAME).find((n) => nom.startsWith(n));
+      const connu = !!parNom || (kind && Object.prototype.hasOwnProperty.call(this.WEAPON_MOUNTS_BY_KIND, kind));
+      const montures = parNom ? this.WEAPON_MOUNTS_BY_NAME[parNom].slice() : connu ? this.WEAPON_MOUNTS_BY_KIND[kind] : null;
+      const deduit = Array.isArray(montures) && montures.some((m) => this.WEAPON_MOUNTS_DEDUITS.includes(m));
+      return {
+        montures,
+        deduit,
+        note: (kind && this.WEAPON_MOUNTS_NOTES[kind]) || (montures ? (deduit ? "Crosse : ajoutée par déduction, le Livre de base ne la cite pour aucune catégorie" : null) : "montures non précisées pour ce type : les quatre sont supposées libres"),
+        source: parNom ? "Livre de base p.266" : "Livre de base p.261-268",
+      };
+    },
     WEAPON_MOD_SLOTS: {
       meleeWeapons: 2, armesJet: null, tasers: 2,
       pistoletsPoche: 0, pistoletsLegers: 3, pistoletsAutomatiques: 3, pistoletsLourds: 3,
@@ -1423,7 +1478,9 @@ Object.assign(EditionSR6, {
     },
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
-    accessoryConflicts(arme) {
+    /** L'affectation des accessoires d'une arme à ses montures : ce que
+        l'écran montre, monture par monture. */
+    accessoryMounts(arme) {
       const objets = [];
       for (const id of (arme && arme.mods) || []) {
         const a = this.accessoryById(id);
@@ -1432,10 +1489,24 @@ Object.assign(EditionSR6, {
         if (!a || a.montures === undefined) continue;
         objets.push({ id: a.id + "#" + objets.length, nom: a.nom, montures: a.montures });
       }
-      const r = Mounts.resolve(objets, this.WEAPON_MOUNTS);
-      if (r.ok) return [];
-      const prises = Object.entries(r.affectation).map(([id, m]) => `${m} (${objets.find((o) => o.id === id).nom})`);
-      return r.restants.map((o) => `${o.nom} ne trouve pas de monture libre — ${prises.length ? "prises : " + prises.join(", ") : "aucune monture disponible"}.`);
+      const wm = this.weaponMounts(arme);
+      const slots = wm.montures || this.WEAPON_MOUNTS.slice();
+      const r = Mounts.resolve(objets, slots);
+      const nomDe = (id) => (objets.find((o) => o.id === id) || {}).nom || null;
+      return {
+        connu: !!wm.montures,
+        note: wm.note,
+        occupation: r.occupation.map((o) => ({ monture: o.monture, nom: o.id ? nomDe(o.id) : null })),
+        restants: r.restants.map((o) => o.nom),
+        ok: r.ok,
+      };
+    },
+
+    accessoryConflicts(arme) {
+      const m = this.accessoryMounts(arme);
+      if (m.ok) return [];
+      const prises = m.occupation.filter((o) => o.nom).map((o) => `${o.monture} (${o.nom})`);
+      return m.restants.map((nom) => `${nom} ne trouve pas de monture libre — ${prises.length ? "prises : " + prises.join(", ") : "cette arme n'offre aucune monture"}.`);
     },
 
     /** Coût des accessoires montés sur tout l'équipement. */

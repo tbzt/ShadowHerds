@@ -1286,7 +1286,44 @@ Object.assign(EditionSR5, {
        disponibles. L'app ne porte pas cette table : le résolveur suppose les
        six — l'écran le dit, il ne le cache pas. */
     WEAPON_MOUNTS: ["Dessus", "Dessous", "Canon", "Côté", "Interne", "Crosse"],
-    WEAPON_MOUNTS_HINT: "Run & Gun p.69 réserve certains emplacements selon l'arme ; ici les six sont supposés libres.",
+
+    /* La TABLE DES EMPLACEMENTS de Run & Gun p.69, par catégorie d'arme —
+       lue sur la clé `kind` du catalogue. « Côté » n'existe que par « tous ».
+       ⚠ « Armes spéciales : discrétion du meneur de jeu » = null, pas une
+       liste inventée ; le catalogue n'a pas de clé pour les pistolets
+       mitrailleurs (au-dessus, canon, crosse, interne). Les armes de corps à
+       corps n'y figurent pas : la table ne parle que des armes à feu. */
+    WEAPON_MOUNTS_BY_KIND: {
+      electroarmes: ["Dessus", "Crosse", "Interne"],
+      pistoletsPoche: [],
+      pistoletsLegers: ["Dessus", "Canon", "Crosse", "Interne"],
+      pistoletsLourds: ["Dessus", "Canon", "Crosse", "Interne", "Dessous"],
+      mitraillettes: ["Dessus", "Canon", "Crosse", "Interne"],
+      fusilsAssaut: "*", shotguns: "*", mitrailleuses: "*", snipers: "*",
+      armesSpeciales: null, armesExotiques: null,
+      meleeWeapons: [],
+    },
+    WEAPON_MOUNTS_NOTES: {
+      pistoletsPoche: "aucun emplacement (Run & Gun p.69)",
+      armesSpeciales: "à la discrétion du meneur de jeu (Run & Gun p.69)",
+      armesExotiques: "à la discrétion du meneur de jeu (Run & Gun p.69)",
+      meleeWeapons: "la table de Run & Gun p.69 ne couvre que les armes à feu",
+    },
+
+    /** Les montures qu'une arme offre. `montures: null` = le livre ne le dit
+        pas pour ce type (ou le type est inconnu) : le résolveur suppose alors
+        les six, et l'écran le dit. */
+    weaponMounts(arme) {
+      const kind = arme && arme.kind;
+      const connu = kind && Object.prototype.hasOwnProperty.call(this.WEAPON_MOUNTS_BY_KIND, kind);
+      const brut = connu ? this.WEAPON_MOUNTS_BY_KIND[kind] : null;
+      const montures = brut === "*" ? this.WEAPON_MOUNTS.slice() : brut;
+      return {
+        montures,
+        note: (kind && this.WEAPON_MOUNTS_NOTES[kind]) || (montures ? null : "emplacements non précisés pour ce type : les six sont supposés libres (Run & Gun p.69)"),
+        source: "Run & Gun p.69",
+      };
+    },
 
     /** Les accessoires d'armes en trois groupes (accessoires, modifications,
         options), puis les mods de véhicule par catégorie de Rigger 5.0. Une
@@ -1329,7 +1366,9 @@ Object.assign(EditionSR5, {
     },
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
-    accessoryConflicts(arme) {
+    /** L'affectation des accessoires d'une arme à ses montures : ce que
+        l'écran montre, monture par monture. */
+    accessoryMounts(arme) {
       const objets = [];
       for (const id of (arme && arme.mods) || []) {
         const a = this.accessoryById(id);
@@ -1338,10 +1377,24 @@ Object.assign(EditionSR5, {
         if (!a || a.montures === undefined) continue;
         objets.push({ id: a.id + "#" + objets.length, nom: a.nom, montures: a.montures });
       }
-      const r = Mounts.resolve(objets, this.WEAPON_MOUNTS);
-      if (r.ok) return [];
-      const prises = Object.entries(r.affectation).map(([id, m]) => `${m} (${objets.find((o) => o.id === id).nom})`);
-      return r.restants.map((o) => `${o.nom} ne trouve pas de monture libre — ${prises.length ? "prises : " + prises.join(", ") : "aucune monture disponible"}.`);
+      const wm = this.weaponMounts(arme);
+      const slots = wm.montures || this.WEAPON_MOUNTS.slice();
+      const r = Mounts.resolve(objets, slots);
+      const nomDe = (id) => (objets.find((o) => o.id === id) || {}).nom || null;
+      return {
+        connu: !!wm.montures,
+        note: wm.note,
+        occupation: r.occupation.map((o) => ({ monture: o.monture, nom: o.id ? nomDe(o.id) : null })),
+        restants: r.restants.map((o) => o.nom),
+        ok: r.ok,
+      };
+    },
+
+    accessoryConflicts(arme) {
+      const m = this.accessoryMounts(arme);
+      if (m.ok) return [];
+      const prises = m.occupation.filter((o) => o.nom).map((o) => `${o.monture} (${o.nom})`);
+      return m.restants.map((nom) => `${nom} ne trouve pas de monture libre — ${prises.length ? "prises : " + prises.join(", ") : "cette arme n'offre aucune monture"}.`);
     },
 
     /** Coût des accessoires montés sur tout l'équipement. */

@@ -807,6 +807,11 @@
   border-color: var(--danger);
   color: var(--danger);
 }
+/* Monture libre : présente mais en retrait, pour que l'occupée ressorte. */
+.cg-tag-libre {
+  border-style: dashed;
+  opacity: 0.6;
+}
 @media (max-width: 700px) {
   .cg-pick-list { max-height: 50vh; }
   .cg-pick-cat { display: none; }

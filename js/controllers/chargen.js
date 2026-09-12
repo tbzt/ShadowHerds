@@ -1121,8 +1121,17 @@ export const CharGen = {
       if (e.note) morceaux.push(`<span class="cg-section-note">${this._esc(e.note)}</span>`);
       if (over) morceaux.push(`<p class="cg-hint">⚑ ${e.utilises - e.total} modification(s) de trop pour ce type d'arme.</p>`);
     }
-    if (c.WEAPON_MOUNTS_HINT && armes.some((a) => a.montures === "*" || (a.montures && a.montures.length))) {
-      morceaux.push(`<span class="cg-section-note">${this._esc(c.WEAPON_MOUNTS_HINT)}</span>`);
+    /* Les montures de l'arme, une puce chacune : occupée (par qui) ou libre.
+       Le module les tire de sa table par catégorie (Run & Gun p.69 ; Livre
+       de base SR6 p.261-268) ou d'une exception nommée ; s'il ne sait pas, il
+       le dit dans `note` et suppose toutes les montures. */
+    if (c.accessoryMounts && armes.some((a) => a.montures === "*" || (a.montures && a.montures.length))) {
+      const m = c.accessoryMounts(g);
+      const puces = m.occupation
+        .map((o) => `<span class="cg-pick-tag${o.nom ? "" : " cg-tag-libre"}" title="${this._esc(o.nom ? `${o.monture} : ${o.nom}` : `${o.monture} : libre`)}">${this._esc(o.monture)}${o.nom ? ` : ${this._esc(o.nom)}` : ""}</span>`)
+        .join("");
+      morceaux.push(puces || `<span class="cg-section-note">aucune monture sur cette arme</span>`);
+      if (m.note) morceaux.push(`<span class="cg-section-note">${this._esc(m.note)}</span>`);
     }
     return morceaux.length ? `<div class="cluster cg-add-row">${morceaux.join("")}</div>` : "";
   },

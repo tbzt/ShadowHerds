@@ -21,44 +21,49 @@
 
 export const Mounts = {
   /** @param objets  [{ id, nom, montures }]
-      @param slots   string[] — les montures que l'arme offre
-      @returns { ok, affectation: {id → monture}, restants: [objets sans place] } */
+      @param slots   string[] — les montures que l'arme offre. Un nom RÉPÉTÉ
+                     est une monture en plus (le Colt M23 offre trois
+                     « Dessous », Livre de base SR6 p.266) : chaque position
+                     de la liste est un emplacement distinct.
+      @returns { ok, affectation: {id → monture}, occupation: [{monture, id|null}],
+                 restants: [objets sans place] } */
   resolve(objets, slots) {
     const cand = (objets || []).filter((o) => o && (o.montures === "*" || (Array.isArray(o.montures) && o.montures.length)));
-    const opts = cand.map((o) => (o.montures === "*" ? slots.slice() : o.montures.filter((m) => slots.includes(m))));
-    // Les plus contraints d'abord : l'ordre qui échoue le plus tôt.
-    const ordre = cand.map((_, i) => i).sort((a, b) => opts[a].length - opts[b].length);
-    const essai = (indices) => {
-      const pris = new Map();
-      const aff = {};
-      const bt = (k) => {
-        if (k === indices.length) return true;
-        const i = indices[k];
-        for (const m of opts[i]) {
-          if (pris.has(m)) continue;
-          pris.set(m, cand[i].id);
-          aff[cand[i].id] = m;
-          if (bt(k + 1)) return true;
-          pris.delete(m);
-          delete aff[cand[i].id];
+    const positions = slots.map((_, i) => i);
+    const opts = cand.map((o) => positions.filter((i) => o.montures === "*" || o.montures.includes(slots[i])));
+    /* COUPLAGE MAXIMUM (chemins augmentants, Kuhn). Un objet est placé si un
+       chemin augmentant existe ; ceux qui n'en ont pas sont « restants ».
+
+       ⚠ Le premier repli — retirer les objets « du moins contraint au plus
+       contraint » jusqu'à ce que ça passe — évinçait un silencieux et une
+       visée quand un harnais de crosse n'avait AUCUNE option : il retirait
+       les deux autres avant lui, et l'écran disait « cette arme n'offre
+       aucune monture » devant deux montures libres. Le couplage maximum n'a
+       pas cette faute : chaque objet plaçable l'est. */
+    const ordre = cand.map((_, i) => i).sort((a, b) => opts[a].length - opts[b].length); // les plus contraints d'abord
+    const prisPar = new Map(); // position → index d'objet
+    const augmente = (i, vu) => {
+      for (const pos of opts[i]) {
+        if (vu.has(pos)) continue;
+        vu.add(pos);
+        if (!prisPar.has(pos) || augmente(prisPar.get(pos), vu)) {
+          prisPar.set(pos, i);
+          return true;
         }
-        return false;
-      };
-      return bt(0) ? aff : null;
+      }
+      return false;
     };
-    const tout = essai(ordre);
-    if (tout) return { ok: true, affectation: tout, restants: [] };
-    /* Sinon : garder le plus grand sous-ensemble plaçable, en retirant les
-       objets du moins contraint au plus contraint, un à la fois. Les retirés
-       sont « restants » — ce que l'écran doit nommer. */
-    const garde = ordre.slice();
-    const restants = [];
-    while (garde.length) {
-      const aff = essai(garde);
-      if (aff) return { ok: false, affectation: aff, restants };
-      const i = garde.pop(); // le moins contraint est en fin d'ordre
-      restants.push(cand[i]);
-    }
-    return { ok: false, affectation: {}, restants };
+    for (const i of ordre) augmente(i, new Set());
+    // les chemins augmentants réaffectent en cascade : relire qui est placé
+    const placeReel = new Set(prisPar.values());
+    const restants = cand.filter((_, i) => !placeReel.has(i));
+    const affectation = {};
+    for (const [pos, i] of prisPar) affectation[cand[i].id] = slots[pos];
+    return {
+      ok: restants.length === 0,
+      affectation,
+      occupation: slots.map((m, pos) => ({ monture: m, id: prisPar.has(pos) ? cand[prisPar.get(pos)].id : null })),
+      restants,
+    };
   },
 };
