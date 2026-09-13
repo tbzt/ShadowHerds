@@ -32,6 +32,7 @@ import { AccessoiresSR6 } from "./sr6.accessoires.js";
 import { ArmureModsSR6, ArmuresSR6 } from "./sr6.armuremods.js";
 import { Content } from "../rules/content.js";
 import { Mounts } from "../rules/mounts.js";
+import { ModRefs } from "../rules/modrefs.js";
 import { Magic } from "../rules/magic.js";
 import { EditionSR6 } from "./sr6.js";
 import { TraitsSR6 } from "./sr6.traits.js";
@@ -1276,19 +1277,28 @@ Object.assign(EditionSR6, {
         formule (« 1 × Indice ») que l'app ne résout pas, ou rien au livre. Les
         compter 0 rendrait une réserve verte à tort — le « faux vert ». Ils
         sont rendus à part, et l'écran doit les nommer. */
+    /** Ce qu'on sait pour évaluer une formule du livre sur CET objet : son
+        indice choisi, et la base du porteur (Résistance). */
+    modVars(gear, ref) {
+      return { indice: ModRefs.indice(ref), base: gear && gear[this.MOD_RESERVE.key] != null && gear[this.MOD_RESERVE.key] !== "" ? Number(gear[this.MOD_RESERVE.key]) : null };
+    },
+
     vehicleModState(vehicule) {
       const res = Number(vehicule && vehicule[this.MOD_RESERVE.key]) || 0;
       const pris = {};
       const indetermines = [];
       for (const f of this.MOD_FAMILIES) pris[f] = 0;
-      for (const id of (vehicule && vehicule.mods) || []) {
-        const m = this.accessoryById(id);
+      for (const ref of ModRefs.normalize(vehicule && vehicule.mods)) {
+        const m = this.accessoryById(ModRefs.id(ref));
         if (!m || !m.famille) continue; // accessoire : aucun emplacement
-        if (m.emplacements == null) {
+        /* « 1 × Indice », « Résistance/2 » : résolus avec l'indice de CET
+           objet et la base du véhicule ; sans eux, nommés, pas comptés 0. */
+        const e = ModRefs.resolve(m.emplacements, m.emplacementsNote, this.modVars(vehicule, ref));
+        if (e == null) {
           indetermines.push({ nom: m.nom, famille: m.famille, note: m.emplacementsNote || "non précisé au livre" });
           continue;
         }
-        pris[m.famille] = (pris[m.famille] || 0) + m.emplacements;
+        pris[m.famille] = (pris[m.famille] || 0) + e;
       }
       return {
         reserves: this.MOD_FAMILIES.map((f) => ({
@@ -1434,8 +1444,8 @@ Object.assign(EditionSR6, {
       const total = connu ? this.WEAPON_MOD_SLOTS[kind] : null;
       let utilises = 0;
       const pris = [];
-      for (const id of (arme && arme.mods) || []) {
-        const a = this.accessoryById(id);
+      for (const ref of ModRefs.normalize(arme && arme.mods)) {
+        const a = this.accessoryById(ModRefs.id(ref));
         if (!a || a.montures === undefined || !a.emplacements) continue; // accessoire sur monture, ou mod de véhicule
         utilises += a.emplacements;
         pris.push(a.nom);
@@ -1509,12 +1519,13 @@ Object.assign(EditionSR6, {
       let utilises = 0;
       const pris = [];
       const indetermines = [];
-      for (const id of (armure && armure.mods) || []) {
-        const a = this.accessoryById(id);
+      for (const ref of ModRefs.normalize(armure && armure.mods)) {
+        const a = this.accessoryById(ModRefs.id(ref));
         if (!a || !Object.prototype.hasOwnProperty.call(a, "capacite")) continue; // pas un objet d'armure
-        if (a.capacite == null) { indetermines.push({ nom: a.nom, note: a.capaciteNote || "non précisé" }); continue; }
-        utilises += a.capacite;
-        if (a.capacite) pris.push(a.nom);
+        const cap = ModRefs.resolve(a.capacite, a.capaciteNote, this.modVars(armure, ref)); // « [Indice] » : l'indice choisi
+        if (cap == null) { indetermines.push({ nom: a.nom, note: a.capaciteNote || "non précisé" }); continue; }
+        utilises += cap;
+        if (cap) pris.push(a.nom);
       }
       return { total: Number.isFinite(total) ? total : null, utilises, pris, indetermines };
     },
@@ -1525,8 +1536,8 @@ Object.assign(EditionSR6, {
         l'écran montre, monture par monture. */
     accessoryMounts(arme) {
       const objets = [];
-      for (const id of (arme && arme.mods) || []) {
-        const a = this.accessoryById(id);
+      for (const ref of ModRefs.normalize(arme && arme.mods)) {
+        const a = this.accessoryById(ModRefs.id(ref));
         /* ⚠ La règle des montures ne vaut QUE pour les accessoires d'armes.
            Les modifications de véhicule n'ont pas de point de fixation. */
         if (!a || a.montures === undefined) continue;
@@ -1556,9 +1567,12 @@ Object.assign(EditionSR6, {
     accessoryCost(build) {
       let n = 0;
       for (const g of build.gear || []) {
-        for (const id of g.mods || []) {
-          const a = this.accessoryById(id);
-          if (a && a.cout != null) n += a.cout;
+        for (const ref of ModRefs.normalize(g.mods)) {
+          const a = this.accessoryById(ModRefs.id(ref));
+          if (!a) continue;
+          // « Indice × 250 ¥ », « Résistance x 1 000¥ » : comptés dès qu'on sait.
+          const c = ModRefs.resolve(a.cout, a.coutNote, this.modVars(g, ref));
+          if (c != null) n += c;
         }
       }
       return n;
@@ -2085,7 +2099,17 @@ Object.assign(EditionSR6, {
           const ref = this.traitById(t.id);
           return ref ? `${ref.nom} (${t.karma ?? ref.karma})` : t.id;
         }),
-        equip: (build.gear || []).map((g) => g.name),
+        /* ⚠ Les accessoires choisis restaient dans le brouillon : la fiche ne
+           recevait que le nom de l'objet. Ils voyagent maintenant avec lui,
+           en clair — « Ares Predator V (Lunette de visée, Silencieux) ». */
+        equip: (build.gear || []).map((g) => {
+          const mods = ModRefs.normalize(g.mods).map((ref) => {
+            const a = this.accessoryById(ModRefs.id(ref));
+            const n = ModRefs.indice(ref);
+            return a ? `${a.nom}${n ? " " + n : ""}` : null;
+          }).filter(Boolean);
+          return mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+        }),
         awakened: build.awakened || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
         tradition: build.tradition || null,

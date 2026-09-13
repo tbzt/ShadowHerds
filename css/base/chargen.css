@@ -807,6 +807,24 @@
   border-color: var(--danger);
   color: var(--danger);
 }
+/* Une puce de mod posé : nom, indice à choisir s'il y a lieu, retrait. */
+.cg-mod-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+.cg-mod-indice {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-xs);
+  opacity: 0.85;
+}
+.cg-mod-tag .btn-icon-tiny {
+  min-width: 22px;
+  min-height: 22px;
+}
 /* Monture libre : présente mais en retrait, pour que l'occupée ressorte. */
 .cg-tag-libre {
   border-style: dashed;

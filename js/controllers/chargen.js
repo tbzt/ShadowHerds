@@ -38,6 +38,7 @@ import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Dialog } from "../widgets/kit/dialog.js";
+import { ModRefs } from "../rules/modrefs.js";
 import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";
@@ -1035,14 +1036,26 @@ export const CharGen = {
            l'endroit où il se produit, pas dans un message global : deux
            accessoires « Dessous » sur la même arme, c'est cette arme-là qui
            est en faute. */
-        const mods = g.mods || [];
+        /* Un mod est `{ id, indice }` (js/rules/modrefs.js). Le brouillon est
+           mis à cette forme ici, une fois pour toutes : les anciens (ids nus)
+           n'ont pas besoin de migration, ils sont relus tels quels. */
+        g.mods = ModRefs.normalize(g.mods);
+        const mods = g.mods;
         const conflits = c.accessoryConflicts ? c.accessoryConflicts(g) : [];
         const tags = mods
-          .map((id) => {
-            const a = c.accessoryById(id);
-            return a
-              ? `<button class="cg-pick-tag" data-cg-action="remove-mod" data-idx="${i}" data-mod="${this._esc(id)}" title="Retirer">${this._esc(a.nom)}${a.monture && a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""} ✕</button>`
+          .map((ref, k) => {
+            const a = c.accessoryById(ModRefs.id(ref));
+            if (!a) return "";
+            /* Un objet à indice (« Autopilote amélioré », « Protection ignifuge ») :
+               son indice se choisit ICI, borné par la plage du livre s'il y en a
+               une. C'est lui qui résout « 1 × Indice », « [Indice] », « Indice
+               × 250 ¥ » — sans lui, l'objet est nommé, pas compté. */
+            const plage = ModRefs.indiceRange(a);
+            const indice = ModRefs.usesIndice(a)
+              ? `<label class="cg-mod-indice" title="Indice de cet objet${plage ? ` (${plage.min}–${plage.max})` : ""}">i
+                  <input type="number" data-cg="gear.${i}.mods.${k}.indice" value="${ref.indice ?? ""}" min="${plage ? plage.min : 1}"${plage ? ` max="${plage.max}"` : ""} style="width:3.2em"></label>`
               : "";
+            return `<span class="cg-pick-tag cg-mod-tag">${this._esc(a.nom)}${a.monture && a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""}${indice}<button class="btn-icon-tiny" data-cg-action="remove-mod" data-idx="${i}" data-k="${k}" title="Retirer">✕</button></span>`;
           })
           .join("");
         /* ⚠ TOUS les groupes du catalogue, chacun dans son <optgroup>. Ne
@@ -1109,8 +1122,8 @@ export const CharGen = {
      choix, ou se saisit. Un coût « [Indice] » est nommé, pas compté 0. */
   _armorCapacity(c, g, i) {
     if (!c.armorCapacityState || !c.ARMOR_RESERVE) return "";
-    const armure = (g.mods || []).some((id) => {
-      const a = c.accessoryById(id);
+    const armure = ModRefs.normalize(g.mods).some((ref) => {
+      const a = c.accessoryById(ModRefs.id(ref));
       return a && Object.prototype.hasOwnProperty.call(a, "capacite");
     });
     if (!armure) return "";
@@ -1135,7 +1148,7 @@ export const CharGen = {
      lieu d'afficher 0/0. Le rappel sur les montures vient aussi du module :
      l'app suppose toutes les montures libres, ce qui n'est pas la règle. */
   _weaponSlots(c, g) {
-    const armes = (g.mods || []).map((id) => c.accessoryById(id)).filter((a) => a && a.montures !== undefined);
+    const armes = ModRefs.normalize(g.mods).map((ref) => c.accessoryById(ModRefs.id(ref))).filter((a) => a && a.montures !== undefined);
     if (!armes.length) return "";
     const morceaux = [];
     if (c.weaponModState) {
@@ -1181,8 +1194,8 @@ export const CharGen = {
        une capacité (armure), sinon un mod de véhicule. « Pas de monture »
        seul faisait passer une modification d'armure pour un mod de véhicule,
        et l'écran alignait six réserves à 0/0 sous une veste pare-balles. */
-    const deVehicule = (g.mods || []).some((id) => {
-      const a = c.accessoryById(id);
+    const deVehicule = ModRefs.normalize(g.mods).some((ref) => {
+      const a = c.accessoryById(ModRefs.id(ref));
       return a && a.montures === undefined && !Object.prototype.hasOwnProperty.call(a, "capacite");
     });
     if (!deVehicule) return "";
@@ -2132,8 +2145,12 @@ export const CharGen = {
         const id = sel && sel.value;
         const g = (b.gear || [])[i];
         if (g && id) {
-          g.mods = g.mods || [];
-          if (!g.mods.includes(id)) g.mods.push(id);
+          g.mods = ModRefs.normalize(g.mods);
+          const a = c.accessoryById(id);
+          const plage = a && ModRefs.indiceRange(a);
+          // Le même mod peut se poser deux fois (deux Dessous sur un M23) :
+          // on n'écarte plus le doublon, on retire par position.
+          g.mods.push(a && ModRefs.usesIndice(a) ? { id, indice: plage ? plage.min : 1 } : { id });
           afterMutate();
         }
         break;
@@ -2141,7 +2158,7 @@ export const CharGen = {
       case "remove-mod": {
         const g = (b.gear || [])[Number(el.dataset.idx)];
         if (g && g.mods) {
-          g.mods = g.mods.filter((x) => x !== el.dataset.mod);
+          g.mods = ModRefs.normalize(g.mods).filter((_, k) => k !== Number(el.dataset.k));
           afterMutate();
         }
         break;
