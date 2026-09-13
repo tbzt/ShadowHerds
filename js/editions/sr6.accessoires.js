@@ -90,7 +90,7 @@ export const AccessoiresSR6 = [
   { id: "systeme_de_tir_securise_iae", nom: "Système de tir sécurisé IAE", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "3 (L)", cout: 400, source: "Feu nourri p.53" },
   { id: "systeme_pneumatique_ameliore", nom: "Système pneumatique (amélioré)", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "3", cout: 600, source: "Feu nourri p.54" },
   { id: "verrouillage_biometrique", nom: "Verrouillage biométrique", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "2 (L)", cout: 100, source: "Feu nourri p.54" },
-  { id: "adaptation_pour_metahumains", nom: "Adaptation pour métahumains", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "3", cout: null, coutNote: "+10%", source: "Feu nourri p.43" },
+  { id: "adaptation_pour_metahumains_arme", nom: "Adaptation pour métahumains", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "3", cout: null, coutNote: "+10%", source: "Feu nourri p.43" },
   { id: "adhesif_gecko", nom: "Adhésif gecko", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "2", cout: 90, source: "Feu nourri p.44" },
   { id: "allegement", nom: "Allègement", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "3", cout: 175, source: "Feu nourri p.45" },
   { id: "bricolee", nom: "Bricolée", type: "modification", monture: "—", montures: [], emplacements: 1, dispo: "—", cout: null, coutNote: "trait de l'arme, pas un achat", source: "Feu nourri p.45" },

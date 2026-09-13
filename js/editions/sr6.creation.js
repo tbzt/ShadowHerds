@@ -29,6 +29,7 @@
    ============================================================ */
 import { VehiculeModsSR6 } from "./sr6.vehiculemods.js";
 import { AccessoiresSR6 } from "./sr6.accessoires.js";
+import { ArmureModsSR6, ArmuresSR6 } from "./sr6.armuremods.js";
 import { Content } from "../rules/content.js";
 import { Mounts } from "../rules/mounts.js";
 import { Magic } from "../rules/magic.js";
@@ -1456,6 +1457,11 @@ Object.assign(EditionSR6, {
         category: nom,
         items: AccessoiresSR6.filter((a) => a.type === t).map((a) => ({ id: a.id, label: a.nom, detail: arme(a) })),
       })).filter((g) => g.items.length);
+      const capa = (m) => (m.capacite == null ? `capacité ${m.capaciteNote}` : m.capacite ? `capacité ${m.capacite}` : "aucune capacité");
+      groupesArmes.push({
+        category: "Modifications d'armure",
+        items: ArmureModsSR6.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), `Disp. ${m.dispo}`, argent(m), m.source].filter(Boolean).join(" · ") })),
+      });
       const places = (m) => {
         if (!m.famille) return "accessoire, aucun emplacement";
         if (m.emplacements != null) return `${m.emplacements} empl. ${m.famille}`;
@@ -1477,8 +1483,42 @@ Object.assign(EditionSR6, {
     },
 
     accessoryById(id) {
-      return AccessoiresSR6.find((a) => a.id === id) || VehiculeModsSR6.find((m) => m.id === id) || null;
+      return AccessoiresSR6.find((a) => a.id === id) || VehiculeModsSR6.find((m) => m.id === id) || ArmureModsSR6.find((m) => m.id === id) || null;
     },
+
+    /* ---- Modifications d'armure : CAPACITÉ (Livre de base p.275) ----
+       « La Capacité d'une protection est indiquée sur la table Armures. Les
+       modifications d'armure ont un coût en Capacité égal à leur indice. »
+
+       ⚠ Contrairement à SR5, la Capacité n'est PAS l'indice d'armure : c'est
+       une valeur propre à chaque armure, que le catalogue (« Nom [SD+N] ») ne
+       porte pas. `armorReserveFor` la lit par NOM dans `ArmuresSR6` au moment
+       du choix ; inconnue → null, et l'écran demande la saisie.
+       ⚠ Un coût « [Indice] » dépend de l'indice choisi : NOMMÉ, pas compté 0. */
+    ARMOR_RESERVE: { key: "capacite", label: "Capacité", hint: "Capacité de la protection, lue sur la table Armures (Livre de base p.274, Feu nourri p.152)" },
+
+    armorReserveFor(item) {
+      const nom = String((item && item.name) || "").trim().toLowerCase();
+      const a = ArmuresSR6.find((x) => x.nom.toLowerCase() === nom);
+      return a && typeof a.capacite === "number" ? a.capacite : null;
+    },
+
+    armorCapacityState(armure) {
+      const brut = armure && armure[this.ARMOR_RESERVE.key];
+      const total = brut == null || brut === "" ? null : Number(brut);
+      let utilises = 0;
+      const pris = [];
+      const indetermines = [];
+      for (const id of (armure && armure.mods) || []) {
+        const a = this.accessoryById(id);
+        if (!a || !Object.prototype.hasOwnProperty.call(a, "capacite")) continue; // pas un objet d'armure
+        if (a.capacite == null) { indetermines.push({ nom: a.nom, note: a.capaciteNote || "non précisé" }); continue; }
+        utilises += a.capacite;
+        if (a.capacite) pris.push(a.nom);
+      }
+      return { total: Number.isFinite(total) ? total : null, utilises, pris, indetermines };
+    },
+
 
     /** Les montures déjà prises sur une arme, et donc les conflits. */
     /** L'affectation des accessoires d'une arme à ses montures : ce que

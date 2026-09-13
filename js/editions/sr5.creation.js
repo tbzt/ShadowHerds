@@ -1391,6 +1391,14 @@ Object.assign(EditionSR5, {
        l'app ne porte pas par objet : NOMMÉ, pas compté 0. */
     ARMOR_RESERVE: { key: "armure", label: "Armure", hint: "sa Capacité en vaut autant (Livre de Règles p.437)" },
 
+    /** La réserve d'une armure au moment du choix : son indice d'Armure, lu
+        sur la ligne de stats du catalogue (« Veste pare-balles [9] ») quand
+        c'est un simple nombre. « 4/6/8/10/12 » → null : à saisir, pas deviné. */
+    armorReserveFor(item) {
+      const d = String((item && item.detail) || "").trim();
+      return /^\d+$/.test(d) ? Number(d) : null;
+    },
+
     armorCapacityState(armure) {
       const total = Number(armure && armure[this.ARMOR_RESERVE.key]);
       let utilises = 0;

@@ -1121,7 +1121,7 @@ export const CharGen = {
     return `<div class="cluster cg-add-row">
       <span class="cg-section-note">${this._esc(base.label)}</span>
       <input type="number" min="0" data-cg="gear.${i}.${this._esc(base.key)}" value="${val ?? ""}" style="width:4.5em" title="${this._esc(base.hint)}">
-      <span class="cg-pick-tag${over ? " cg-tag-over" : ""}" title="${this._esc(e.pris.join(", ") || "rien d'installé")}">Capacité ${e.utilises}/${e.total == null ? "?" : e.total}</span>
+      <span class="cg-pick-tag${over ? " cg-tag-over" : ""}" title="${this._esc(e.pris.join(", ") || "rien d'installé")}">Utilisée ${e.utilises}/${e.total == null ? "?" : e.total}</span>
     </div>
     ${val == null ? `<p class="cg-hint">Saisis l'indice d'Armure : ${this._esc(base.hint)}</p>` : ""}
     ${over ? `<p class="cg-hint">⚑ ${e.utilises - e.total} point(s) de capacité de trop pour cette protection.</p>` : ""}
@@ -2153,13 +2153,14 @@ export const CharGen = {
         // dit le TYPE de l'arme, donc ses emplacements de modification.
         if (!b.gear.some((g) => g.name === nom)) {
           const item = { name: nom, cost: 0, ...(el.dataset.kind ? { kind: el.dataset.kind } : {}) };
-          /* Une armure porte son indice dans la ligne de stats du catalogue
-             (« Veste pare-balles [9] ») : on le garde, c'est sa Capacité. Un
-             détail qui n'est pas un simple nombre (« 4/6/8/10/12 ») reste à
-             saisir — on n'invente pas. */
-          if (c.ARMOR_RESERVE && el.dataset.kind === "armures") {
+          /* La réserve d'une armure se lit au moment du choix — l'indice
+             d'Armure sur la ligne de stats en SR5, la Capacité par nom en
+             SR6 : c'est le module qui sait où, `armorReserveFor`. Inconnue →
+             rien n'est écrit, l'écran demande la saisie. */
+          if (c.ARMOR_RESERVE && c.armorReserveFor && el.dataset.kind === "armures") {
             const ref = (c.gearCatalog() || []).flatMap((g) => g.items).find((x) => x.label === nom);
-            if (ref && /^\d+$/.test(String(ref.detail || "").trim())) item[c.ARMOR_RESERVE.key] = Number(ref.detail);
+            const base = c.armorReserveFor({ name: nom, detail: ref && ref.detail });
+            if (base != null) item[c.ARMOR_RESERVE.key] = base;
           }
           b.gear.push(item);
         }
