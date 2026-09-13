@@ -4532,6 +4532,41 @@ export const EditionSR6 = {
         "Résistance au feu [Indice, neutralise Enflammé]",
         "Résistance au froid [Indice, neutralise Frigorifié]",
       ],
+      /* ---- supplements ---- Feu nourri p.152 : les armures absentes du Livre de base, aux NOMS EXACTS de la
+         table pour que `armorReserveFor` retrouve leur capacité (ArmuresSR6). Les titres
+         de collection déjà présents (« Collections Ares Victory ») restent : ce sont eux
+         qu'on détaille ici. Généré par REFERENCE/accessoires-armures/genere_pools.py. */
+      supplements: [
+        "Ace of Clubs [SD+3, SS+3, Capacité 7]",
+        "Ace of Coins [SD+3, SS+6, Capacité 6]",
+        "Ace of Cups [SD+4, SS+3, Capacité 8]",
+        "Ace of Diamonds [SD+4, SS+3, Capacité 7]",
+        "Ace of Hearts [SD+3, SS+4, Capacité 7]",
+        "Ace of Spades [SD+3, SS+3, Capacité 8]",
+        "Ace of Swords [SD+3, SS+2, Capacité 6]",
+        "Ace of Wands [SD+3, SS+4, Capacité 9]",
+        "Ares \"Bug Stomper\" [SD+8, SS-10, Capacité 12]",
+        "Ares \"Bug Stomper\" — Casque [SD+2, SS-4, Capacité 6]",
+        "Armure de classe militaire — Légère [SD+8, SS-6, Capacité 10]",
+        "Armure de classe militaire — Moyenne [SD+9, SS-7, Capacité 12]",
+        "Armure de classe militaire — Lourde [SD+10, SS-8, Capacité 14]",
+        "Armure de classe militaire — Casque [SD+2, SS-4, Capacité 8]",
+        "Armure de sécurité — Casque [SD+2, SS-4, Capacité 6]",
+        "Collection Synergist [SD+2, SS+3, Capacité 4]",
+        "Globetrotter [SD+2, SS+1, Capacité 4]",
+        "Mortimer of London — Costume Berwick [SD+3, SS+4, Capacité 7]",
+        "Mortimer of London — Costume Crimson Sky [SD+3, SS+5, Capacité 6]",
+        "Mortimer of London — Costume Summit [SD+3, SS+4, Capacité 6]",
+        "Mortimer of London — Diamant [SD+2, SS+2, Capacité 2]",
+        "Mortimer of London — Manteau [SD+4, SS+4, Capacité 7]",
+        "Rapid Transit — Basique [SD+2, SS-1, Capacité 2]",
+        "Rapid Transit — Élite [SD+2, Capacité 2]",
+        "Rapid Transit — Platine [SD+2, SS+1, Capacité 2]",
+        "Rapid Transit — Diamant [SD+2, SS+2, Capacité 2]",
+        "Sleeping Tiger [SD+3, SS+5, Capacité 6]",
+        "Steampunk [SD+4, SS+4, Capacité 10]",
+        "Wild Hunt [SD+3, SS-2, Capacité 8]",
+      ],
     },
     // Grenades/roquettes/explosifs p.272-273 (absents de la sélection initiale).
     grenades: [

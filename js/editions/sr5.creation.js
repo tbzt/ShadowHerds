@@ -29,7 +29,7 @@
    ============================================================ */
 import { VehiculeModsSR5 } from "./sr5.vehiculemods.js";
 import { AccessoiresSR5 } from "./sr5.accessoires.js";
-import { ArmureModsSR5, ArmureCapaciteSR5 } from "./sr5.armuremods.js";
+import { ArmureModsSR5, ArmureCapaciteSR5, ArmuresSR5 } from "./sr5.armuremods.js";
 import { Content } from "../rules/content.js";
 import { Mounts } from "../rules/mounts.js";
 import { Magic } from "../rules/magic.js";
@@ -1389,12 +1389,19 @@ Object.assign(EditionSR5, {
        (« Veste pare-balles [9] ») quand il est un nombre, saisi sinon.
        ⚠ Un coût en capacité « [Indice] » dépend de l'indice choisi, que
        l'app ne porte pas par objet : NOMMÉ, pas compté 0. */
-    ARMOR_RESERVE: { key: "armure", label: "Armure", hint: "sa Capacité en vaut autant (Livre de Règles p.437)" },
+    ARMOR_RESERVE: { key: "capacite", label: "Capacité", hint: "égale à l'indice d'Armure (Livre de Règles p.437), sauf capacité propre donnée par Run & Gun (p.223-224)" },
 
-    /** La réserve d'une armure au moment du choix : son indice d'Armure, lu
-        sur la ligne de stats du catalogue (« Veste pare-balles [9] ») quand
-        c'est un simple nombre. « 4/6/8/10/12 » → null : à saisir, pas deviné. */
+    /** La réserve d'une armure au moment du choix. Run & Gun (p.223-224)
+        donne à certaines armures une capacité PROPRE, différente de leur
+        indice (Ace of Coins : armure 7, capacité 10) : elle prime, lue par
+        nom dans `ArmuresSR5`. Sinon la règle p.437 : l'indice d'Armure, lu
+        sur la ligne de stats (« Veste pare-balles [9] ») quand c'est un simple
+        nombre. « 4/6/8/10/12 » → null : à saisir, pas deviné. */
     armorReserveFor(item) {
+      const nom = String((item && item.name) || "").trim().toLowerCase();
+      const a = ArmuresSR5.find((x) => x.nom.toLowerCase() === nom);
+      if (a && typeof a.capacite === "number") return a.capacite;
+      if (a && a.capaciteNote) return null; // « Armure / 2 » (Heritage) : dépend de l'indice choisi
       const d = String((item && item.detail) || "").trim();
       return /^\d+$/.test(d) ? Number(d) : null;
     },
