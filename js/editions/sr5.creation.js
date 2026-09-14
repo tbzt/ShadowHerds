@@ -501,6 +501,37 @@ Object.assign(EditionSR5, {
       return (val("INT") + val("LOG")) * 2;
     },
 
+    /** Création par Karma : ce que les connaissances coûtent AU-DELÀ des
+        points gratuits. Un point gratuit paie un rang (p.93) ; les rangs
+        suivants coûtent le nouvel indice × 1 (p.107). Les points couvrent
+        donc les PREMIERS rangs d'une connaissance — on ne « saute » pas un
+        rang — et le joueur les répartit comme il veut : on retient la
+        répartition qui lui coûte le moins de karma (les rangs les plus
+        chers couverts en priorité, connaissance par connaissance). Petit
+        sac à dos : au plus quelques dizaines de points, une poignée de
+        connaissances. Rend `{free, ranks, covered, karma}`. */
+    knowledgeKarma(build) {
+      const kc = this.karmaCosts;
+      const free = this.knowledgePointsTotal(build);
+      const vals = (build.knowledges || []).map((k) => Math.max(1, k.val || 1));
+      const ranks = vals.reduce((n, v) => n + v, 0);
+      const plein = vals.reduce((n, v) => n + this.karmaForSkill(v, kc.knowledgeMult), 0);
+      // best[c] = plus grande somme de « nouveaux indices » couverts avec c points.
+      let best = new Array(free + 1).fill(0);
+      for (const v of vals) {
+        const next = best.slice();
+        for (let c = 0; c <= free; c++) {
+          for (let j = 1; j <= v && j <= c; j++) {
+            const gain = best[c - j] + this.karmaForSkill(j, kc.knowledgeMult);
+            if (gain > next[c]) next[c] = gain;
+          }
+        }
+        best = next;
+      }
+      const couvert = Math.max(...best);
+      return { free, ranks, covered: Math.min(ranks, free), karma: plein - couvert };
+    },
+
     knowledgePointsUsed(build) {
       // Un rang de connaissance acheté au karma (finition) ne consomme pas
       // les points gratuits — même parti que pour attributs et compétences.
@@ -1037,9 +1068,17 @@ Object.assign(EditionSR5, {
         const base = offert.groups[g.name] || 0;
         sum += this.karmaForSkill(g.val || 0, kc.groupMult) - this.karmaForSkill(base, kc.groupMult);
       }
-      for (const k of build.knowledges || []) {
-        const base = offert.knowledges[k.name] || 0;
-        sum += this.karmaForSkill(k.val || 1, kc.knowledgeMult) - this.karmaForSkill(base, kc.knowledgeMult);
+      if (this.methods[build.method]?.family === "karma") {
+        /* Création par Karma : « vous bénéficiez de points gratuits pour les
+           compétences de connaissances et de langues » (RF p.140 → LdR p.93,
+           (INT + LOG) × 2). Tout était facturé au tarif de progression —
+           un sur-coût sur chaque personnage créé par cette méthode. */
+        sum += this.knowledgeKarma(build).karma;
+      } else {
+        for (const k of build.knowledges || []) {
+          const base = offert.knowledges[k.name] || 0;
+          sum += this.karmaForSkill(k.val || 1, kc.knowledgeMult) - this.karmaForSkill(base, kc.knowledgeMult);
+        }
       }
       sum += (build.spells || []).length * kc.spell;
       sum += (build.complexForms || []).length * kc.complexForm;
@@ -1310,6 +1349,48 @@ Object.assign(EditionSR5, {
         rate: this.KARMA_TO_NUYEN,
         nuyen: nuyenKarma * this.KARMA_TO_NUYEN,
       };
+    },
+
+    /** L'économie de l'étape Compétences, dite par le module : des POINTS de
+        colonne en priorités, du KARMA aux coûts de progression en création
+        par Karma ou à modules. L'écran affichait « 0 / 46 » et « 0 / 10 » à
+        un personnage créé par Karma — les colonnes d'une grille qu'il n'a
+        jamais choisie. */
+    skillsEconomy(build) {
+      const fam = this.methods[build.method]?.family;
+      const kc = this.karmaCosts;
+      const [indiv, groups] = this.skillPointsTotal(build);
+      if (fam === "priority") {
+        return {
+          points: true,
+          hint: `${indiv} points de compétences et ${groups} points de groupes. Indice maximum ${this.SKILL_CAP}, 7 avec Aptitude. Une spécialisation coûte 1 point.`,
+          indiv: `${this.skillPointsUsed(build)} / ${indiv}`,
+          groups: `${this.groupPointsUsed(build)} / ${groups}`,
+          groupsAllowed: groups > 0,
+        };
+      }
+      const n = (build.skills || []).length;
+      const g = (build.groups || []).length;
+      return {
+        points: false,
+        hint: `Chaque rang coûte le nouvel indice × ${kc.skillMult} (un groupe × ${kc.groupMult}, une spécialisation ${kc.specialization}), sur le karma. Indice maximum ${this.SKILL_CAP}, 7 avec Aptitude.`,
+        indiv: `${n} compétence${n > 1 ? "s" : ""}`,
+        groups: `${g} groupe${g > 1 ? "s" : ""}`,
+        groupsAllowed: true,
+      };
+    },
+
+    /** Le compte des connaissances, tel que l'étape Compétences l'affiche :
+        points gratuits, et — en création par Karma — le karma facturé
+        au-delà. */
+    knowledgeSummary(build) {
+      const used = this.knowledgePointsUsed(build);
+      const total = this.knowledgePointsTotal(build);
+      if (this.methods[build.method]?.family === "karma") {
+        const kk = this.knowledgeKarma(build);
+        return `${used} / ${total} points gratuits — (INT + LOG) × 2${kk.karma ? ` · ${kk.karma} karma au-delà` : ""}`;
+      }
+      return `${used} / ${total} — (INT + LOG) × 2`;
     },
 
     /** Ce que le karma de finition peut monter : attributs, spéciaux, puis
@@ -2344,7 +2425,9 @@ Object.assign(EditionSR5, {
 
       const kUsed = this.knowledgePointsUsed(build);
       const kTotal = this.knowledgePointsTotal(build);
-      if (kUsed > kTotal) {
+      // En création par Karma, l'au-delà n'est pas une faute : il est facturé
+      // (`knowledgeKarma`). En priorités, il se paie à l'étape Karma.
+      if (kUsed > kTotal && method.family !== "karma") {
         out.skills.push(`Trop de points de connaissances (${kUsed}/${kTotal} = (INT + LOG) × 2).`);
       }
 

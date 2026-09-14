@@ -682,7 +682,8 @@ export const CharGen = {
   _render_skills_sr() {
     const c = this._creation();
     const b = this._build;
-    const [indivTotal, groupTotal] = c.skillPointsTotal(b);
+    // Points de colonne ou karma : c'est le module qui le dit.
+    const eco = c.skillsEconomy(b);
     const cat = c.skillCatalog();
     const taken = new Set((b.skills || []).map((s) => s.name));
     const cap = c.SKILL_CAP;
@@ -744,25 +745,25 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("skills")}
-      <p class="cg-hint">${indivTotal} points de compétences et ${groupTotal} points de groupes. Indice maximum ${cap}, 7 avec Aptitude. Une spécialisation coûte 1 point.</p>
-      <div class="cg-section-label">Compétences actives <span class="cg-section-note">${c.skillPointsUsed(b)} / ${indivTotal}</span></div>
+      <p class="cg-hint">${this._esc(eco.hint)}</p>
+      <div class="cg-section-label">Compétences actives <span class="cg-section-note">${this._esc(eco.indiv)}</span></div>
       ${skillRows || '<p class="cg-hint">Aucune compétence.</p>'}
       <div class="cluster cg-add-row">
         <select id="cg-sr-skill-pick">${skillOpts || "<option>— toutes prises —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-skill-sr">＋ Ajouter</button>
       </div>
-      <div class="cg-section-label">Groupes de compétences <span class="cg-section-note">${c.groupPointsUsed(b)} / ${groupTotal}</span></div>
+      <div class="cg-section-label">Groupes de compétences <span class="cg-section-note">${this._esc(eco.groups)}</span></div>
       ${groupRows}
       <div class="cluster cg-add-row">
-        <select id="cg-sr-group-pick" ${groupTotal ? "" : "disabled"}>${groupOpts}</select>
-        <button class="btn-secondary btn-small" data-cg-action="add-group" ${groupTotal ? "" : "disabled"}>＋ Ajouter</button>
+        <select id="cg-sr-group-pick" ${eco.groupsAllowed ? "" : "disabled"}>${groupOpts}</select>
+        <button class="btn-secondary btn-small" data-cg-action="add-group" ${eco.groupsAllowed ? "" : "disabled"}>＋ Ajouter</button>
         ${
-          groupTotal
+          eco.groupsAllowed
             ? ""
             : `<span class="cg-section-note">La colonne « ${this._esc(b.priorities.skills)} » n'accorde aucun point de groupe : prenez A, B ou C pour en acheter.</span>`
         }
       </div>
-      <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">${c.knowledgePointsUsed(b)} / ${c.knowledgePointsTotal(b)} — (INT + LOG) × 2</span></div>
+      <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">${this._esc(c.knowledgeSummary ? c.knowledgeSummary(b) : `${c.knowledgePointsUsed(b)} / ${c.knowledgePointsTotal(b)}`)}</span></div>
       ${knowRows}
       <div class="cluster cg-add-row">
         <input type="text" id="cg-sr-knowledge" placeholder="ex. Gangs de Seattle, Sperethiel…">
