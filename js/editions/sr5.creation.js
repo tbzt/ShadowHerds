@@ -889,7 +889,18 @@ Object.assign(EditionSR5, {
       return fields;
     },
 
-    /** Jauge dans l'unité de la MÉTHODE : points de priorité, ou karma. */
+    /** Qui l'on construit, en trois mots — pour l'en-tête et la reprise. */
+    identity(build) {
+      const lvl = this.gameLevels[build.gameLevel];
+      return {
+        name: (build.name || "").trim(),
+        meta: this.metaLabel(build.meta),
+        method: [this.methods[build.method]?.label, lvl && lvl.label].filter(Boolean).join(", "),
+      };
+    },
+
+    /** Jauge dans l'unité de la MÉTHODE : points de priorité, ou karma.
+        `step` sur chaque cellule : l'étape qu'elle alimente. */
     budget(build) {
       const method = this.methods[build.method];
       if (!method) return { headline: null, cells: [] };
@@ -897,11 +908,11 @@ Object.assign(EditionSR5, {
 
       if (method.family === "priority") {
         const cells = [
-          { label: "Attributs", used: this.attrPointsUsed(build), total: this.attrPointsTotal(build) },
-          { label: "Spéciaux", used: this.specialPointsUsed(build), total: this.specialPointsTotal(build) },
-          { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build)[0] },
-          { label: "Groupes", used: this.groupPointsUsed(build), total: this.skillPointsTotal(build)[1] },
-          { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenFor(build) },
+          { label: "Attributs", used: this.attrPointsUsed(build), total: this.attrPointsTotal(build), step: "attrs" },
+          { label: "Spéciaux", used: this.specialPointsUsed(build), total: this.specialPointsTotal(build), step: "attrs" },
+          { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build)[0], step: "skills" },
+          { label: "Groupes", used: this.groupPointsUsed(build), total: this.skillPointsTotal(build)[1], step: "skills" },
+          { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenFor(build), step: "gear" },
         ];
         if (method.points) {
           const used = this.priorityPointsUsed(build);
@@ -915,13 +926,16 @@ Object.assign(EditionSR5, {
             cells,
           };
         }
-        const karma = this.karmaTotal(build);
+        /* La jauge lit `finishingKarma` — la même bourse que l'étape Karma
+           de finition. Elle affichait `used: 0` : une barre immobile alors
+           que traits et achats au karma la dépensent. */
+        const kf = this.finishingKarma(build);
         return {
           headline: {
-            label: `Système de priorités · ${karma} karma de finition`,
-            used: 0,
-            total: karma,
-            over: false,
+            label: `Karma de finition : ${kf.used} / ${kf.total}`,
+            used: kf.used,
+            total: kf.total,
+            over: kf.used > kf.total,
           },
           cells,
         };
@@ -945,8 +959,8 @@ Object.assign(EditionSR5, {
             over: total > method.karma,
           },
           cells: [
-            { label: "Modules", used: (build.lifePath || []).filter((x) => x && x.id).length, total: null },
-            { label: "Nuyens", used: this.nuyenUsed(build), total: this.karmaNuyenCap(build) },
+            { label: "Modules", used: (build.lifePath || []).filter((x) => x && x.id).length, total: null, step: "modules" },
+            { label: "Nuyens", used: this.nuyenUsed(build), total: this.karmaNuyenCap(build), step: "gear" },
           ],
         };
       }
@@ -962,7 +976,7 @@ Object.assign(EditionSR5, {
           over: used > total,
         },
         cells: [
-          { label: "Nuyens", used: this.nuyenUsed(build), total: this.karmaNuyenCap(build) },
+          { label: "Nuyens", used: this.nuyenUsed(build), total: this.karmaNuyenCap(build), step: "gear" },
         ],
       };
     },

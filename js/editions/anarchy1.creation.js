@@ -356,6 +356,11 @@ Object.assign(EditionAnarchy1, {
       ];
     },
 
+    /** Qui l'on construit, en trois mots — pour l'en-tête et la reprise. */
+    identity(build) {
+      return { name: (build.name || "").trim(), meta: build.meta, method: this.level(build).label };
+    },
+
     budget(build) {
       const lvl = this.level(build);
       const e = this.edgePointsUsed(build);
@@ -366,10 +371,11 @@ Object.assign(EditionAnarchy1, {
           total: lvl.edgePoints,
           over: e > lvl.edgePoints,
         },
+        // `step` : l'étape que la cellule alimente.
         cells: [
-          { label: "Attributs", used: this.attrPointsUsed(build), total: this.attrPointsTotal(build) },
-          { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build) },
-          { label: "Armure", used: this.armorTotal(build), total: null },
+          { label: "Attributs", used: this.attrPointsUsed(build), total: this.attrPointsTotal(build), step: "attrs" },
+          { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build), step: "skills" },
+          { label: "Armure", used: this.armorTotal(build), total: null, step: "gear" },
         ],
       };
     },

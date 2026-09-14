@@ -58,6 +58,11 @@ export const CardRenderer = {
       édition depuis `78920ba`, et tout le reste du stockage est cloisonné par
       édition. C'est une garde contre la CLASSE de panne — celle qui a produit
       `EditionSR5 is not defined` — pas le correctif d'un bug mesuré. */
+  /** `actions === null` : APERÇU — ni pied d'actions ni rail de lentilles.
+      C'est la Révision de l'assistant de création : un personnage qui
+      n'existe pas encore n'a rien à « mettre en scène », et un pied « ⚔ En
+      scène » sur une fiche non enregistrée était la grammaire de la table
+      posée dans l'avant (CONTRIBUTING, quatre temps, règle 5). */
   render(pnj, actions = ["save", "discard"], deps = CardRenderer.liveDeps()) {
     if (pnj && pnj.edition && !App.isEditionLoaded(pnj.edition)) {
       Debug.warn("storage", "fiche d'une édition non chargée — rendu refusé", {
@@ -80,7 +85,7 @@ export const CardRenderer = {
     el.dataset.edition = pnj.edition;
 
     el.innerHTML = this._shell(pnj, actions, deps);
-    if (this._lensSelector(pnj, deps)) el.classList.add("has-rail");
+    if (actions !== null && this._lensSelector(pnj, deps)) el.classList.add("has-rail");
 
     setTimeout(() => el.classList.remove("scanning"), 900);
     return el;
@@ -95,9 +100,9 @@ export const CardRenderer = {
       this._body(pnj, deps) +
       this._footModulesHtml(pnj, deps) +
       this._journal(pnj, deps) +
-      this._footer(pnj, actions, deps) +
+      (actions === null ? "" : this._footer(pnj, actions, deps)) +
       `</div>` +
-      this._lensSelector(pnj, deps)
+      (actions === null ? "" : this._lensSelector(pnj, deps))
     );
   },
 

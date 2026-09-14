@@ -749,15 +749,37 @@ Object.assign(EditionSR6, {
       return fields;
     },
 
+    /** Qui l'on construit, en trois mots — l'en-tête de l'assistant et le
+        bandeau de reprise le lisent. `name` vide = sans nom encore. */
+    identity(build) {
+      const m = this.metaTable.find((x) => x.nom === build.meta);
+      return {
+        name: (build.name || "").trim(),
+        meta: m && m.souche && m.souche !== m.nom ? `${m.nom} (${m.souche})` : build.meta,
+        method: this.methods[build.method]?.label || "",
+      };
+    },
+
+    /** Karma de personnalisation DÉPENSÉ : le métatype (Compagnon p.90) et le
+        net des traits (p.69). La jauge de tête affichait `used: 0` — une
+        barre qui ne bougeait jamais, alors que le module savait les deux.
+        La conversion karma → nuyens (`KARMA_TO_NUYEN`) n'est pas modélisée. */
+    karmaUsed(build) {
+      const k = this.metaKarma(build);
+      return (typeof k === "number" ? k : 0) + this.traitState(build).net;
+    },
+
     budget(build) {
       const method = this.methods[build.method];
       if (!method) return { headline: null, cells: [] };
       const n = (v) => v.toLocaleString("fr-FR");
+      // `step` : l'étape que la cellule alimente — l'écran met en avant celles
+      // de l'étape courante, sans savoir ce qu'elles comptent.
       const cells = [
-        { label: "Attributs", used: this.attrPointsUsed(build), total: this.attrPointsTotal(build) },
-        { label: "Ajustement", used: this.adjustPointsUsed(build), total: this.adjustPointsTotal(build) },
-        { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build) },
-        { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenTotal(build) },
+        { label: "Attributs", used: this.attrPointsUsed(build), total: this.attrPointsTotal(build), step: "attrs" },
+        { label: "Ajustement", used: this.adjustPointsUsed(build), total: this.adjustPointsTotal(build), step: "attrs" },
+        { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build), step: "skills" },
+        { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenTotal(build), step: "gear" },
       ];
 
       if (method.family === "modules") {
@@ -771,8 +793,8 @@ Object.assign(EditionSR6, {
             over: g.modules > n,
           },
           cells: [
-            { label: "Nuyens", used: this.nuyenUsed(build), total: g.nuyen },
-            { label: "Points de contacts", used: this.contactPointsUsed(build), total: g.contactPts },
+            { label: "Nuyens", used: this.nuyenUsed(build), total: g.nuyen, step: "gear" },
+            { label: "Points de contacts", used: this.contactPointsUsed(build), total: g.contactPts, step: "contacts" },
           ],
         };
       }
@@ -800,12 +822,13 @@ Object.assign(EditionSR6, {
           cells,
         };
       }
+      const karma = this.karmaUsed(build);
       return {
         headline: {
-          label: `${method.label} · ${this.KARMA} karma de personnalisation`,
-          used: 0,
+          label: `Karma de personnalisation : ${karma} / ${this.KARMA}`,
+          used: karma,
           total: this.KARMA,
-          over: false,
+          over: karma > this.KARMA,
         },
         cells,
       };

@@ -145,6 +145,17 @@ Object.assign(EditionAnarchy2, {
     /** Budget neutre : une jauge de tête + des cellules de catégorie. Le
         contrôleur n'a plus à savoir que l'unité est le nuyen — SR5 y passera
         des points de priorité puis du karma dans la même forme. */
+    /** Qui l'on construit, en trois mots — pour l'en-tête et la reprise. */
+    identity(build) {
+      const level = this.gameLevels[build.gameLevel];
+      const table = this.pointTables[build.gameLevel]?.[build.archetypeTable];
+      return {
+        name: (build.name || "").trim(),
+        meta: build.meta,
+        method: [level && level.label, table && table.label].filter(Boolean).join(", "),
+      };
+    },
+
     budget(build) {
       const level = this.gameLevels[build.gameLevel];
       if (!level) return { headline: null, cells: [] };
@@ -164,13 +175,15 @@ Object.assign(EditionAnarchy2, {
       if (build.advancedMode || !table) return { headline, cells: [] };
       return {
         headline,
+        // `step` : l'étape que la cellule alimente.
         cells: [
-          { label: "Attributs", used: this.attrPointsUsed(build.attrs), total: table.attrPoints },
-          { label: "Compétences", used: this.skillPointsUsed(build), total: table.skillPoints },
+          { label: "Attributs", used: this.attrPointsUsed(build.attrs), total: table.attrPoints, step: "attrs" },
+          { label: "Compétences", used: this.skillPointsUsed(build), total: table.skillPoints, step: "skills" },
           {
             label: "Atouts",
             used: (build.edges || []).reduce((a, e) => a + (e.level || 0), 0),
             total: table.edgePoints,
+            step: "edges",
           },
         ],
       };

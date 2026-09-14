@@ -86,6 +86,10 @@ export const CharGen = {
     this._resumed = !!draft;
     this._build = draft || creation.newBuild();
     this._build.skills = this._normalizeSkillSpecs(this._build.skills);
+    /* État d'INTERFACE du brouillon : les étapes déjà quittées. Il vit dans
+       le brouillon (donc dans `Storage`, avec lui) et en sort avant toute
+       lecture par le module — cf. `_cleanBuild`. */
+    this._build._ui = this._build._ui || { seen: [] };
     this._step = 0;
     const overlay = document.getElementById("chargen-overlay");
     overlay.classList.add("open");
@@ -97,12 +101,54 @@ export const CharGen = {
 
   /** Bandeau de reprise de brouillon (masquable, propose de repartir à zéro). */
   _resumeBanner() {
-    if (!this._resumed) return "";
+    // Sur la première étape seulement : c'est là qu'on décide de reprendre
+    // ou de repartir ; ailleurs, le bandeau prenait une ligne pour rien.
+    if (!this._resumed || this._step !== 0) return "";
+    const id = this._identityText();
     return `<div class="cluster cg-resume-banner">
-      <span>↺ Brouillon repris.</span>
-      <button class="btn-secondary btn-small" data-cg-action="restart">Recommencer à zéro</button>
+      <span>↺ Brouillon repris${id ? ` — ${this._esc(id)}` : ""}.</span>
+      <button class="btn-secondary btn-small" data-cg-action="restart">Recommencer</button>
       <button class="btn-icon-tiny" data-cg-action="dismiss-resume" title="Masquer">✕</button>
     </div>`;
+  },
+
+  /** « Kaz · Ork · Système de priorités » — ce que le module dit de qui l'on
+      construit (`identity`). Sans nom encore : « Sans nom ». */
+  _identityText() {
+    const c = this._creation();
+    if (!c || typeof c.identity !== "function") return "";
+    const id = c.identity(this._build) || {};
+    return [id.name || "Sans nom", id.meta, id.method].filter(Boolean).join(" · ");
+  },
+
+  /* ---- Étapes vues ----
+     Une étape n'est « en erreur » qu'une fois QUITTÉE avec des erreurs : un
+     brouillon neuf affichait trois onglets rouges et un encadré par étape
+     avant le premier geste — rien n'était faux, rien n'était fait. Le
+     contrat (`stepErrors`) ne change pas ; seul le moment où l'écran le
+     montre. La Révision, elle, montre tout, toujours. */
+  _seen(id) {
+    return !!(this._build && this._build._ui && this._build._ui.seen.includes(id));
+  },
+  _markSeen(id) {
+    if (!this._build || !id) return;
+    this._build._ui = this._build._ui || { seen: [] };
+    if (!this._build._ui.seen.includes(id)) this._build._ui.seen.push(id);
+  },
+
+  /** Changer d'étape : on note l'étape quittée comme vue, on rend, on
+      ramène le défilement en haut et le focus sur le titre de l'étape —
+      sinon la nouvelle étape s'ouvrait là où l'ancienne avait défilé. */
+  _goto(idx) {
+    const courante = this._stepAt(this._step);
+    if (courante) this._markSeen(courante.id);
+    this._step = Math.max(0, Math.min(idx, this._steps().length - 1));
+    this._saveDraft();
+    this._renderAll();
+    const modal = document.querySelector("#chargen-overlay .modal");
+    if (modal) modal.scrollTop = 0;
+    const titre = document.querySelector("#chargen-body .cg-step-title");
+    if (titre) titre.focus({ preventScroll: true });
   },
 
   close() {
@@ -129,7 +175,9 @@ export const CharGen = {
       `{name, val}`. Un `.trim()` générique planterait sur l'une des deux. */
   _cleanBuild(b) {
     const c = this._creation();
-    return c.cleanBuild ? c.cleanBuild(b) : b;
+    // L'état d'interface (`_ui`) ne sort jamais vers le module.
+    const { _ui, ...rest } = b || {};
+    return c.cleanBuild ? c.cleanBuild(rest) : rest;
   },
 
   /** Migre les compétences vers le modèle multi-spés `specs: string[]`
@@ -154,7 +202,8 @@ export const CharGen = {
 
   /** Erreurs live de l'étape courante, rendues en tête de l'étape. */
   _stepErrorBox(step) {
-    const errs = this._creation().stepErrors(this._build)[step] || [];
+    if (!this._seen(step)) return "";
+    const errs = this._creation().stepErrors(this._cleanBuild(this._build))[step] || [];
     if (!errs.length) return "";
     return `<div class="stack cg-step-errors">${errs
       .map((e) => `<div class="cg-error-text">⚠ ${this._esc(e)}</div>`)
@@ -171,6 +220,8 @@ export const CharGen = {
 
   /* ---- Rendu ---- */
   _renderAll() {
+    const sub = document.getElementById("chargen-subtitle");
+    if (sub) sub.textContent = this._identityText();
     this._renderSteps();
     this._renderBudget();
     this._renderStep();
@@ -180,11 +231,19 @@ export const CharGen = {
   _renderSteps() {
     const el = document.getElementById("chargen-steps");
     if (!el) return;
-    const stepErr = this._creation().stepErrors(this._build);
+    const stepErr = this._creation().stepErrors(this._cleanBuild(this._build));
     el.innerHTML = this._steps().map((step, i) => {
-      const hasErr = (stepErr[step.id] || []).length > 0;
-      return `<button class="cg-step-tab${i === this._step ? " active" : ""}${hasErr ? " has-error" : ""}" data-cg-action="goto" data-idx="${i}" aria-current="${i === this._step ? "step" : "false"}">${i + 1}. ${this._esc(step.label)}${hasErr ? ' <span class="cg-tab-dot">●</span>' : ""}</button>`;
+      const nErr = (stepErr[step.id] || []).length;
+      const vue = this._seen(step.id);
+      // Quatre états : courante, faite (vue et propre), en erreur (vue et
+      // fautive), à faire (jamais quittée). Une étape jamais vue ne rougit pas.
+      const etat = i === this._step ? "active" : vue && nErr ? "has-error" : vue ? "is-done" : "is-todo";
+      const glyphe = etat === "is-done" ? "✓" : etat === "has-error" ? "●" : String(i + 1);
+      const titre = etat === "has-error" ? `${nErr} point(s) à corriger` : etat === "is-done" ? "Étape complète" : step.label;
+      return `<button class="cg-step-tab ${etat}" data-cg-action="goto" data-idx="${i}" aria-current="${i === this._step ? "step" : "false"}" title="${this._esc(titre)}"><span class="cg-tab-num">${glyphe}</span> ${this._esc(step.label)}</button>`;
     }).join("");
+    const actif = el.querySelector(".cg-step-tab.active");
+    if (actif && actif.scrollIntoView) actif.scrollIntoView({ block: "nearest", inline: "center" });
   },
 
   /** Rend le budget tel que le module le décrit : une jauge de tête + des
@@ -205,12 +264,17 @@ export const CharGen = {
       <div class="cg-budget-bar"><div class="cg-budget-fill${headline.over ? " over" : ""}" style="width:${pct}%"></div></div>
     </div>`;
     if (cells.length) {
-      html += `<div class="cluster cg-budget-row cg-budget-cats">${cells
+      /* Les cellules de l'ÉTAPE COURANTE ressortent, les autres s'estompent :
+         chaque cellule dit (`step`) quelle étape elle alimente. Sur une
+         étape qui n'en a aucune (Concept, Révision), toutes restent égales. */
+      const courante = (this._stepAt(this._step) || {}).id;
+      const liees = cells.some((c) => c.step === courante);
+      html += `<div class="cluster cg-budget-row cg-budget-cats${liees ? " has-current" : ""}">${cells
         .map(
           (c) =>
             // `total: null` = compteur sans plafond (« 3 modules »), pas un
             // budget : afficher « 3/null » serait pire que rien.
-            `<span class="cg-budget-cell${c.total != null && c.used > c.total ? " over" : ""}">${this._esc(c.label)} ${c.used}${c.total != null ? `/${c.total}` : ""}</span>`,
+            `<span class="cg-budget-cell${c.total != null && c.used > c.total ? " over" : ""}${c.step === courante ? " is-current" : ""}">${this._esc(c.label)} <strong>${c.used}</strong>${c.total != null ? `/${c.total}` : ""}${c.step === courante && c.total != null && c.total - c.used > 0 ? ` <em>reste ${c.total - c.used}</em>` : ""}</span>`,
         )
         .join("")}</div>`;
     }
@@ -222,7 +286,9 @@ export const CharGen = {
     if (!step) return;
     const el = document.getElementById("chargen-body");
     if (!el) return;
-    el.innerHTML = this._resumeBanner() + this[`_render_${step.kind}`].call(this);
+    const n = this._steps().length;
+    const titre = `<h3 class="cg-step-title" tabindex="-1"><span class="cg-step-count">Étape ${this._step + 1} sur ${n}</span>${this._esc(step.label)}</h3>`;
+    el.innerHTML = this._resumeBanner() + titre + this[`_render_${step.kind}`].call(this);
     if (step.kind === "review") this._mountReview();
   },
 
@@ -231,10 +297,18 @@ export const CharGen = {
     if (!el) return;
     const isFirst = this._step === 0;
     const isLast = this._step === this._steps().length - 1;
+    /* « Créer » reste inerte tant que le contrat refuse : la Révision liste
+       ce qui manque, juste au-dessus. Un clic qui ne fait qu'un toast
+       « corrigez les erreurs » disait la même chose, après coup. */
+    const nErr = isLast ? this._creation().validate(this._cleanBuild(this._build)).length : 0;
     el.innerHTML = `
-      <button class="btn-secondary" data-cg-action="discard">Abandonner</button>
+      <button class="btn-quiet cg-footer-left" data-cg-action="discard">Abandonner</button>
       <button class="btn-secondary" data-cg-action="prev" ${isFirst ? "disabled" : ""}>← Précédent</button>
-      ${isLast ? `<button class="btn-primary" data-cg-action="save">✓ Créer le personnage</button>` : `<button class="btn-primary" data-cg-action="next">Suivant →</button>`}
+      ${
+        isLast
+          ? `<button class="btn-primary" data-cg-action="save" ${nErr ? "disabled" : ""} title="${nErr ? `${nErr} point(s) à corriger avant de créer` : "Enregistrer le personnage"}">✓ Créer le personnage${nErr ? ` (${nErr})` : ""}</button>`
+          : `<button class="btn-primary" data-cg-action="next">Suivant →</button>`
+      }
     `;
   },
 
@@ -358,7 +432,7 @@ export const CharGen = {
         const attrKey = s.attr || def?.attr || "LOG";
         const attrVal = b.attrs[attrKey] || 0;
         const pool = (s.val || 0) + attrVal;
-        const poolChip = `<span class="cg-pool" title="Pool = ${s.val || 0} (${this._esc(s.name)}) + ${attrVal} (${attrKey})">⚄ ${pool}</span>`;
+        const poolChip = `<span class="cg-pool" title="Pool = ${s.val || 0} (${this._esc(s.name)}) + ${attrVal} (${attrKey})">${pool} dés</span>`;
         // Une puce lançable par spécialisation (indice+2), retirable.
         const specChips = specs
           .map(
@@ -368,19 +442,21 @@ export const CharGen = {
           .join("");
         const remaining = (def?.specs || []).filter((sp) => !specs.includes(sp));
         const canAddSpec = (s.val || 0) >= 1 && remaining.length > 0;
-        const addSpec = remaining.length
+        // Le contrôle n'apparaît que s'il peut servir (indice ≥ 1, une spé
+        // encore libre) : inerte, il ne faisait que du bruit sous chaque ligne.
+        const addSpec = canAddSpec
           ? `<span class="cg-spec-add">
               <select id="cg-skill-spec-pick-${i}">${remaining.map((sp) => `<option value="${this._esc(sp)}">${this._esc(sp)}</option>`).join("")}</select>
-              <button class="btn-icon-tiny" data-cg-action="add-spec" data-idx="${i}" ${canAddSpec ? "" : "disabled"} title="${canAddSpec ? "Ajouter une spécialisation (2 500 ¥)" : "Indice ≥ 1 requis"}">＋ spé</button>
+              <button class="btn-icon-tiny" data-cg-action="add-spec" data-idx="${i}" title="Ajouter une spécialisation (2 500 ¥)">＋ spé</button>
             </span>`
           : "";
         return `<div class="cluster cg-list-row cg-skill-row">
-          <strong>${this._esc(s.name)}</strong>
+          <strong>${this._esc(s.name)}</strong><span class="cg-skill-attr" title="Attribut lié">${this._esc(attrKey)}</span>
           <input type="number" min="0" max="${level.skillMax}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
           ${poolChip}
           ${overCap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
           <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
-          <div class="cluster cg-spec-line">${specChips}${addSpec}</div>
+          ${specChips || addSpec ? `<div class="cluster cg-spec-line">${specChips}${addSpec}</div>` : ""}
         </div>`;
       })
       .join("");
@@ -618,17 +694,17 @@ export const CharGen = {
           )
           .join("");
         return `<div class="cluster cg-list-row cg-skill-row">
-          <strong>${this._esc(s.name)}</strong>
+          <strong>${this._esc(s.name)}</strong><span class="cg-skill-attr" title="Attribut lié">${this._esc(attrKey)}</span>
           <input type="number" min="0" max="${cap}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
-          <span class="cg-pool" title="Pool = ${s.val || 0} + ${attrVal} (${this._esc(attrKey)})">⚄ ${pool}</span>
+          <span class="cg-pool" title="Pool = ${s.val || 0} + ${attrVal} (${this._esc(attrKey)})">${pool} dés</span>
           ${(s.val || 0) > cap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
           <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
-          <div class="cluster cg-spec-line">${specChips}
-            <span class="cg-spec-add">
+          ${specChips || (s.val || 0) >= 1 ? `<div class="cluster cg-spec-line">${specChips}
+            ${(s.val || 0) >= 1 ? `<span class="cg-spec-add">
               <input type="text" id="cg-sr-spec-${i}" placeholder="Spécialisation…">
-              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" ${(s.val || 0) >= 1 ? "" : "disabled"} title="1 point de compétence">＋ spé</button>
-            </span>
-          </div>
+              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" title="1 point de compétence">＋ spé</button>
+            </span>` : ""}
+          </div>` : ""}
         </div>`;
       })
       .join("");
@@ -717,17 +793,17 @@ export const CharGen = {
           .join("");
         const canAddSpec = (s.val || 0) >= 1 && (multiOk || (s.specs || []).length === 0);
         return `<div class="cluster cg-list-row cg-skill-row">
-          <strong>${this._esc(s.name)}</strong>
+          <strong>${this._esc(s.name)}</strong><span class="cg-skill-attr" title="Attribut lié">${this._esc(attrKey)}</span>
           <input type="number" min="0" max="${cap}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
-          <span class="cg-pool" title="Pool = ${s.val || 0} + ${attrVal} (${this._esc(attrKey)})">⚄ ${pool}</span>
+          <span class="cg-pool" title="Pool = ${s.val || 0} + ${attrVal} (${this._esc(attrKey)})">${pool} dés</span>
           ${(s.val || 0) > cap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
           <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
-          <div class="cluster cg-spec-line">${specChips}
-            <span class="cg-spec-add">
+          ${specChips || canAddSpec ? `<div class="cluster cg-spec-line">${specChips}
+            ${canAddSpec ? `<span class="cg-spec-add">
               <input type="text" id="cg-sr-spec-${i}" placeholder="Spécialisation…">
-              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" ${canAddSpec ? "" : "disabled"} title="${canAddSpec ? "1 point de compétence" : "Une seule spécialisation par compétence"}">＋ spé</button>
-            </span>
-          </div>
+              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" title="1 point de compétence">＋ spé</button>
+            </span>` : ""}
+          </div>` : ""}
         </div>`;
       })
       .join("");
@@ -1096,8 +1172,8 @@ export const CharGen = {
         ${
           opts
             ? `<div class="cluster cg-add-row">
-                <select data-cg-mod-pick="${i}">${opts}</select>
-                <button class="btn-secondary btn-small" data-cg-action="add-mod" data-idx="${i}">＋ Accessoire</button>
+                <select data-cg-mod-pick="${i}" aria-label="Accessoire à ajouter"><option value="">— accessoire à ajouter —</option>${opts}</select>
+                <button class="btn-secondary btn-small" data-cg-action="add-mod" data-idx="${i}">＋ Ajouter</button>
               </div>`
             : ""
         }
@@ -1250,18 +1326,18 @@ export const CharGen = {
         const pool = (s.val || 0) + c.attrValue(b, attrKey);
         const peutSpe = (s.val || 0) >= c.SPEC_MIN_RANK && (specsTotal === 0 || (s.specs || []).length);
         return `<div class="cluster cg-list-row cg-skill-row">
-          <strong>${this._esc(s.name)}</strong>
+          <strong>${this._esc(s.name)}</strong><span class="cg-skill-attr" title="Attribut lié">${this._esc(attrKey)}</span>
           <input type="number" min="${c.SKILL_MIN}" max="${lvl.skillCap}" data-cg="skills.${i}.val" value="${s.val || 0}" style="width:3.5em">
-          <span class="cg-pool" title="Pool = ${s.val || 0} + ${c.attrValue(b, attrKey)} (${this._esc(attrKey)})">⚄ ${pool}</span>
+          <span class="cg-pool" title="Pool = ${s.val || 0} + ${c.attrValue(b, attrKey)} (${this._esc(attrKey)})">${pool} dés</span>
           ${(s.val || 0) > lvl.skillCap ? '<span class="cg-error-text">&gt; plafond</span>' : ""}
           <button class="btn-icon-tiny danger" data-cg-action="remove-skill" data-idx="${i}" title="Retirer">✕</button>
-          <div class="cluster cg-spec-line">
+          ${(s.specs || []).length || peutSpe ? `<div class="cluster cg-spec-line">
             ${(s.specs || []).map((sp) => `<span class="cg-spec-chip">◊ ${this._esc(sp)}<button class="cg-spec-x" data-cg-action="remove-spec" data-idx="${i}" data-spec="${this._esc(sp)}" title="Retirer">✕</button></span>`).join("")}
-            <span class="cg-spec-add">
+            ${peutSpe ? `<span class="cg-spec-add">
               <input type="text" id="cg-a1-spec-${i}" placeholder="Spécialisation…">
-              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" ${peutSpe ? "" : "disabled"} title="1 point, indice ${c.SPEC_MIN_RANK} minimum, une seule pour tout le personnage">＋ spé</button>
-            </span>
-          </div>
+              <button class="btn-icon-tiny" data-cg-action="add-spec-sr" data-idx="${i}" title="1 point, indice ${c.SPEC_MIN_RANK} minimum, une seule pour tout le personnage">＋ spé</button>
+            </span>` : ""}
+          </div>` : ""}
         </div>`;
       })
       .join("");
@@ -1686,6 +1762,14 @@ export const CharGen = {
 
   _mountReview() {
     const c = this._creation();
+    // Arriver à la Révision, c'est avoir tout parcouru : chaque étape devient
+    // « vue », et les onglets disent enfin où il reste à corriger.
+    const avant = (this._build._ui || { seen: [] }).seen.length;
+    this._steps().forEach((s) => this._markSeen(s.id));
+    if (this._build._ui.seen.length !== avant) {
+      this._saveDraft();
+      this._renderSteps();
+    }
     const clean = this._cleanBuild(this._build);
     const stepErr = c.stepErrors(clean);
     const errBox = document.getElementById("cg-review-errors");
@@ -1705,13 +1789,22 @@ export const CharGen = {
       if (headline && headline.over) {
         items.push(`<div class="cg-error">⚠ Budget dépassé : ${this._esc(headline.label)}.</div>`);
       }
+      /* Sans nom, `buildCharacter` en tire un au sort — à CHAQUE rendu : la
+         Révision montrait « Gravedigger » puis « Khulan “Ash” » sur deux
+         visites. On le dit, on ne le laisse pas croire. */
+      if (!(clean.name || "").trim()) {
+        const idx = this._steps().findIndex((s) => s.id === "concept");
+        items.push(`<div class="cg-hint cg-error-link" data-cg-action="goto" data-idx="${idx}">Sans nom — un nom sera tiré au sort à la création. <span class="cg-error-goto">→ Concept</span></div>`);
+      }
       errBox.innerHTML = items.length ? items.join("") : '<div class="cg-ok">✓ Personnage valide.</div>';
     }
     const holder = document.getElementById("cg-review-card");
     if (holder) {
       holder.innerHTML = "";
       const preview = c.buildCharacter(clean);
-      holder.appendChild(CardRenderer.render(preview, []));
+      if (!(clean.name || "").trim()) preview.name = "Sans nom";
+      // `null` : aperçu — ni pied d'actions ni rail (cf. CardRenderer.render).
+      holder.appendChild(CardRenderer.render(preview, null));
     }
   },
 
@@ -1817,16 +1910,13 @@ export const CharGen = {
 
     switch (action) {
       case "goto":
-        this._step = Number(el.dataset.idx);
-        this._renderAll();
+        this._goto(Number(el.dataset.idx));
         break;
       case "next":
-        this._step = Math.min(this._step + 1, this._steps().length - 1);
-        this._renderAll();
+        this._goto(this._step + 1);
         break;
       case "prev":
-        this._step = Math.max(this._step - 1, 0);
-        this._renderAll();
+        this._goto(this._step - 1);
         break;
       case "discard":
         this._discard();

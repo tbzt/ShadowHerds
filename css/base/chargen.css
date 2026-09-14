@@ -154,13 +154,89 @@
 }
 
 /* --- Passe design & QoL --- */
+/* Quatre états d'onglet : courant, fait, en erreur, à faire. Une étape
+   jamais quittée ne rougit pas — rien n'y est faux, rien n'y est fait. */
 .cg-step-tab.has-error {
   border-color: var(--danger);
   color: var(--danger);
 }
-.cg-tab-dot {
+.cg-step-tab.is-done {
+  border-color: color-mix(in srgb, var(--success) 60%, var(--border));
+  color: var(--text-dim);
+}
+.cg-step-tab.is-done .cg-tab-num {
+  color: var(--success);
+}
+.cg-step-tab.has-error .cg-tab-num {
   color: var(--danger);
+}
+.cg-tab-num {
+  display: inline-block;
+  min-width: 1.2em;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+}
+/* Identité en en-tête : « Kaz · Ork · Système de priorités ». */
+.cg-subtitle {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cg-subtitle:empty {
+  display: none;
+}
+/* Titre d'étape : cible de focus au changement d'étape, et l'orientation
+   que l'onglet seul ne donnait pas. */
+.cg-step-title {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  outline: none;
+}
+.cg-step-count {
+  display: block;
+  font-family: var(--font-mono);
   font-size: var(--fs-2xs);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 2px;
+}
+/* Cellules de budget : celles de l'étape courante ressortent. */
+.cg-budget-cats.has-current .cg-budget-cell:not(.is-current) {
+  opacity: 0.55;
+}
+.cg-budget-cell.is-current {
+  color: var(--text);
+}
+.cg-budget-cell.is-current strong {
+  color: var(--accent);
+}
+.cg-budget-cell em {
+  font-style: normal;
+  color: var(--accent2);
+}
+/* Abandonner, à gauche et discret : ce n'est pas une étape de navigation. */
+.cg-footer-left {
+  margin-right: auto;
+}
+/* « Créer » inerte tant que la Révision liste des points à corriger. */
+#chargen-footer .btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: saturate(0.4);
+}
+/* Attribut lié d'une compétence, et réserve de dés en clair. */
+.cg-skill-attr {
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
+  color: var(--accent2);
+  letter-spacing: 0.08em;
 }
 .cg-step-errors {
   gap: var(--sp-1);
