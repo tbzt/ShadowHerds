@@ -1252,7 +1252,13 @@ Object.assign(EditionAnarchy2, {
       // Attributs : bornes métatype + nombre au maximum autorisé.
       let atMaxCount = 0;
       for (const k of ["FOR", "AGI", "VOL", "LOG", "CHA"]) {
-        const val = (build.attrs || {})[k] || 0;
+        const brut = (build.attrs || {})[k];
+        // Un brouillon corrompu (`NaN`) passait : `NaN < min` est faux.
+        if (brut != null && !Number.isFinite(Number(brut))) {
+          out.attrs.push(`${k} n'est pas un nombre — le brouillon est abîmé, corrige la valeur.`);
+          continue;
+        }
+        const val = brut || 0;
         const [min, max] = range[k];
         if (val < min || val > max) {
           out.attrs.push(`${k} doit être compris entre ${min} et ${max} pour un ${build.meta}.`);

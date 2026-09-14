@@ -480,6 +480,13 @@ Object.assign(EditionAnarchy1, {
         return out;
       }
 
+      // Un brouillon corrompu (`NaN`) passait la validation : rien ne comparait.
+      for (const k of this.ATTRS || []) {
+        const v = (build.attrs || {})[k];
+        if (v != null && !Number.isFinite(Number(v))) {
+          out.attrs.push(`${k} n'est pas un nombre — le brouillon est abîmé, corrige la valeur.`);
+        }
+      }
       const aU = this.attrPointsUsed(build);
       const aT = this.attrPointsTotal(build);
       if (aU > aT) out.attrs.push(`Trop de points d'attributs (${aU}/${aT}).`);
@@ -558,7 +565,7 @@ Object.assign(EditionAnarchy1, {
       const physMon = 8 + Math.ceil(attrs.FOR / 2);
       const stunMon = 8 + Math.ceil(attrs.VOL / 2);
 
-      return {
+      const pnj = {
         id: Utils.uid(),
         edition: "anarchy1",
         isPC: true,
@@ -589,6 +596,9 @@ Object.assign(EditionAnarchy1, {
         contacts: build.contacts || [],
         notes: build.notes || "",
       };
+      // Défense (AGI + LOG) et initiative (max AGI/LOG) : une seule source,
+      // `EditionAnarchy1.recalc` — la fiche du PJ n'en avait aucune.
+      return EditionAnarchy1.recalc(pnj);
     },
   },
 });

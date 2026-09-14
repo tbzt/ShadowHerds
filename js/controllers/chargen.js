@@ -300,7 +300,11 @@ export const CharGen = {
 
     const row = (spec) => {
       const path = spec.path || `attrs.${spec.key}`;
-      const val = path.split(".").reduce((o, k) => (o == null ? o : o[k]), b) || 0;
+      /* Un attribut non touché vaut son MINIMUM, comme le module le compte
+         (`?? min`). `|| 0` affichait 0 et « hors bornes » sur les huit
+         lignes d'un brouillon neuf — huit erreurs pour rien de faux. */
+      const brut = path.split(".").reduce((o, k) => (o == null ? o : o[k]), b);
+      const val = brut == null || brut === "" ? spec.min : Number(brut);
       const atMax = val >= spec.max;
       const outOfRange = val < spec.min || val > spec.max;
       return `<div class="cluster cg-attr-row">
@@ -1063,7 +1067,11 @@ export const CharGen = {
            d'armes de tous les menus le jour où les mods de véhicule ont été
            mis en tête — une régression silencieuse : rien ne cassait, il
            manquait juste la moitié du choix. */
-        const opts = (c.accessoryCatalog ? c.accessoryCatalog() : [])
+        /* Les accessoires QUI CONVIENNENT à cet objet : une armure ne se voit
+           plus proposer les mods de châssis. Le tri est au module
+           (`accessoryCatalogFor`, par famille) ; un objet sans famille reçoit
+           tout, comme avant. */
+        const opts = (c.accessoryCatalogFor ? c.accessoryCatalogFor(g) : c.accessoryCatalog ? c.accessoryCatalog() : [])
           .filter((grp) => grp.items.length)
           .map(
             (grp) =>
@@ -1772,8 +1780,15 @@ export const CharGen = {
     const path = el.dataset.cg;
     let val;
     if (el.type === "checkbox") val = el.checked;
-    else if (el.type === "number") val = Number(el.value);
-    else val = el.value;
+    else if (el.type === "number") {
+      // Un champ vide ou illisible ne doit jamais écrire `NaN` dans le
+      // brouillon : il traversait la validation et sortait un attribut nul.
+      val = el.value === "" ? null : Number(el.value);
+      if (val != null && !Number.isFinite(val)) return;
+      // Vide = « pas renseigné » (null), que chaque lecteur sait traiter ;
+      // sauf un attribut, qui retombe sur son minimum.
+      if (val == null && (path.startsWith("attrs.") || path.startsWith("special."))) val = this._creation().attrRangeFor(this._build, path.split(".")[1])[0];
+    } else val = el.value;
     if (path === "awakened" && val === "") val = null;
     if (path.startsWith("attrs.") || path.startsWith("special.")) {
       const key = path.split(".")[1];
@@ -2169,16 +2184,14 @@ export const CharGen = {
         // `kind` = la clé du catalogue (« pistoletsLourds ») : c'est elle qui
         // dit le TYPE de l'arme, donc ses emplacements de modification.
         if (!b.gear.some((g) => g.name === nom)) {
-          const item = { name: nom, cost: 0, ...(el.dataset.kind ? { kind: el.dataset.kind } : {}) };
-          /* La réserve d'une armure se lit au moment du choix — l'indice
-             d'Armure sur la ligne de stats en SR5, la Capacité par nom en
-             SR6 : c'est le module qui sait où, `armorReserveFor`. Inconnue →
-             rien n'est écrit, l'écran demande la saisie. */
-          if (c.ARMOR_RESERVE && c.armorReserveFor && el.dataset.kind === "armures") {
-            const ref = (c.gearCatalog() || []).flatMap((g) => g.items).find((x) => x.label === nom);
-            const base = c.armorReserveFor({ name: nom, detail: ref && ref.detail });
-            if (base != null) item[c.ARMOR_RESERVE.key] = base;
-          }
+          const ref = (c.gearCatalog() || []).flatMap((g) => g.items).find((x) => x.label === nom);
+          const brut = { name: nom, detail: ref && ref.detail, kind: el.dataset.kind || undefined };
+          /* L'objet entre dans le brouillon par le module (`gearFromCatalog`) :
+             c'est lui qui sait quelle réserve se lit au moment du choix —
+             Capacité d'une armure, Résistance/Structure d'un véhicule — et
+             sur quel objet. Le contrôleur ne teste plus `kind === "armures"` :
+             c'était une clé d'édition logée ici. */
+          const item = c.gearFromCatalog ? c.gearFromCatalog(brut) : { name: nom, cost: 0, ...(brut.kind ? { kind: brut.kind } : {}) };
           b.gear.push(item);
         }
         afterMutate();

@@ -37,6 +37,7 @@ import { Magic } from "../rules/magic.js";
 import { EditionSR6 } from "./sr6.js";
 import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { Vehicles } from "../catalogs/vehicles.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
 
@@ -486,6 +487,12 @@ Object.assign(EditionSR6, {
         seule table qui dise quelles LETTRES chaque métatype peut recevoir.
         Elle était tirée de `Object.keys(attrRange)`, qui ignore tout des
         priorités : avec un Duende, les cinq lettres rendaient « — ». */
+    /** Vrai si une table de bornes CONNAÎT ce métatype (livre de base, ou
+        Compagnon via `Metavariants`) — le fait que le garde-fou mesure. */
+    _metaKnown(meta) {
+      return !!EditionSR6.attrRange[meta] || !!Metavariants.use("sr6").resolve(meta)?.ranges;
+    },
+
     _metaList() {
       return this.metaTable.map((m) => m.nom);
     },
@@ -518,21 +525,26 @@ Object.assign(EditionSR6, {
     },
 
     /* ---- Totaux offerts ---- */
+    /* ⚠ En création par points, le total est BORNÉ au plafond de la règle
+       (attrMax, adjustMax, skillMax) : 96 PC en attributs annonçaient 52
+       points quand le livre en autorise 20, et l'erreur n'arrivait qu'à la
+       révision. Les nuyens l'étaient déjà ; même classe de plafond, même
+       traitement. `stepErrors` continue de refuser l'excédent de PC. */
     attrPointsTotal(build) {
       if (this.methods[build.method]?.family === "pc") {
-        return this.pc.attrFree + Math.floor((build.pcAttr || 0) / this.pc.attrCost);
+        return this.pc.attrFree + Math.min(this.pc.attrMax, Math.floor((build.pcAttr || 0) / this.pc.attrCost));
       }
       return this.priorityTable[build.priorities.attrs]?.attrs || 0;
     },
     adjustPointsTotal(build) {
       if (this.methods[build.method]?.family === "pc") {
-        return this.pc.adjustFree + Math.floor((build.pcAdjust || 0) / this.pc.adjustCost);
+        return this.pc.adjustFree + Math.min(this.pc.adjustMax, Math.floor((build.pcAdjust || 0) / this.pc.adjustCost));
       }
       return this.adjustFor(build.meta, build.priorities.meta) || 0;
     },
     skillPointsTotal(build) {
       if (this.methods[build.method]?.family === "pc") {
-        return this.pc.skillFree + Math.floor((build.pcSkill || 0) / this.pc.skillCost);
+        return this.pc.skillFree + Math.min(this.pc.skillMax, Math.floor((build.pcSkill || 0) / this.pc.skillCost));
       }
       return this.priorityTable[build.priorities.skills]?.skills || 0;
     },
@@ -1139,7 +1151,7 @@ Object.assign(EditionSR6, {
         La catégorie n'est plus jetée : le sélecteur la rend en <optgroup>,
         ce qui était la raison d'être de `flattenEquipPools`. */
     gearCatalog() {
-      return (EditionSR6.equipCatalog() || []).map((g) => ({
+      const objets = (EditionSR6.equipCatalog() || []).map((g) => ({
         category: g.category,
         // `detail` porte la ligne de stats du livre ; l'écran la montre.
         // `kind` est la clé du pool (« pistoletsLourds ») : c'est elle qui
@@ -1148,6 +1160,104 @@ Object.assign(EditionSR6, {
           .map((it) => ({ label: it.label, detail: it.detail || "", kind: String(it.id || "").split("::")[0] }))
           .filter((it) => it.label),
       }));
+      /* Véhicules et drones : le catalogue existait (js/catalogs/vehicles.js,
+         132 entrées SR6) et l'étape Équipement ne le proposait pas — on
+         saisissait « Drone MCT-Nissan Roto-Drone » en texte libre, et
+         l'objet, sans famille, se voyait offrir les mods des trois familles.
+         Même motif que `gearCatalog` en septembre : l'accesseur était là,
+         l'écran l'ignorait. */
+      return [...objets, ...this._vehicleGroups()];
+    },
+
+    /** Les deux rayons Véhicules / Drones, tirés du catalogue partagé. La
+        Résistance (`structure` dans le catalogue, « Body » en VO) est la
+        réserve d'emplacements d'« À tombeau ouvert » : elle suit l'objet. */
+    _vehicleGroups() {
+      const ligne = (v) => {
+        const st = v.stats || {};
+        return [
+          st.mania != null ? `Man. ${st.mania}${st.maniaHors != null ? `/${st.maniaHors}` : ""}` : "",
+          st.accel != null ? `Accél. ${st.accel}` : "",
+          st.vitesse != null ? `Vit. ${st.vitesse}` : "",
+          st.structure != null ? `Résist. ${st.structure}` : "",
+          st.blindage != null ? `Blind. ${st.blindage}` : "",
+          st.pilote != null ? `Autopilote ${st.pilote}` : "",
+          st.senseurs != null ? `Senseurs ${st.senseurs}` : "",
+        ].filter(Boolean).join(" · ");
+      };
+      const liste = Vehicles.catalogList("sr6");
+      return [
+        { category: "Véhicules", items: liste.filter((v) => v.kind !== "drone").map((v) => ({ label: v.name, detail: ligne(v), kind: "vehicules" })) },
+        { category: "Drones", items: liste.filter((v) => v.kind === "drone").map((v) => ({ label: v.name, detail: ligne(v), kind: "drones" })) },
+      ].filter((g) => g.items.length);
+    },
+
+    /* ---- Famille d'un objet : arme, armure ou véhicule ----
+       C'est elle qui dit quels accessoires lui proposer. « ＋ Accessoire »
+       offrait les mods de châssis sur une veste pare-balles parce que le
+       menu ne triait pas. La famille se lit sur le `kind` du catalogue
+       (pool d'armes, « armures », « vehicules »/« drones »), à défaut sur le
+       nom (table des armures, catalogue des véhicules), à défaut sur ce
+       qui est déjà monté ; un objet libre sans indice reste `null` et se
+       voit tout proposer — mieux que de lui fermer la porte. */
+    gearFamily(gear) {
+      const kind = gear && gear.kind;
+      if (kind && Object.prototype.hasOwnProperty.call(this.WEAPON_MOUNTS_BY_KIND, kind)) return "arme";
+      if (kind === "armures") return "armure";
+      if (kind === "vehicules" || kind === "drones") return "vehicule";
+      const nom = String((gear && gear.name) || "").trim().toLowerCase();
+      if (nom && ArmuresSR6.some((a) => a.nom.toLowerCase() === nom)) return "armure";
+      if (nom && Vehicles.matchItem(nom, "sr6")) return "vehicule";
+      for (const ref of ModRefs.normalize(gear && gear.mods)) {
+        const a = this.accessoryById(ModRefs.id(ref));
+        if (!a) continue;
+        if (a.montures !== undefined) return "arme";
+        if (Object.prototype.hasOwnProperty.call(a, "capacite")) return "armure";
+        return "vehicule";
+      }
+      return null;
+    },
+
+    /** Le catalogue d'accessoires QUI CONVIENT à cet objet : les groupes de
+        sa famille seulement, tous si la famille est inconnue. */
+    accessoryCatalogFor(gear) {
+      const fam = this.gearFamily(gear);
+      const tout = this.accessoryCatalog();
+      return fam ? tout.filter((g) => g.famille === fam) : tout;
+    },
+
+    /** L'objet tel qu'il entre dans le brouillon depuis le catalogue : son
+        `kind`, et sa réserve quand le module sait la lire au moment du choix
+        — Capacité d'une armure (table Armures), Résistance d'un véhicule
+        (catalogue). Inconnue → rien d'écrit, l'écran demande la saisie. */
+    gearFromCatalog({ name, detail, kind }) {
+      const item = { name, cost: 0, ...(kind ? { kind } : {}) };
+      const fam = this.gearFamily(item);
+      if (fam === "armure") {
+        const base = this.armorReserveFor({ name, detail });
+        if (base != null) item[this.ARMOR_RESERVE.key] = base;
+      } else if (fam === "vehicule") {
+        const v = Vehicles.catalogList("sr6").find((x) => x.name === name);
+        if (v && v.stats && v.stats.structure != null) item[this.MOD_RESERVE.key] = v.stats.structure;
+      }
+      return item;
+    },
+
+    /** L'armure PORTÉE : la meilleure protection de l'équipement, lue sur
+        la table Armures (« SD +3 »). Les bonus d'armure ne se cumulent pas
+        au livre, hors compléments (casque, bouclier) — on retient le plus
+        haut, sans additionner. Rend `{nom, sd}` ou null. */
+    armorWorn(build) {
+      let best = null;
+      for (const g of build.gear || []) {
+        const nom = String(g.name || "").trim().toLowerCase();
+        const a = ArmuresSR6.find((x) => x.nom.toLowerCase() === nom);
+        if (!a) continue;
+        const sd = parseInt(String(a.sd).replace(/[^\d-]/g, ""), 10);
+        if (Number.isNaN(sd)) continue;
+        if (!best || sd > best.sd) best = { nom: a.nom, sd };
+      }
+      return best;
     },
 
     gearLimits(build) {
@@ -1465,11 +1575,13 @@ Object.assign(EditionSR6, {
       ].filter(Boolean).join(" · ");
       const groupesArmes = [["accessoire", "Accessoires d'armes"], ["modification", "Modifications d'armes"]].map(([t, nom]) => ({
         category: nom,
+        famille: "arme",
         items: AccessoiresSR6.filter((a) => a.type === t).map((a) => ({ id: a.id, label: a.nom, detail: arme(a) })),
       })).filter((g) => g.items.length);
       const capa = (m) => (m.capacite == null ? `capacité ${m.capaciteNote}` : m.capacite ? `capacité ${m.capacite}` : "aucune capacité");
       groupesArmes.push({
         category: "Modifications d'armure",
+        famille: "armure",
         items: ArmureModsSR6.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), `Disp. ${m.dispo}`, argent(m), m.source].filter(Boolean).join(" · ") })),
       });
       const places = (m) => {
@@ -1480,7 +1592,7 @@ Object.assign(EditionSR6, {
       // Dans l'ordre du livre ; les entrées du livre de base sans section
       // (montures p.303) ferment la marche.
       const ORDRE = ["Accessoires", "Châssis", "Habillage", "Motorisation", "Électronique", ""];
-      const sections = ORDRE.map((sec) => ({ category: sec ? `Mods de véhicule — ${sec}` : "Mods de véhicule (livre de base)", items: [] }));
+      const sections = ORDRE.map((sec) => ({ category: sec ? `Mods de véhicule — ${sec}` : "Mods de véhicule (livre de base)", famille: "vehicule", items: [] }));
       for (const m of VehiculeModsSR6) {
         const g = sections[Math.max(0, ORDRE.indexOf(m.section || ""))];
         g.items.push({
@@ -1908,16 +2020,22 @@ Object.assign(EditionSR6, {
       for (const k of this.ATTRS) {
         const [min, max] = this._range(build.meta, k);
         const val = (build.attrs || {})[k];
-        if (val != null && (val < min || val > max)) {
+        /* ⚠ Un brouillon corrompu (attribut `NaN`, chaîne) traversait la
+           validation : `NaN < min` est faux, comme `NaN > max`. On refuse ce
+           qui n'est pas un nombre fini avant de comparer. */
+        if (val != null && !Number.isFinite(Number(val))) {
+          out.attrs.push(`${k} n'est pas un nombre — le brouillon est abîmé, corrige la valeur.`);
+        } else if (val != null && (val < min || val > max)) {
           out.attrs.push(`${k} doit être compris entre ${min} et ${max} pour un ${build.meta}.`);
         }
       }
-      const atMax = this.ATTRS.filter(
+      const auMax = this.ATTRS.filter(
         (k) => ((build.attrs || {})[k] ?? 1) >= this._range(build.meta, k)[1],
-      ).length;
-      if (atMax > 1) {
+      );
+      if (auMax.length > 1) {
+        // Nommer plutôt que compter : « (3 le sont) » ne dit pas lesquels.
         out.attrs.push(
-          `Un seul attribut peut atteindre le rang maximum du métatype à la création (${atMax} le sont).`,
+          `Un seul attribut peut atteindre le rang maximum du métatype à la création — ${auMax.join(", ")} y sont.`,
         );
       }
 
@@ -1927,20 +2045,20 @@ Object.assign(EditionSR6, {
       if (reserves && sUsed < sTotal) {
         out.skills.push(`Tous les points de compétence doivent être dépensés (${sUsed}/${sTotal}) — rien ne se conserve.`);
       }
-      let atSkillCap = 0;
+      const auPlafond = [];
       for (const s of build.skills || []) {
         if ((s.val || 0) > this.SKILL_CAP) {
           out.skills.push(`${s.name} dépasse le rang maximum à la création (${this.SKILL_CAP}, 7 avec Aptitude).`);
         }
-        if ((s.val || 0) >= this.SKILL_CAP) atSkillCap++;
+        if ((s.val || 0) >= this.SKILL_CAP) auPlafond.push(s.name);
         // Une seule spé par compétence, sauf armes exotiques (Compagnon p.29).
         if ((s.specs || []).length > 1 && s.name !== "Armes exotiques") {
           out.skills.push(`${s.name} : une seule spécialisation par compétence à la création.`);
         }
       }
-      if (atSkillCap > 1) {
+      if (auPlafond.length > 1) {
         out.skills.push(
-          `Une seule compétence peut atteindre le rang maximum (${atSkillCap} y sont).`,
+          `Une seule compétence peut atteindre le rang maximum — ${auPlafond.join(", ")} y sont.`,
         );
       }
 
@@ -2064,7 +2182,15 @@ Object.assign(EditionSR6, {
       const stunMon = separate ? 8 + Math.ceil(attrs.VOL / 2) : null;
       const perceptionSkill = (build.skills || []).find((s) => s.name === "Perception");
 
-      return {
+      /* Le profil magique de la fiche, dans les mots du générateur : c'est
+         `special` que lisent `recalc` (Technodrain), le persona vivant et
+         l'en-tête de carte. */
+      const profil = this.magicProfile(build);
+      const SPECIAL = { technomancien: "Technomancien", adepte: "Adepte", mystique: "Adepte mystique", magicien: "Magicien", specialise: "Magicien spécialisé" };
+      const special = profil ? SPECIAL[profil.key] || null : null;
+      const armure = this.armorWorn(build);
+
+      const pnj = {
         id: Utils.uid(),
         edition: "sr6",
         isPC: true,
@@ -2125,15 +2251,30 @@ Object.assign(EditionSR6, {
         meFilled: 0,
         physFilled: 0,
         stunFilled: 0,
-        // Bloc « mécanique de table » du PJ SR6 (cf. pcTableBlock).
-        initBase: attrs.RÉA + attrs.INT,
+        special,
+        // L'attribut de Drain de la tradition : c'est lui que `recalc` lit
+        // pour poser `drainResist`. Sans lui, la fiche n'avait pas de Drain.
+        traditionDrainAttr: this.drainAttr(build),
+        /* Score Défensif = Constitution + indice d'Armure (livre de base,
+           « Score Défensif ») ; 1 dé d'initiative et 1 action majeure + 2
+           mineures par défaut. La fiche affichait « SD ? » et un
+           Encaissement vide : ces champs n'étaient pas émis. */
+        armure: armure ? armure.sd : 0,
+        armureNom: armure ? armure.nom : null,
+        sdBase: attrs.CON + (armure ? armure.sd : 0),
         initDice: 1,
-        defense: attrs.RÉA + attrs.INT,
+        pa: "MAJ 1, MIN 2",
         perception: (perceptionSkill?.val || 0) + attrs.INT,
         volonte: attrs.VOL,
         contacts: build.contacts || [],
         notes: build.notes || "",
       };
+      /* ⚠ Une seule source pour les dérivés — initiative, défense,
+         encaissement, sang-froid, Drain : `EditionSR6.recalc`, celle des
+         PNJ générés et de toute édition manuelle. La fiche du PJ en
+         recopiait deux à la main et n'avait pas les autres ; deux
+         consommateurs d'un même fait doivent lire la même expression. */
+      return EditionSR6.recalc(pnj);
     },
   },
 });

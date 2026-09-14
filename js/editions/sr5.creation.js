@@ -37,6 +37,8 @@ import { Magic } from "../rules/magic.js";
 import { EditionSR5 } from "./sr5.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { TraitsSR5 } from "./sr5.traits.js";
+import { Metavariants } from "../rules/metavariants.js";
+import { Vehicles } from "../catalogs/vehicles.js";
 import { Utils } from "../core/utils.js";
 
 Object.assign(EditionSR5, {
@@ -136,6 +138,56 @@ Object.assign(EditionSR5, {
         skills: [18, 0],
         nuyen: 6000,
       },
+    },
+
+    /* ============================================================
+       MÉTAVARIANTES ET MÉTACONSCIENCES (Run Faster VF p.73-78, p.140)
+       « La création de personnages métavariants, métaconscients et
+       zoocanthropes se fait de la même manière que pour les métatypes
+       standards, avec un seul petit changement : certaines options
+       nécessitent de dépenser une partie des points de Karma de départ »
+       (p.73). Les bornes d'attributs vivent dans `Metavariants` (p.76-77,
+       partagées avec le générateur) ; ici, ce que le générateur n'a pas :
+       les points spéciaux par priorité et le coût additionnel (p.78, lus
+       à la table), la colonne Chance (p.76-77) et le coût en création par
+       Karma (p.140). Les zoocanthropes (forme animale + forme métahumaine,
+       p.73) restent hors périmètre.
+       ⚠ « – » dans la table = lettre FERMÉE (absente), 0 = ouverte à 0
+       point : même convention que la table de base. */
+    META_EXTENDED: {
+      Cyclope: { A: 5, B: 0, karma: 2 },
+      Dryade: { A: 8, B: 6, C: 3, D: 0, karma: 0 },
+      Fomori: { A: 5, B: 0, karma: 12 },
+      Géant: { A: 5, B: 0, karma: 2 },
+      Gnome: { A: 7, B: 4, C: 1, karma: 7 },
+      Hanuman: { A: 7, B: 4, C: 1, karma: 5 },
+      Hobgobelin: { A: 7, B: 4, C: 0, karma: 5 },
+      Koborokuru: { A: 7, B: 4, C: 1, karma: 0 },
+      Menehune: { A: 7, B: 4, C: 1, karma: 2 },
+      Minotaure: { A: 5, B: 0, karma: 2 },
+      Nartaki: { A: 8, B: 6, C: 4, D: 2, E: 0, karma: 0 },
+      Nocturna: { A: 8, B: 6, C: 0, karma: 0 },
+      Ogre: { A: 7, B: 4, C: 0, karma: 8 },
+      Oni: { A: 7, B: 4, C: 0, karma: 4 },
+      Satyre: { A: 7, B: 4, C: 0, karma: 10 },
+      Wakyambi: { A: 8, B: 6, C: 3, D: 0, karma: 12 },
+      "Xapiri thëpë": { A: 8, B: 6, C: 3, D: 0, karma: 0 },
+      Centaure: { A: 6, B: 3, C: 0, karma: 25 },
+      Naga: { A: 4, B: 2, C: 0, karma: 25 },
+      Pixie: { A: 6, B: 3, C: 0, karma: 15 },
+      Sasquatch: { A: 5, B: 2, C: 0, karma: 20 },
+    },
+    /** Colonne Chance de la table étendue (p.76-77) ; tout le reste est 1/6. */
+    CHC_EXTENDED: { Nartaki: [2, 7], Pixie: [2, 7], Centaure: [1, 5], Naga: [1, 5] },
+    /** Métaconsciences : Magie naturelle de 1, remplacée par celle de la
+        priorité si une est prise (p.74). */
+    METACONSCIENCES: ["Centaure", "Naga", "Pixie", "Sasquatch"],
+    /** Coût du métatype en création par Karma (p.140). */
+    META_KARMA: {
+      Humain: 0, Nain: 50, Elfe: 40, Ork: 50, Troll: 90,
+      Centaure: 60, Cyclope: 100, Dryade: 90, Fomori: 100, Géant: 90, Gnome: 50, Hanuman: 100, Hobgobelin: 40,
+      Koborokuru: 70, Menehune: 50, Minotaure: 100, Naga: 95, Nartaki: 40, Nocturna: 60, Ogre: 40, Oni: 50,
+      Pixie: 70, Sasquatch: 90, Satyre: 50, Wakyambi: 70, "Xapiri thëpë": 80,
     },
 
     /** Colonnes de la table, dans l'ordre du livre. */
@@ -270,7 +322,10 @@ Object.assign(EditionSR5, {
         tradition: "",
         lifestyle: "",
         attrs: {},
-        special: { CHC: 0, MAG: 0, RES: 0 },
+        /* Chance : `null` = « au minimum du métatype » (2 pour un Humain,
+           p.68). Un 0 littéral faisait sortir tout PJ qui n'y touchait pas
+           avec Chance 0 — mesuré sur la fiche, Satyre comme Humain. */
+        special: { CHC: null, MAG: 0, RES: 0 },
         skills: [],
         groups: [],
         knowledges: [],
@@ -302,12 +357,55 @@ Object.assign(EditionSR5, {
         table du livre p.68 déjà présente dans l'app (vérifiée cellule par
         cellule le 2026-09-09). Une seule source, jamais deux. */
     _range(meta, key) {
-      const r = EditionSR5.attrRange[meta] || EditionSR5.attrRange.Humain;
-      return r[key] || [1, 6];
+      const base = EditionSR5.attrRange[meta];
+      if (base) return base[key] || [1, 6];
+      // Métavariante ou métaconscience : bornes de Run Faster p.76-77, déjà
+      // dans `Metavariants` ; la colonne Chance n'y est pas, elle vient d'ici.
+      const mv = Metavariants.use("sr5").resolve(meta);
+      if (mv && mv.ranges) {
+        if (key === "CHC") return this.CHC_EXTENDED[meta] || [1, 6];
+        return mv.ranges[key] || [1, 6];
+      }
+      return EditionSR5.attrRange.Humain[key] || [1, 6];
     },
 
+    /** Vrai si une table de bornes CONNAÎT ce métatype — le fait que le
+        garde-fou mesure, plutôt que de le déduire d'une empreinte : le
+        Nartaki a exactement les bornes de l'Humain (p.76) et n'est pas un
+        repli pour autant. */
+    _metaKnown(meta) {
+      return !!EditionSR5.attrRange[meta] || !!Metavariants.use("sr5").resolve(meta);
+    },
+
+    /** Les souches, puis les métavariantes par souche, puis les
+        métaconsciences — l'ordre de Run Faster. Seuls entrent ceux qui ont
+        une ligne de priorité (p.78) ET des bornes (p.76-77). */
     _metaList() {
-      return Object.keys(EditionSR5.attrRange);
+      const souches = Object.keys(EditionSR5.attrRange);
+      const mv = Metavariants.use("sr5");
+      const etendus = Object.keys(this.META_EXTENDED).filter((m) => this._metaKnown(m));
+      const variantes = souches.flatMap((s) => etendus.filter((m) => !this.METACONSCIENCES.includes(m) && mv.baseMetatype(m) === s));
+      const conscientes = etendus.filter((m) => this.METACONSCIENCES.includes(m));
+      return [...souches, ...variantes, ...conscientes];
+    },
+
+    /** Libellé du sélecteur : la souche entre parenthèses pour une
+        métavariante (« Satyre (Ork) »), rien pour une souche ou une
+        métaconscience. */
+    metaLabel(meta) {
+      if (EditionSR5.attrRange[meta] || this.METACONSCIENCES.includes(meta)) return meta;
+      const souche = Metavariants.use("sr5").baseMetatype(meta);
+      return souche && souche !== meta ? `${meta} (${souche})` : meta;
+    },
+
+    /** Karma que le métatype coûte, dans la monnaie de la méthode : le coût
+        additionnel de Run Faster p.78 sur le karma de finition (priorités),
+        le coût de la table p.140 en création par Karma. */
+    metaKarma(build) {
+      const fam = this.methods[build.method]?.family;
+      if (fam === "karma") return this.META_KARMA[build.meta] || 0;
+      if (fam === "priority") return (this.META_EXTENDED[build.meta] || {}).karma || 0;
+      return 0;
     },
 
     /** Le niveau de campagne peut remplacer la colonne Ressources (p.66). */
@@ -336,7 +434,10 @@ Object.assign(EditionSR5, {
     adjustFor(meta, letter) {
       const row = this.priorityTable[letter];
       if (!row || !row.meta) return null;
-      return row.meta[meta] ?? null;
+      if (Object.prototype.hasOwnProperty.call(row.meta, meta)) return row.meta[meta];
+      // Table étendue (Run Faster p.78) : une lettre absente est fermée.
+      const ext = this.META_EXTENDED[meta];
+      return ext && Object.prototype.hasOwnProperty.call(ext, letter) ? ext[letter] : null;
     },
 
     /** Points d'attributs SPÉCIAUX offerts par la colonne Métatype. */
@@ -365,7 +466,10 @@ Object.assign(EditionSR5, {
       const [chcMin] = this._range(build.meta, "CHC");
       const sp = build.special || {};
       const chc = Math.max(0, (sp.CHC == null ? chcMin : sp.CHC) - chcMin);
-      return chc + Math.max(0, sp.MAG || 0) + Math.max(0, sp.RES || 0);
+      // Une métaconscience a une Magie naturelle de 1 (RF p.74) : ce point ne
+      // s'achète pas.
+      const magMin = this.attrRangeFor(build, "MAG")[0];
+      return chc + Math.max(0, (sp.MAG || 0) - magMin) + Math.max(0, sp.RES || 0);
     },
 
     /** Une spécialisation coûte 1 point de compétence à la création (p.91). */
@@ -473,11 +577,13 @@ Object.assign(EditionSR5, {
         cell(colKey, L) {
           const row = self.priorityTable[L];
           if (colKey === "meta") {
-            const pts = row.meta[build.meta];
-            if (pts === undefined) {
+            // Une seule lecture de la table, base ET étendue : `adjustFor`.
+            const pts = self.adjustFor(build.meta, L);
+            if (pts == null) {
               return { html: "—", title: `${build.meta} indisponible en ${L}`, invalid: true };
             }
-            return { html: `${build.meta} (${pts})`, title: `${pts} point(s) d'attributs spéciaux`, invalid: false };
+            const k = self.metaKarma(build);
+            return { html: `${build.meta} (${pts})`, title: `${pts} point(s) d'attributs spéciaux${k ? ` · ${k} karma additionnel` : ""}`, invalid: false };
           }
           if (colKey === "attrs") return { html: String(row.attrs), title: "Points d'attributs", invalid: false };
           if (colKey === "skills") {
@@ -527,7 +633,7 @@ Object.assign(EditionSR5, {
         La catégorie n'est plus jetée : le sélecteur la rend en <optgroup>,
         ce qui était la raison d'être de `flattenEquipPools`. */
     gearCatalog() {
-      return (EditionSR5.equipCatalog() || []).map((g) => ({
+      const objets = (EditionSR5.equipCatalog() || []).map((g) => ({
         category: g.category,
         // `detail` porte la ligne de stats du livre ; l'écran la montre.
         // `kind` est la clé du pool (« pistoletsLourds ») : c'est elle qui
@@ -536,6 +642,93 @@ Object.assign(EditionSR5, {
           .map((it) => ({ label: it.label, detail: it.detail || "", kind: String(it.id || "").split("::")[0] }))
           .filter((it) => it.label),
       }));
+      /* Véhicules et drones : le catalogue existait (js/catalogs/vehicles.js)
+         et l'étape Équipement ne le proposait pas — un véhicule saisi en
+         texte libre n'avait pas de famille, et « ＋ Accessoire » lui offrait
+         tout. Cf. le commentaire jumeau de sr6.creation.js. */
+      return [...objets, ...this._vehicleGroups()];
+    },
+
+    /** Les deux rayons Véhicules / Drones. La Structure du catalogue est la
+        réserve d'emplacements de Rigger 5.0 : elle suit l'objet. */
+    _vehicleGroups() {
+      const ligne = (v) => {
+        const st = v.stats || {};
+        return [
+          st.mania != null ? `Man. ${st.mania}` : "",
+          st.vitesse != null ? `Vit. ${st.vitesse}` : "",
+          st.accel != null ? `Accél. ${st.accel}` : "",
+          st.structure != null ? `Struct. ${st.structure}` : "",
+          st.blindage != null ? `Blind. ${st.blindage}` : "",
+          st.pilote != null ? `Autopilote ${st.pilote}` : "",
+          st.senseurs != null ? `Senseurs ${st.senseurs}` : "",
+        ].filter(Boolean).join(" · ");
+      };
+      const liste = Vehicles.catalogList("sr5");
+      return [
+        { category: "Véhicules", items: liste.filter((v) => v.kind !== "drone").map((v) => ({ label: v.name, detail: ligne(v), kind: "vehicules" })) },
+        { category: "Drones", items: liste.filter((v) => v.kind === "drone").map((v) => ({ label: v.name, detail: ligne(v), kind: "drones" })) },
+      ].filter((g) => g.items.length);
+    },
+
+    /* ---- Famille d'un objet : arme, armure ou véhicule ----
+       Cf. sr6.creation.js : c'est elle qui trie les accessoires proposés. */
+    gearFamily(gear) {
+      const kind = gear && gear.kind;
+      if (kind && Object.prototype.hasOwnProperty.call(this.WEAPON_MOUNTS_BY_KIND, kind)) return "arme";
+      if (kind === "armures") return "armure";
+      if (kind === "vehicules" || kind === "drones") return "vehicule";
+      const nom = String((gear && gear.name) || "").trim().toLowerCase();
+      if (nom && ArmuresSR5.some((a) => a.nom.toLowerCase() === nom)) return "armure";
+      if (nom && Vehicles.matchItem(nom, "sr5")) return "vehicule";
+      for (const ref of ModRefs.normalize(gear && gear.mods)) {
+        const a = this.accessoryById(ModRefs.id(ref));
+        if (!a) continue;
+        if (a.montures !== undefined) return "arme";
+        if (Object.prototype.hasOwnProperty.call(a, "capacite")) return "armure";
+        return "vehicule";
+      }
+      return null;
+    },
+
+    accessoryCatalogFor(gear) {
+      const fam = this.gearFamily(gear);
+      const tout = this.accessoryCatalog();
+      return fam ? tout.filter((g) => g.famille === fam) : tout;
+    },
+
+    gearFromCatalog({ name, detail, kind }) {
+      const item = { name, cost: 0, ...(kind ? { kind } : {}) };
+      const fam = this.gearFamily(item);
+      if (fam === "armure") {
+        const base = this.armorReserveFor({ name, detail });
+        if (base != null) item[this.ARMOR_RESERVE.key] = base;
+      } else if (fam === "vehicule") {
+        const v = Vehicles.catalogList("sr5").find((x) => x.name === name);
+        if (v && v.stats && v.stats.structure != null) item[this.MOD_RESERVE.key] = v.stats.structure;
+      }
+      return item;
+    },
+
+    /** L'indice d'Armure PORTÉ (Livre de Règles p.169) : la meilleure
+        protection de l'équipement, plus les compléments notés « +N » (casque,
+        bouclier — Run & Gun, appendice). Les protections entières ne se
+        cumulent pas ; on retient la plus haute. Rend `{nom, armure}` ou null. */
+    armorWorn(build) {
+      let best = null;
+      let bonus = 0;
+      for (const g of build.gear || []) {
+        const nom = String(g.name || "").trim().toLowerCase();
+        const a = ArmuresSR5.find((x) => x.nom.toLowerCase() === nom);
+        if (!a) continue;
+        const brut = String(a.armure);
+        const n = parseInt(brut.replace(/[^\d]/g, ""), 10);
+        if (Number.isNaN(n)) continue;
+        if (brut.startsWith("+")) bonus += n;
+        else if (!best || n > best.armure) best = { nom: a.nom, armure: n };
+      }
+      if (!best && !bonus) return null;
+      return { nom: best ? best.nom : null, armure: (best ? best.armure : 0) + bonus };
     },
 
     /** Catalogue groupé par section, dans l'ordre de la vie. */
@@ -624,7 +817,7 @@ Object.assign(EditionSR5, {
           path: "meta",
           label: "Métatype",
           type: "select",
-          options: this._metaList().map((m) => ({ value: m, label: m })),
+          options: this._metaList().map((m) => ({ value: m, label: this.metaLabel(m) })),
         },
         {
           path: "gender",
@@ -651,6 +844,16 @@ Object.assign(EditionSR5, {
               label: `${a.label} (${a.karma} karma)`,
             })),
           ),
+        });
+      }
+      // Le métatype se paie en karma quand Run Faster le dit (p.78, p.140) —
+      // rien d'autre ne le rappellerait avant la fin.
+      const kMeta = this.metaKarma(build);
+      if (kMeta) {
+        fields.push({
+          path: "_metaKarma",
+          label: `${build.meta} coûte ${kMeta} karma${this.methods[build.method]?.family === "priority" ? " sur le karma de finition" : ""}.`,
+          type: "note",
         });
       }
       if (this.methods[build.method]?.family === "priority") {
@@ -785,6 +988,8 @@ Object.assign(EditionSR5, {
          le refacturer ici compterait le parcours deux fois et ferait sauter
          les 750. Le report part donc du rang offert, pas du minimum. */
       const offert = this.lifePathGranted(build);
+      // Le métatype d'abord (RF p.140) — Humain 0, Troll 90, Naga 95.
+      if (this.methods[build.method]?.family === "karma") sum += this.META_KARMA[build.meta] || 0;
       // Attributs : cumul de (nouvel indice × 5) depuis le minimum du métatype.
       for (const k of this.ATTRS) {
         const [min] = this._range(build.meta, k);
@@ -1051,8 +1256,9 @@ Object.assign(EditionSR5, {
     finishingKarma(build) {
       const total = this.gameLevels[build.gameLevel]?.karma || 0;
       const tr = this.traitState(build);
-      // Les avantages se paient sur cette bourse, les défauts l'alimentent.
-      const used = (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) + tr.net;
+      // Les avantages se paient sur cette bourse, les défauts l'alimentent ;
+      // le coût additionnel d'une métavariante aussi (RF p.78).
+      const used = (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) + tr.net + this.metaKarma(build);
       const nuyenKarma = this.karmaBought(build).nuyen;
       return {
         total,
@@ -1348,14 +1554,17 @@ Object.assign(EditionSR5, {
       const TYPES = [["accessoire", "Accessoires d'armes"], ["modification", "Modifications d'armes"], ["option", "Options d'accessoires"]];
       const groupesArmes = TYPES.map(([t, nom]) => ({
         category: nom,
+        famille: "arme",
         items: AccessoiresSR5.filter((a) => a.type === t).map((a) => ({ id: a.id, label: a.nom, detail: arme(a) })),
       })).filter((g) => g.items.length);
       const capa = (m) => (m.capacite == null ? `capacité ${m.capaciteNote}` : m.capacite ? `capacité ${m.capacite}` : "aucune capacité");
       const groupesArmure = [{
         category: "Modifications d'armure",
+        famille: "armure",
         items: ArmureModsSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m), m.source].filter(Boolean).join(" · ") })),
       }, {
         category: "Matériel installé dans une armure",
+        famille: "armure",
         items: ArmureCapaciteSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.groupe, m.note || "", m.source].filter(Boolean).join(" · ") })),
       }];
       const places = (m) => {
@@ -1364,7 +1573,7 @@ Object.assign(EditionSR5, {
         return `${m.famille} · empl. ${m.emplacementsNote}`;
       };
       const ORDRE = [...this.MOD_FAMILIES, ""];
-      const sections = ORDRE.map((sec) => ({ category: sec ? `Mods de véhicule — ${sec}` : "Mods de véhicule (Livre de Règles)", items: [] }));
+      const sections = ORDRE.map((sec) => ({ category: sec ? `Mods de véhicule — ${sec}` : "Mods de véhicule (Livre de Règles)", famille: "vehicule", items: [] }));
       for (const m of VehiculeModsSR5) {
         const g = sections[Math.max(0, ORDRE.indexOf(m.famille || ""))];
         g.items.push({
@@ -1601,6 +1810,7 @@ Object.assign(EditionSR5, {
     attrRangeFor(build, key) {
       if (this.SPECIAL_ATTRS.includes(key)) {
         if (key === "CHC") return this._range(build.meta, "CHC");
+        if (key === "MAG" && this.METACONSCIENCES.includes(build.meta)) return [1, 6];
         return [0, 6];
       }
       return this._range(build.meta, key);
@@ -1951,8 +2161,7 @@ Object.assign(EditionSR5, {
         }
         // Le métatype doit exister dans la ligne choisie (le troll n'est pas
         // disponible en C, D, E ; l'ork pas en D/E ; l'elfe pas en E).
-        const row = this.priorityTable[build.priorities.meta];
-        if (row && row.meta[build.meta] === undefined) {
+        if (this.priorityTable[build.priorities.meta] && this.adjustFor(build.meta, build.priorities.meta) == null) {
           out.priorites.push(
             `${build.meta} n'est pas disponible en priorité ${build.priorities.meta} (Métatype).`,
           );
@@ -2035,17 +2244,21 @@ Object.assign(EditionSR5, {
       for (const k of this.ATTRS) {
         const [min, max] = this._range(build.meta, k);
         const val = (build.attrs || {})[k];
-        if (val != null && (val < min || val > max)) {
+        // Un brouillon corrompu (`NaN`) traversait la validation : `NaN < min`
+        // est faux. Cf. sr6.creation.js.
+        if (val != null && !Number.isFinite(Number(val))) {
+          out.attrs.push(`${k} n'est pas un nombre — le brouillon est abîmé, corrige la valeur.`);
+        } else if (val != null && (val < min || val > max)) {
           out.attrs.push(`${k} doit être compris entre ${min} et ${max} pour un ${build.meta}.`);
         }
       }
-      const atMax = this.ATTRS.filter((k) => {
+      const auMax = this.ATTRS.filter((k) => {
         const [min, max] = this._range(build.meta, k);
         return ((build.attrs || {})[k] ?? min) >= max;
-      }).length;
-      if (atMax > 1) {
+      });
+      if (auMax.length > 1) {
         out.attrs.push(
-          `Un seul attribut mental ou physique peut être à son maximum naturel (${atMax} le sont). Chance, Magie et Résonance ne comptent pas.`,
+          `Un seul attribut mental ou physique peut être à son maximum naturel — ${auMax.join(", ")} y sont. Chance, Magie et Résonance ne comptent pas.`,
         );
       }
 
@@ -2174,7 +2387,14 @@ Object.assign(EditionSR5, {
       const physMon = 8 + Math.ceil(attrs.CON / 2);
       const stunMon = 8 + Math.ceil(attrs.VOL / 2);
 
-      return {
+      /* Le profil magique dans les mots du générateur : `special` est lu par
+         `recalc` (Technodrain), le persona vivant et l'en-tête de carte. */
+      const profil = this.magicProfile(build);
+      const SPECIAL = { technomancien: "Technomancien", adepte: "Adepte", magicien: "Magicien", specialise: "Magicien spécialisé", mystique: "Adepte mystique" };
+      const special = profil ? SPECIAL[profil.key] || null : null;
+      const armure = this.armorWorn(build);
+
+      const pnj = {
         id: Utils.uid(),
         edition: "sr5",
         isPC: true,
@@ -2245,9 +2465,21 @@ Object.assign(EditionSR5, {
         stunMon,
         physFilled: 0,
         stunFilled: 0,
+        special,
+        // L'attribut de Drain de la tradition : `recalc` en tire `drainResist`.
+        traditionDrainAttr: this.drainAttr(build),
+        // Armure portée, lue sur l'équipement : `recalc` en tire l'Encaissement.
+        armure: armure ? armure.armure : 0,
+        armureNom: armure ? armure.nom : null,
+        initDice: 1,
         contacts: build.contacts || [],
         notes: build.notes || "",
       };
+      /* ⚠ La fiche d'un PJ n'avait NI initiative, NI limites, NI défense :
+         `generate()` les calcule pour un PNJ, et rien ne les posait ici.
+         Une seule source pour les dérivés — `EditionSR5.recalc`, celle des
+         PNJ générés et de l'édition manuelle. */
+      return EditionSR5.recalc(pnj);
     },
   },
 });
