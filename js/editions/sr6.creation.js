@@ -240,6 +240,10 @@ Object.assign(EditionSR6, {
     KARMA: 50,
     KARMA_TO_NUYEN: 2000,
     KARMA_TO_NUYEN_ENDETTE: 5000,
+    /** « Tout point de Karma non dépensé à la fin de la création de
+        personnage est perdu » (livre de base, quatrième étape) : rien ne se
+        garde, contrairement aux 7 de SR5. */
+    KARMA_CARRYOVER: 0,
     SKILL_CAP: 6,
     SKILL_CAP_APTITUDE: 7,
     TRAIT_MAX: 6,
@@ -420,6 +424,13 @@ Object.assign(EditionSR6, {
       }
       if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
       out.push({ id: "traits", kind: "traits_sr", label: "Traits" });
+      /* Quatrième étape du livre : les 50 karma de personnalisation
+         s'ajoutent au solde des traits, montent attributs et compétences aux
+         coûts de progression, ou deviennent des nuyens (2 000 ¥ le point,
+         5 000 avec Endetté). « Quelle que soit la méthode » : l'étape vaut
+         pour les trois familles, comme le coût du métatype. Elle précède
+         l'Équipement, puisque c'est là que l'argent converti se dépense. */
+      out.push({ id: "finition", kind: "finish_karma", label: "Karma" });
       out.push(
         { id: "gear", kind: "gear_nuyen", label: "Équipement" },
         { id: "contacts", kind: "contacts", label: "Contacts" },
@@ -451,6 +462,8 @@ Object.assign(EditionSR6, {
         lifestyle: "",
         /** Traits retenus : `{id, karma}`. */
         traits: [],
+        /** Achats faits sur le karma de personnalisation : `{kind, name, cost}`. */
+        karmaBuys: [],
         gear: [],
         contacts: [],
         pcNuyen: 0, // PC investis en ressources (méthode par points)
@@ -548,25 +561,166 @@ Object.assign(EditionSR6, {
       }
       return this.priorityTable[build.priorities.skills]?.skills || 0;
     },
+    /** Ressources de la colonne (ou des PC), PLUS le karma converti : « vous
+        devriez avoir un petit pactole de nuyens obtenus grâce au choix de
+        Ressources et au Karma dépensé » (cinquième étape). */
     nuyenTotal(build) {
-      if (this.methods[build.method]?.family === "pc") {
-        return Math.min(this.pc.nuyenMax, (build.pcNuyen || 0) * this.pc.nuyenPerPC);
-      }
+      return this.nuyenBase(build) + this.finishingKarma(build).nuyen;
+    },
+    nuyenBase(build) {
+      const fam = this.methods[build.method]?.family;
+      if (fam === "pc") return Math.min(this.pc.nuyenMax, (build.pcNuyen || 0) * this.pc.nuyenPerPC);
+      if (fam === "modules") return this.lifeModuleGrants(build).nuyen || 0;
       return this.priorityTable[build.priorities.nuyen]?.nuyen || 0;
+    },
+
+    /* ============================================================
+       KARMA DE PERSONNALISATION (livre de base, quatrième étape ;
+       coûts de progression p.70)
+       « Chaque personnage reçoit 50 points de Karma, ajoutés au solde de
+       karma issu des traits […] dépensés pour augmenter les compétences et
+       les attributs mais aussi pour obtenir plus d'argent […] au taux de
+       2 000 nuyens par point de Karma ou de 5 000 avec le trait Endetté.
+       Tout point de Karma non dépensé […] est perdu. »
+       Même moteur qu'en SR5 (`karmaBuys`, achats défaits dans l'ordre
+       inverse), autres constantes : rien ne se garde, pas de plafond de
+       conversion, un taux qui dépend d'un trait.
+       ============================================================ */
+    karmaBought(build) {
+      const out = { attrs: {}, skills: {}, nuyen: 0 };
+      for (const a of build.karmaBuys || []) {
+        if (a.kind === "attr") out.attrs[a.name] = (out.attrs[a.name] || 0) + 1;
+        else if (a.kind === "skill") out.skills[a.name] = (out.skills[a.name] || 0) + 1;
+        else if (a.kind === "nuyen") out.nuyen += a.cost || 0;
+      }
+      return out;
+    },
+
+    /** ¥ par point de karma converti : 5 000 avec le trait Endetté. */
+    karmaRate(build) {
+      const endette = (build.traits || []).some((t) => t.id === "endette");
+      return endette ? this.KARMA_TO_NUYEN_ENDETTE : this.KARMA_TO_NUYEN;
+    },
+
+    finishingKarma(build) {
+      const total = this.KARMA;
+      const k = this.metaKarma(build);
+      const used =
+        (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) +
+        this.traitState(build).net +
+        (typeof k === "number" ? k : 0);
+      const nuyenKarma = this.karmaBought(build).nuyen;
+      const rate = this.karmaRate(build);
+      return {
+        total,
+        used,
+        left: total - used,
+        carryoverMax: this.KARMA_CARRYOVER,
+        nuyenKarma,
+        nuyenKarmaMax: null, // aucun plafond au livre
+        rate,
+        nuyen: nuyenKarma * rate,
+      };
+    },
+
+    /** Ce que le karma peut monter, avec l'état de chaque cible : les huit
+        attributs, l'Atout, la Magie ou la Résonance quand le profil en a,
+        puis les compétences prises. L'écran ne connaît pas ces listes. */
+    karmaTargets(build) {
+      /* En méthode à modules, attributs et compétences sont ceux du parcours
+         (`lifeModuleGrants`), pas de `build.attrs` : un achat ici n'aurait
+         rien à monter. Le karma y sert aux nuyens ; on le dit. */
+      if (this.methods[build.method]?.family === "modules") {
+        return { attrs: [], skills: [], note: "En méthode à modules, attributs et compétences viennent du parcours : ce karma se convertit en nuyens." };
+      }
+      const prof = this.magicProfile(build);
+      const special = ["ATO"];
+      if (prof && prof.key === "technomancien") special.push("RES");
+      else if (prof) special.push("MAG");
+      const attrs = [...this.ATTRS.map((k) => ({ key: k, path: "attrs" })), ...special.map((k) => ({ key: k, path: "special" }))].map(({ key, path }) => {
+        const [min, max] = this.attrRangeFor(build, key);
+        const cur = (build[path] || {})[key] ?? min;
+        return { kind: "attr", name: key, courant: cur, plafond: max };
+      });
+      const skills = (build.skills || []).map((s) => ({ kind: "skill", name: s.name, courant: s.val || 0, plafond: this.SKILL_CAP }));
+      return { attrs, skills };
+    },
+
+    karmaBuyCost(build, kind, name) {
+      const kc = this.karmaCosts;
+      if (kind === "attr") {
+        const [min, max] = this.attrRangeFor(build, name);
+        const cur = this.SPECIAL_ATTRS.includes(name) ? (build.special || {})[name] ?? min : (build.attrs || {})[name] ?? min;
+        return cur >= max ? null : (cur + 1) * kc.attrMult;
+      }
+      if (kind === "skill") {
+        const row = (build.skills || []).find((x) => x.name === name);
+        const cur = row ? row.val || 0 : 0;
+        return cur >= this.SKILL_CAP ? null : (cur + 1) * kc.skillMult;
+      }
+      if (kind === "nuyen") return 1;
+      return null;
+    },
+
+    applyKarmaBuy(build, kind, name) {
+      const cost = this.karmaBuyCost(build, kind, name);
+      if (cost == null) return build;
+      if (cost > this.finishingKarma(build).left) return build;
+      build.karmaBuys = build.karmaBuys || [];
+      if (kind === "attr") {
+        const [min] = this.attrRangeFor(build, name);
+        const cible = this.SPECIAL_ATTRS.includes(name) ? (build.special = build.special || {}) : (build.attrs = build.attrs || {});
+        cible[name] = (cible[name] ?? min) + 1;
+      } else if (kind === "skill") {
+        build.skills = build.skills || [];
+        const row = build.skills.find((x) => x.name === name);
+        if (row) row.val = (row.val || 0) + 1;
+        else build.skills.push({ name, val: 1, attr: (this.SKILLS.find((x) => x.name === name) || {}).attr || "LOG", specs: [] });
+      }
+      build.karmaBuys.push({ kind, name, cost });
+      return build;
+    },
+
+    /** Défait le DERNIER achat sur cette cible : le remboursement est le prix payé. */
+    undoKarmaBuy(build, kind, name) {
+      const liste = build.karmaBuys || [];
+      for (let i = liste.length - 1; i >= 0; i--) {
+        const a = liste[i];
+        if (a.kind !== kind || a.name !== name) continue;
+        if (kind === "attr") {
+          const cible = this.SPECIAL_ATTRS.includes(name) ? build.special : build.attrs;
+          if (cible && cible[name] != null) cible[name] -= 1;
+        } else if (kind === "skill") {
+          const row = (build.skills || []).find((x) => x.name === name);
+          if (row) row.val = Math.max(0, (row.val || 0) - 1);
+        }
+        liste.splice(i, 1);
+        return build;
+      }
+      return build;
     },
 
     /* ---- Dépenses ---- */
     /** ⚠ Depuis 1, un pour un (p.66) — pas depuis l'indice du métatype
         comme en SR5, ni depuis 0 comme en Anarchy 2. */
+    /* ⚠ Un rang acheté au karma NE consomme PAS les points de la colonne :
+       chaque compte retranche ce que `karmaBought` a payé — sinon monter un
+       attribut au karma ferait « Trop de points d'attributs ». Même parti
+       qu'en SR5. */
     attrPointsUsed(build) {
-      return this.ATTRS.reduce((sum, k) => sum + Math.max(0, ((build.attrs || {})[k] ?? 1) - 1), 0);
+      const achete = this.karmaBought(build).attrs;
+      return this.ATTRS.reduce((sum, k) => sum + Math.max(0, ((build.attrs || {})[k] ?? 1) - 1 - (achete[k] || 0)), 0);
     },
 
     /** Points d'ajustement : Atout au-dessus de 1, Magie/Résonance, et les
         attributs « spéciaux de métatype » montés au-delà de 6. */
     adjustPointsUsed(build) {
       const sp = build.special || {};
-      let sum = Math.max(0, (sp.ATO ?? 1) - 1) + Math.max(0, sp.MAG || 0) + Math.max(0, sp.RES || 0);
+      const achete = this.karmaBought(build).attrs;
+      let sum =
+        Math.max(0, (sp.ATO ?? 1) - 1 - (achete.ATO || 0)) +
+        Math.max(0, (sp.MAG || 0) - (achete.MAG || 0)) +
+        Math.max(0, (sp.RES || 0) - (achete.RES || 0));
       for (const k of this.ATTRS) {
         if (!this._isMetaSpecial(build.meta, k)) continue;
         sum += Math.max(0, ((build.attrs || {})[k] ?? 1) - 6);
@@ -576,8 +730,9 @@ Object.assign(EditionSR6, {
 
     /** Un point = un rang, ou une spécialisation (p.66). */
     skillPointsUsed(build) {
+      const achete = this.karmaBought(build).skills;
       return (build.skills || []).reduce(
-        (sum, s) => sum + (s.val || 0) + (s.specs || []).length,
+        (sum, s) => sum + Math.max(0, (s.val || 0) - (achete[s.name] || 0)) + (s.specs || []).length,
         0,
       );
     },
@@ -760,13 +915,11 @@ Object.assign(EditionSR6, {
       };
     },
 
-    /** Karma de personnalisation DÉPENSÉ : le métatype (Compagnon p.90) et le
-        net des traits (p.69). La jauge de tête affichait `used: 0` — une
-        barre qui ne bougeait jamais, alors que le module savait les deux.
-        La conversion karma → nuyens (`KARMA_TO_NUYEN`) n'est pas modélisée. */
+    /** Karma de personnalisation DÉPENSÉ : métatype, net des traits, achats
+        de finition (attributs, compétences, nuyens). La jauge de tête
+        affichait `used: 0` — une barre qui ne bougeait jamais. */
     karmaUsed(build) {
-      const k = this.metaKarma(build);
-      return (typeof k === "number" ? k : 0) + this.traitState(build).net;
+      return this.finishingKarma(build).used;
     },
 
     budget(build) {
@@ -1897,7 +2050,7 @@ Object.assign(EditionSR6, {
        VALIDATION (core p.66-69)
        ============================================================ */
     stepErrors(build) {
-      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], traits: [], contacts: [] };
+      const out = { concept: [], priorites: [], modules: [], attrs: [], skills: [], magie: [], gear: [], traits: [], finition: [], contacts: [] };
       const method = this.methods[build.method];
       if (!method) {
         out.concept.push("Méthode de création inconnue.");
@@ -2092,6 +2245,18 @@ Object.assign(EditionSR6, {
         out.gear.push(
           `Ressources dépassées : ${nUsed.toLocaleString("fr-FR")} / ${nTotal.toLocaleString("fr-FR")} ¥.`,
         );
+      } else if (nTotal - nUsed > this.CASH_MAX) {
+        /* « Si vous avez plus de 5 000 nuyens, revenez en arrière et achetez
+           quelque chose d'autre » (cinquième étape). La consigne le disait,
+           rien ne le vérifiait. */
+        out.gear.push(
+          `Il reste ${(nTotal - nUsed).toLocaleString("fr-FR")} ¥ : au plus ${this.CASH_MAX.toLocaleString("fr-FR")} ¥ de liquide à la création — dépense le reste, ou convertis moins de karma.`,
+        );
+      }
+      const kf = this.finishingKarma(build);
+      if (kf.used > kf.total) out.finition.push(`Karma de personnalisation dépassé (${kf.used}/${kf.total}).`);
+      if (kf.left > kf.carryoverMax) {
+        out.finition.push(`${kf.left} karma non dépensés — ils seront perdus : monte un attribut ou une compétence, ou convertis-les en nuyens.`);
       }
       for (const g of build.gear || []) {
         if (g.availability != null && g.availability !== "" && Number(g.availability) >= this.ILLEGAL_AVAILABILITY_CAP) {

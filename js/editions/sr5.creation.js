@@ -299,7 +299,7 @@ Object.assign(EditionSR5, {
          plus de 7. Les méthodes au karma et à modules n'en ont pas besoin :
          leur monnaie EST le karma, `karmaUsed` s'en charge déjà. */
       out.push({ id: "traits", kind: "traits_sr", label: "Traits" });
-      if (fam === "priority") out.push({ id: "finition", kind: "finish_sr5", label: "Karma" });
+      if (fam === "priority") out.push({ id: "finition", kind: "finish_karma", label: "Karma" });
       out.push(
         { id: "contacts", kind: "contacts", label: "Contacts" },
         { id: "review", kind: "review", label: "Révision" },
@@ -414,6 +414,13 @@ Object.assign(EditionSR5, {
       const letter = build.priorities.nuyen;
       if (level && level.nuyenByPriority) return level.nuyenByPriority[letter] || 0;
       return this.priorityTable[letter]?.nuyen || 0;
+    },
+
+    /** Colonne Ressources PLUS le karma converti (p.102) : la finition
+        affichait « 2 karma convertis · 4 000 ¥ » sans que le total de nuyens
+        ne bouge — la conversion était nommée, pas comptée. */
+    nuyenTotal(build) {
+      return this.nuyenFor(build) + this.finishingKarma(build).nuyen;
     },
 
     /** Points d'attributs offerts par la colonne Attributs. */
@@ -912,7 +919,7 @@ Object.assign(EditionSR5, {
           { label: "Spéciaux", used: this.specialPointsUsed(build), total: this.specialPointsTotal(build), step: "attrs" },
           { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build)[0], step: "skills" },
           { label: "Groupes", used: this.groupPointsUsed(build), total: this.skillPointsTotal(build)[1], step: "skills" },
-          { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenFor(build), step: "gear" },
+          { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenTotal(build), step: "gear" },
         ];
         if (method.points) {
           const used = this.priorityPointsUsed(build);
@@ -1282,8 +1289,21 @@ Object.assign(EditionSR5, {
         carryoverMax: this.KARMA_CARRYOVER,
         nuyenKarma,
         nuyenKarmaMax: this.gameLevels[build.gameLevel]?.karmaToNuyenMax || 0,
+        rate: this.KARMA_TO_NUYEN,
         nuyen: nuyenKarma * this.KARMA_TO_NUYEN,
       };
+    },
+
+    /** Ce que le karma de finition peut monter : attributs, spéciaux, puis
+        les compétences prises. L'écran lit cette liste, pas `ATTRS`. */
+    karmaTargets(build) {
+      const attrs = [...this.ATTRS, ...this.SPECIAL_ATTRS].map((k) => {
+        const [min, max] = this.attrRangeFor(build, k);
+        const cur = this.SPECIAL_ATTRS.includes(k) ? (build.special || {})[k] ?? min : (build.attrs || {})[k] ?? min;
+        return { kind: "attr", name: k, courant: cur, plafond: max };
+      });
+      const skills = (build.skills || []).map((s) => ({ kind: "skill", name: s.name, courant: s.val || 0, plafond: this.SKILL_CAP }));
+      return { attrs, skills };
     },
 
     /** Coût du PROCHAIN rang d'une cible — « nouvel indice × multiplicateur »
@@ -2199,7 +2219,7 @@ Object.assign(EditionSR5, {
         if (gUsed > groups) out.skills.push(`Trop de points de groupes (${gUsed}/${groups}).`);
 
         const nuyen = this.nuyenUsed(build);
-        const nuyenMax = this.nuyenFor(build);
+        const nuyenMax = this.nuyenTotal(build);
         if (nuyen > nuyenMax) {
           out.gear.push(
             `Ressources dépassées : ${nuyen.toLocaleString("fr-FR")} / ${nuyenMax.toLocaleString("fr-FR")} ¥.`,
