@@ -837,7 +837,14 @@ export const CharGen = {
         <select id="cg-sr-skill-pick">${opts || "<option>— toutes prises —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-skill-sr">＋ Ajouter</button>
       </div>
-      <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">hors réserve de compétences</span></div>
+      <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">${
+        c.knowledgeState
+          ? (() => {
+              const ks = c.knowledgeState(b);
+              return `${ks.count} / ${ks.free} gratuites (Logique + langue maternelle)${ks.extra ? ` · ${ks.extra} au karma (${ks.karma})` : ""}`;
+            })()
+          : "hors réserve de compétences"
+      }</span></div>
       ${knowRows}
       <div class="cluster cg-add-row">
         <input type="text" id="cg-sr-knowledge" placeholder="ex. Pègre de Seattle, Sperethiel…">
@@ -984,6 +991,12 @@ export const CharGen = {
       : cibles.attrs.length
         ? `<p class="cg-hint">Aucune compétence à monter — prends-en à l'étape Compétences.</p>`
         : "";
+    // Connaissances : seulement quand le module en fait des cibles (SR5,
+    // « nouvel indice × 1 ») ; SR6 les compte d'office au-delà des gratuites.
+    const knows = (cibles.knowledges || []).length
+      ? `<div class="cg-section-label">Connaissances <span class="cg-section-note">nouvel indice × ${c.karmaCosts.knowledgeMult ?? c.karmaCosts.knowledge}</span></div>${cibles.knowledges.map(ligne).join("")}`
+      : "";
+    const notes = (cibles.notes || (cibles.note ? [cibles.note] : [])).map((t) => `<p class="cg-hint">${this._esc(t)}</p>`).join("");
     const sansPlafond = kf.nuyenKarmaMax == null;
     const nuyenPossible = (sansPlafond || kf.nuyenKarma < kf.nuyenKarmaMax) && kf.left >= 1;
     const garde = kf.carryoverMax > 0 ? `on n'en garde pas plus de ${kf.carryoverMax} après la création` : "tout karma non dépensé est perdu";
@@ -991,12 +1004,12 @@ export const CharGen = {
     return `<div class="stack">
       ${this._stepErrorBox("finition")}
       <p class="cg-hint"><strong>${kf.left}</strong> karma à dépenser ici sur ${kf.total} — ${garde}.</p>
-      ${cibles.note ? `<p class="cg-hint">${this._esc(cibles.note)}</p>` : ""}
 
       ${cibles.attrs.length ? `<div class="cg-section-label">Attributs <span class="cg-section-note">nouvel indice × ${c.karmaCosts.attrMult}</span></div>${attrs}` : ""}
 
       ${cibles.attrs.length ? `<div class="cg-section-label">Compétences <span class="cg-section-note">nouvel indice × ${c.karmaCosts.skillMult}</span></div>` : ""}
       ${skills}
+      ${knows}
 
       <div class="cg-section-label">Ressources <span class="cg-section-note">${kf.nuyenKarma}${sansPlafond ? "" : ` / ${kf.nuyenKarmaMax}`} karma convertis · ${argent(kf.nuyen)} ¥</span></div>
       <div class="cluster cg-list-row">
@@ -1005,7 +1018,7 @@ export const CharGen = {
         <button class="btn-icon-tiny danger" data-cg-action="karma-undo" data-kind="nuyen" data-name="nuyen" ${kf.nuyenKarma ? "" : "disabled"} title="Annuler">✕</button>
       </div>
 
-      <p class="cg-hint">Traits, contacts et connaissances s'achètent aussi avec ce karma ; l'application ne le modélise pas encore.</p>
+      ${notes}
     </div>`;
   },
 

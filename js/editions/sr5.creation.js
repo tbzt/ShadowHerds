@@ -502,7 +502,10 @@ Object.assign(EditionSR5, {
     },
 
     knowledgePointsUsed(build) {
-      return (build.knowledges || []).reduce((sum, k) => sum + (k.val || 1), 0);
+      // Un rang de connaissance acheté au karma (finition) ne consomme pas
+      // les points gratuits — même parti que pour attributs et compétences.
+      const achete = this.karmaBought(build).knowledges;
+      return (build.knowledges || []).reduce((sum, k) => sum + Math.max(0, (k.val || 1) - (achete[k.name] || 0)), 0);
     },
 
     nuyenUsed(build) {
@@ -1043,6 +1046,8 @@ Object.assign(EditionSR5, {
       if (build.awakened && this.awakenedKarma[build.awakened]) {
         sum += this.awakenedKarma[build.awakened].karma;
       }
+      // Contacts : Charisme × 3 offerts, le reste au karma (RF p.140 → p.100).
+      sum += this.contactKarmaExcess(build);
       // Nuyens achetés au karma.
       sum += Math.ceil(this.nuyenUsed(build) / this.KARMA_TO_NUYEN);
       return sum;
@@ -1143,8 +1148,17 @@ Object.assign(EditionSR5, {
         0,
       );
     },
+    /** Ce que les contacts coûtent AU-DELÀ du karma offert : « 1 point par
+        point d'Influence, 1 par point de Loyauté » (table Achats et
+        restrictions supplémentaires, étape 7). Un contact ne peut pas
+        coûter plus de `CONTACT_KARMA_MAX` à la création. */
+    CONTACT_KARMA_MAX: 7,
+    contactKarmaExcess(build) {
+      return Math.max(0, this.contactKarmaUsed(build) - this.contactKarmaTotal(build));
+    },
     contactsHint(build) {
-      return `Connexion + Loyauté se paient en karma : ${this.contactKarmaUsed(build)} / ${this.contactKarmaTotal(build)} offerts (Charisme × ${this.gameLevels[build.gameLevel]?.contactMult || 3}).`;
+      const exces = this.contactKarmaExcess(build);
+      return `Connexion + Loyauté : ${this.contactKarmaUsed(build)} / ${this.contactKarmaTotal(build)} points offerts (Charisme × ${this.gameLevels[build.gameLevel]?.contactMult || 3}). Au-delà, 1 karma le point sur le karma de finition${exces ? ` — ${exces} pour l'instant` : ""} ; au plus ${this.CONTACT_KARMA_MAX} par contact.`;
     },
 
     /** Nettoyage du brouillon : en SR5 les connaissances sont des OBJETS
@@ -1280,7 +1294,11 @@ Object.assign(EditionSR5, {
       const tr = this.traitState(build);
       // Les avantages se paient sur cette bourse, les défauts l'alimentent ;
       // le coût additionnel d'une métavariante aussi (RF p.78).
-      const used = (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) + tr.net + this.metaKarma(build);
+      const used =
+        (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) +
+        tr.net +
+        this.metaKarma(build) +
+        this.contactKarmaExcess(build);
       const nuyenKarma = this.karmaBought(build).nuyen;
       return {
         total,
@@ -1303,7 +1321,17 @@ Object.assign(EditionSR5, {
         return { kind: "attr", name: k, courant: cur, plafond: max };
       });
       const skills = (build.skills || []).map((s) => ({ kind: "skill", name: s.name, courant: s.val || 0, plafond: this.SKILL_CAP }));
-      return { attrs, skills };
+      const knowledges = (build.knowledges || []).filter((k) => k && k.name).map((k) => ({ kind: "know", name: k.name, courant: k.val || 1, plafond: null }));
+      const exces = this.contactKarmaExcess(build);
+      return {
+        attrs,
+        skills,
+        knowledges,
+        notes: [
+          "Les traits se prennent à l'étape Traits : leur solde pèse déjà sur cette bourse.",
+          exces ? `Contacts : ${exces} karma au-delà des points offerts, comptés ici.` : "Les contacts au-delà des points offerts (Charisme × 3) se paient ici, 1 karma le point.",
+        ],
+      };
     },
 
     /** Coût du PROCHAIN rang d'une cible — « nouvel indice × multiplicateur »
@@ -2320,12 +2348,14 @@ Object.assign(EditionSR5, {
         out.skills.push(`Trop de points de connaissances (${kUsed}/${kTotal} = (INT + LOG) × 2).`);
       }
 
-      const cUsed = this.contactKarmaUsed(build);
-      const cTotal = this.contactKarmaTotal(build);
-      if (cUsed > cTotal) {
-        out.contacts.push(
-          `Contacts : ${cUsed} / ${cTotal} points de karma offerts (Charisme × ${this.gameLevels[build.gameLevel]?.contactMult || 3}). Le surplus se paie sur le karma de création.`,
-        );
+      /* Le surplus de contacts n'est plus une erreur : il est CHARGÉ sur le
+         karma (`contactKarmaExcess`) — l'ancien message le disait sans le
+         faire. Reste la restriction du livre : 7 karma par contact au plus. */
+      for (const ct of build.contacts || []) {
+        const cout = (Number(ct.connection) || 0) + (Number(ct.loyalty) || 0);
+        if (cout > this.CONTACT_KARMA_MAX) {
+          out.contacts.push(`${ct.name || "Contact"} : Connexion + Loyauté = ${cout}, au plus ${this.CONTACT_KARMA_MAX} par contact à la création.`);
+        }
       }
 
       const level = this.gameLevels[build.gameLevel];

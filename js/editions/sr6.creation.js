@@ -596,6 +596,18 @@ Object.assign(EditionSR6, {
       return out;
     },
 
+    /** Connaissances et langues : « un nombre égal à leur Logique (après une
+        éventuelle amélioration avec du Karma de personnalisation) plus une
+        Langue maternelle gratuite » (Finalisation). Au-delà, une Connaissance
+        coûte 3 karma (Progression, p.70), pris sur cette même bourse. */
+    knowledgeState(build) {
+      const log = (build.attrs || {}).LOG ?? 1;
+      const free = log + 1;
+      const count = (build.knowledges || []).filter((k) => k && String(k.name || k).trim()).length;
+      const extra = Math.max(0, count - free);
+      return { free, count, extra, karma: extra * this.karmaCosts.knowledge, log };
+    },
+
     /** ¥ par point de karma converti : 5 000 avec le trait Endetté. */
     karmaRate(build) {
       const endette = (build.traits || []).some((t) => t.id === "endette");
@@ -608,7 +620,8 @@ Object.assign(EditionSR6, {
       const used =
         (build.karmaBuys || []).reduce((n, a) => n + (a.cost || 0), 0) +
         this.traitState(build).net +
-        (typeof k === "number" ? k : 0);
+        (typeof k === "number" ? k : 0) +
+        this.knowledgeState(build).karma;
       const nuyenKarma = this.karmaBought(build).nuyen;
       const rate = this.karmaRate(build);
       return {
@@ -631,7 +644,7 @@ Object.assign(EditionSR6, {
          (`lifeModuleGrants`), pas de `build.attrs` : un achat ici n'aurait
          rien à monter. Le karma y sert aux nuyens ; on le dit. */
       if (this.methods[build.method]?.family === "modules") {
-        return { attrs: [], skills: [], note: "En méthode à modules, attributs et compétences viennent du parcours : ce karma se convertit en nuyens." };
+        return { attrs: [], skills: [], notes: ["En méthode à modules, attributs et compétences viennent du parcours : ce karma se convertit en nuyens."] };
       }
       const prof = this.magicProfile(build);
       const special = ["ATO"];
@@ -643,7 +656,16 @@ Object.assign(EditionSR6, {
         return { kind: "attr", name: key, courant: cur, plafond: max };
       });
       const skills = (build.skills || []).map((s) => ({ kind: "skill", name: s.name, courant: s.val || 0, plafond: this.SKILL_CAP }));
-      return { attrs, skills };
+      const ks = this.knowledgeState(build);
+      return {
+        attrs,
+        skills,
+        notes: [
+          "Les traits se prennent à l'étape Traits : leur solde pèse déjà sur cette bourse.",
+          ks.extra ? `Connaissances : ${ks.extra} au-delà des ${ks.free} gratuites (Logique + langue maternelle), ${ks.karma} karma comptés ici.` : `Connaissances : ${ks.free} gratuites (Logique + langue maternelle), puis ${this.karmaCosts.knowledge} karma chacune, comptées ici.`,
+          "Les contacts se paient en points de contacts (Charisme × 6), pas en karma.",
+        ],
+      };
     },
 
     karmaBuyCost(build, kind, name) {
