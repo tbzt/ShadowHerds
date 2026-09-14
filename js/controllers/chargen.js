@@ -322,20 +322,24 @@ export const CharGen = {
     const b = this._build;
     const val = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), b);
 
+    /* Les champs se posent sur une grille à deux colonnes : les textes libres
+       (nom, concept) et les notes prennent toute la largeur, les choix se
+       rangent deux par ligne. Une colonne unique de champs pleine largeur
+       faisait un formulaire administratif. */
     const field = (f) => {
       const cur = val(f.path);
       if (f.type === "checkbox") {
-        return `<div class="stack cg-field"><label><input type="checkbox" data-cg="${f.path}" ${cur ? "checked" : ""}> ${this._esc(f.label)}</label></div>`;
+        return `<div class="stack cg-field cg-field--wide"><label><input type="checkbox" data-cg="${f.path}" ${cur ? "checked" : ""}> ${this._esc(f.label)}</label></div>`;
       }
       if (f.type === "number") {
         return `<div class="stack cg-field"><label>${this._esc(f.label)}</label>
           <input type="number" min="${f.min ?? 0}" data-cg="${f.path}" value="${cur ?? 0}"></div>`;
       }
       if (f.type === "note") {
-        return `<p class="cg-hint">${this._esc(f.label)}</p>`;
+        return `<p class="cg-hint cg-note cg-field--wide">${this._esc(f.label)}</p>`;
       }
       if (f.type === "text") {
-        return `<div class="stack cg-field"><label>${this._esc(f.label)}</label>
+        return `<div class="stack cg-field cg-field--wide"><label>${this._esc(f.label)}</label>
           <input type="text" data-cg="${f.path}" data-cg-rerender="false" value="${this._esc(cur || "")}" placeholder="${this._esc(f.placeholder || "")}"></div>`;
       }
       const opts = (f.options || [])
@@ -360,7 +364,7 @@ export const CharGen = {
         <span class="cg-section-label">Démarrage rapide</span>
         <div class="cg-preset-btns">${presetBtns}</div>
       </div>` : ""}
-      ${c.conceptFields(b).map(field).join("")}
+      <div class="cg-form-grid">${c.conceptFields(b).map(field).join("")}</div>
     </div>`;
   },
 
@@ -381,17 +385,19 @@ export const CharGen = {
       const val = brut == null || brut === "" ? spec.min : Number(brut);
       const atMax = val >= spec.max;
       const outOfRange = val < spec.min || val > spec.max;
-      return `<div class="cluster cg-attr-row">
-        <span class="cg-attr-label">${this._esc(spec.key)}</span>
+      /* Une TUILE par attribut : le code en tête, la valeur au centre entre
+         deux boutons de 44 px, la fourchette dessous. La liste verticale
+         « CON − 1 + (1–6) hors bornes » se lisait comme un tableau de
+         comptable ; ici on voit d'un coup d'œil où l'on a mis ses points. */
+      const nom = Utils.attrFullName ? Utils.attrFullName(spec.key) : "";
+      return `<div class="cg-attr-tile${atMax ? " is-max" : ""}${outOfRange ? " is-out" : ""}" title="${this._esc(nom || spec.key)}">
+        <span class="cg-attr-label">${this._esc(spec.key)}${spec.note ? ` <em class="cg-attr-note">${this._esc(spec.note)}</em>` : ""}</span>
         <div class="cg-stepper">
           <button class="cg-step-btn" data-cg-action="attr-dec" data-key="${this._esc(spec.key)}" data-path="${this._esc(path)}" ${val <= spec.min ? "disabled" : ""} aria-label="Diminuer ${this._esc(spec.key)}">−</button>
-          <input type="number" min="${spec.min}" max="${spec.max}" data-cg="${this._esc(path)}" value="${val}">
+          <input type="number" min="${spec.min}" max="${spec.max}" data-cg="${this._esc(path)}" value="${val}" aria-label="${this._esc(nom || spec.key)}">
           <button class="cg-step-btn" data-cg-action="attr-inc" data-key="${this._esc(spec.key)}" data-path="${this._esc(path)}" ${val >= spec.max ? "disabled" : ""} aria-label="Augmenter ${this._esc(spec.key)}">＋</button>
         </div>
-        <span class="cg-attr-range">(${spec.min}–${spec.max})</span>
-        ${atMax ? '<span class="tag">au max</span>' : ""}
-        ${spec.note ? `<span class="cg-attr-note">${this._esc(spec.note)}</span>` : ""}
-        ${outOfRange ? '<span class="cg-error-text">hors bornes</span>' : ""}
+        <span class="cg-attr-range">${spec.min}–${spec.max}${atMax ? " · max" : ""}${outOfRange ? ' · <span class="cg-error-text">hors bornes</span>' : ""}</span>
       </div>`;
     };
 
@@ -402,7 +408,7 @@ export const CharGen = {
               g.total != null ? ` <span class="cg-section-note">${g.used}/${g.total}</span>` : ""
             }</div>`
           : "";
-        return head + g.specs.map(row).join("");
+        return head + `<div class="cg-attr-grid">${g.specs.map(row).join("")}</div>`;
       })
       .join("");
 
@@ -478,7 +484,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("skills")}
-      <p class="cg-hint">Table : ${table.skillPoints} points de compétences (spés et connaissances comprises). Plafond d'indice : ${level.skillMax}. ⚄ = pool de dés (indice + attribut). Plusieurs spés possibles par compétence (indice ≥ 1, sans limite de nombre).</p>
+      <p class="cg-hint">${table.skillPoints} points de compétences, spécialisations et connaissances comprises. Indice maximum : ${level.skillMax}.</p>
       ${rows || '<p class="cg-hint">Aucune compétence choisie.</p>'}
       <div class="cluster cg-add-row">
         <select id="cg-skill-pick">${addOpts || "<option>— toutes prises —</option>"}</select>
@@ -555,7 +561,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("edges")}
-      <p class="cg-hint">Table : ${table.edgePoints} points d'atouts (5 000 ¥/niveau). Modèles RR pré-câblés (s'appliquent automatiquement) + atout personnalisé en texte libre pour le reste du système (cyberware/bioware/pouvoirs d'adepte…, p.58-63).</p>
+      <p class="cg-hint">${table.edgePoints} points d'atouts, 5 000 ¥ le niveau. Les modèles RR s'appliquent seuls ; le reste s'écrit en texte libre.</p>
       ${edgeRows || '<p class="cg-hint">Aucun atout.</p>'}
       <div class="cluster cg-add-row">
         <select id="cg-edge-spec-pick">${specOpts || "<option value=\"\">— aucune spécialisation —</option>"}</select>
@@ -599,7 +605,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("gear")}
-      <p class="cg-hint">Kit gratuit (${this._esc(table.label)}) : commlink, faux SIN et armure 3 toujours fournis. Au-delà des quotas, chaque élément est payé en nuyens.</p>
+      <p class="cg-hint">Kit ${this._esc(table.label)} : commlink, faux SIN et armure 3 fournis. Au-delà des quotas, chaque élément se paie en nuyens.</p>
       <div class="cg-section-label">Armes normales <span class="cg-section-note">${this._kitMeter(chosenNormal, table.kit.armesNormales, "au kit")}</span></div>
       <div class="cg-check-grid">${normalChecks}</div>
       ${speChecks ? `<div class="cg-section-label">Armes de spécialiste <span class="cg-section-note">${this._kitMeter(chosenSpe, table.kit.armesSpe, "au kit")}</span></div>
@@ -738,7 +744,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("skills")}
-      <p class="cg-hint">Deux réserves distinctes (colonne Compétences « ${this._esc(b.priorities.skills)} ») : ${indivTotal} points individuels et ${groupTotal} points de groupes. Plafond d'indice à la création : ${cap} (7 avec le trait Aptitude, p.90). Une spécialisation coûte 1 point.</p>
+      <p class="cg-hint">${indivTotal} points de compétences et ${groupTotal} points de groupes. Indice maximum ${cap}, 7 avec Aptitude. Une spécialisation coûte 1 point.</p>
       <div class="cg-section-label">Compétences actives <span class="cg-section-note">${c.skillPointsUsed(b)} / ${indivTotal}</span></div>
       ${skillRows || '<p class="cg-hint">Aucune compétence.</p>'}
       <div class="cluster cg-add-row">
@@ -753,7 +759,7 @@ export const CharGen = {
         ${
           groupTotal
             ? ""
-            : `<span class="cg-section-note">La colonne Compétences « ${this._esc(b.priorities.skills)} » n'accorde <strong>aucun</strong> point de groupe (p.67) : prenez A, B ou C pour en acheter.</span>`
+            : `<span class="cg-section-note">La colonne « ${this._esc(b.priorities.skills)} » n'accorde aucun point de groupe : prenez A, B ou C pour en acheter.</span>`
         }
       </div>
       <div class="cg-section-label">Connaissances et langues <span class="cg-section-note">${c.knowledgePointsUsed(b)} / ${c.knowledgePointsTotal(b)} — (INT + LOG) × 2</span></div>
@@ -824,7 +830,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("skills")}
-      <p class="cg-hint">Une seule réserve : ${total} rangs. Un point donne un rang, ou une spécialisation. Rang maximum à la création : ${cap} (7 avec le trait Aptitude), et <strong>une seule compétence</strong> peut l'atteindre.</p>
+      <p class="cg-hint">${total} rangs à répartir : un point = un rang ou une spécialisation. Rang maximum ${cap} (7 avec Aptitude), pour une seule compétence.</p>
       <div class="cg-section-label">Compétences <span class="cg-section-note">${used} / ${total}</span></div>
       ${rows || '<p class="cg-hint">Aucune compétence.</p>'}
       <div class="cluster cg-add-row">
@@ -870,7 +876,6 @@ export const CharGen = {
           <span class="tag">${ref.type === "avantage" ? "avantage" : "défaut"}</span>
           <input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? k[0]}" style="width:4.5em" title="Karma retenu">
           <span class="cg-section-note">karma (livre : ${this._esc(borne)})${ref.parNiveau ? " par niveau" : ""}</span>
-          <span class="cg-section-note">${this._esc(ref.source)}</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>
         </div>`;
       })
@@ -921,7 +926,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("traits")}
-      <p class="cg-hint">Anarchy ne fait pas payer ses traits : on en <strong>compte</strong>. ${st.maxAvantages} Avantage(s) et ${st.maxDefauts} Défaut(s) (p.70). Le livre invite à en inventer — le catalogue suggère, il ne ferme pas.</p>
+      <p class="cg-hint">${st.maxAvantages} Avantage(s) et ${st.maxDefauts} Défaut(s), sans coût. Le catalogue suggère ; inventez le vôtre si besoin.</p>
       <div class="cg-section-label">Retenus
         <span class="cg-section-note">${this._kitMeter(st.avantages, st.maxAvantages, "avantages")} · ${this._kitMeter(st.defauts, st.maxDefauts, "défauts")}</span>
       </div>
@@ -984,7 +989,7 @@ export const CharGen = {
     const nuyenPossible = kf.nuyenKarma < kf.nuyenKarmaMax && kf.left >= 1;
     return `<div class="stack">
       ${this._stepErrorBox("finition")}
-      <p class="cg-hint">${kf.used} / ${kf.total} karma dépensés — il en reste <strong>${kf.left}</strong>. On n'en garde pas plus de ${kf.carryoverMax} après la création (p.102) : le reste est à dépenser ici.</p>
+      <p class="cg-hint"><strong>${kf.left}</strong> karma à dépenser ici — on n'en garde pas plus de ${kf.carryoverMax} après la création.</p>
 
       <div class="cg-section-label">Attributs <span class="cg-section-note">nouvel indice × ${c.karmaCosts.attrMult}</span></div>
       ${attrs}
@@ -999,7 +1004,7 @@ export const CharGen = {
         <button class="btn-icon-tiny danger" data-cg-action="karma-undo" data-kind="nuyen" data-name="nuyen" ${kf.nuyenKarma ? "" : "disabled"} title="Annuler">✕</button>
       </div>
 
-      <p class="cg-hint">Les traits, contacts et connaissances s'achètent aussi sur ce karma au livre ; l'application ne les modélise pas encore ici.</p>
+      <p class="cg-hint">Traits, contacts et connaissances s'achètent aussi avec ce karma ; l'application ne le modélise pas encore.</p>
     </div>`;
   },
 
@@ -1185,7 +1190,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("gear")}
-      <p class="cg-hint">Ressources : ${(nuyenCell?.used || 0).toLocaleString("fr-FR")} / ${(nuyenCell?.total || 0).toLocaleString("fr-FR")} ¥. ${this._esc(limits.hint)} La ligne de stats du livre s'affiche sous chaque entrée ; les PRIX, eux, n'y figurent pas et se lisent au livre.</p>
+      <p class="cg-hint">${this._esc(limits.hint)} Les prix ne sont pas au catalogue : saisissez-les.</p>
       ${rows || '<p class="cg-hint">Aucun équipement.</p>'}
       ${this._catalogPicker({
         id: "gear",
@@ -1353,14 +1358,14 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("skills")}
-      <p class="cg-hint">${c.MAX_SKILLS} compétences au maximum, indice ${c.SKILL_MIN} à ${lvl.skillCap} pour un ${this._esc(lvl.label)}. La réserve vaut ${total} points : ${lvl.skillPoints} du niveau de jeu, corrigés par le métatype et par l'armure choisie. Une <strong>seule</strong> spécialisation pour tout le personnage, à ${c.SPEC_COST} point, sur une compétence d'indice ${c.SPEC_MIN_RANK} minimum.</p>
+      <p class="cg-hint">${total} points à répartir, ${c.MAX_SKILLS} compétences au maximum, indice ${c.SKILL_MIN} à ${lvl.skillCap}. Une seule spécialisation pour tout le personnage, sur une compétence d'indice ${c.SPEC_MIN_RANK} au moins.</p>
       <div class="cg-section-label">Compétences <span class="cg-section-note">${used} / ${total} · ${(b.skills || []).length}/${c.MAX_SKILLS}</span></div>
       ${rows || '<p class="cg-hint">Aucune compétence.</p>'}
       <div class="cluster cg-add-row">
         <select id="cg-sr-skill-pick">${opts || "<option>— toutes prises —</option>"}</select>
         <button class="btn-secondary btn-small" data-cg-action="add-skill-sr" ${(b.skills || []).length >= c.MAX_SKILLS ? "disabled" : ""}>＋ Ajouter</button>
       </div>
-      <div class="cg-section-label">Connaissance <span class="cg-section-note">les mots-clés en tiennent aussi lieu (p.78)</span></div>
+      <div class="cg-section-label">Connaissance <span class="cg-section-note">les mots-clés en tiennent aussi lieu</span></div>
       ${knows}
       <div class="cluster cg-add-row">
         <input type="text" id="cg-sr-knowledge" placeholder="ex. Gangs de Seattle…">
@@ -1387,7 +1392,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("edges")}
-      <p class="cg-hint">${lvl.edgePoints} points d'Atouts pour un ${this._esc(lvl.label)}, ${c.MAX_EDGES} Atouts au maximum. Quels que soient vos choix, les modificateurs plafonnent à ±${c.edgeCaps.dice} dés, ${c.edgeCaps.rerollFailures} relances d'échecs, ${c.edgeCaps.rerollEnemySuccesses} relances de réussites adverses et ${c.edgeCaps.armor} points d'Armure.</p>
+      <p class="cg-hint">${lvl.edgePoints} points d'Atouts, ${c.MAX_EDGES} Atouts au maximum. Plafonds : ±${c.edgeCaps.dice} dés, ${c.edgeCaps.rerollFailures} relances d'échecs, ${c.edgeCaps.rerollEnemySuccesses} relances adverses, ${c.edgeCaps.armor} d'Armure.</p>
       ${mv ? `<p class="cg-hint">⚑ ${this._esc(b.meta)} impose l'Atout <strong>${this._esc(mv.edge.nom)}</strong> au niveau ${mv.edge.niveau}${mv.edge.niveau ? `, soit ${mv.edge.niveau} point(s) déjà engagés` : " — offert"}.</p>` : ""}
       ${rows || '<p class="cg-hint">Aucun Atout.</p>'}
       <div class="cluster cg-add-row">
@@ -1441,7 +1446,7 @@ export const CharGen = {
         <input type="text" id="cg-gear-text" placeholder="Nom de l'équipement…">
         <button class="btn-secondary btn-small" data-cg-action="add-gear">＋ Ajouter</button>
       </div>
-      <p class="cg-hint">Le commlink est toujours fourni, en plus de l'armure et des armes (p.78).</p>
+      <p class="cg-hint">Le commlink est toujours fourni, avec l'armure et les armes.</p>
     </div>`;
   },
 
@@ -1535,7 +1540,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("modules")}
-      <p class="cg-hint">On compose une vie, on ne répartit pas des points : chaque module coûte du karma sur les ${LM.karma}. L'ordre de choix raconte le parcours. Le solde finalise ensuite le personnage aux étapes Attributs et Compétences — le livre laisse volontairement les attributs bas.</p>
+      <p class="cg-hint">Chaque module coûte du karma sur ${LM.karma} ; l'ordre raconte le parcours. Le solde finalise ensuite attributs et compétences.</p>
       ${issues.length ? `<div class="stack cg-step-errors">${issues.map((t) => `<div class="cg-hint">⚑ ${this._esc(t)}</div>`).join("")}</div>` : ""}
       <div class="cg-section-label">Parcours <span class="cg-section-note">${b.lifePath.filter((x) => x && x.id).length} modules · ${parcours} karma</span></div>
       ${
@@ -1544,7 +1549,7 @@ export const CharGen = {
               <span class="cg-section-note">Gains reportés : ${etat.appliques} / ${etat.lisibles} lisibles${etat.manuels ? ` · ${etat.manuels} ligne(s) à la main` : ""}</span>
               ${etat.appliques < etat.lisibles ? `<button class="btn-secondary btn-small" data-cg-action="lp-apply-all">＋ Tout reporter</button>` : ""}
             </div>
-            <p class="cg-hint">Ces gains sont PAYÉS par le karma des modules : les reporter ne consomme rien de plus. Le solde ne sert qu'à ce que vous ajoutez par-dessus.</p>`
+            <p class="cg-hint">Ces gains sont déjà payés par les modules : les reporter ne coûte rien.</p>`
           : ""
       }
       ${rows || '<p class="cg-hint">Parcours vide. Commencez par une nationalité.</p>'}
@@ -1552,7 +1557,7 @@ export const CharGen = {
         <select id="cg-lp-pick">${groupes}</select>
         <button class="btn-secondary btn-small" data-cg-action="lp-add">＋ Ajouter au parcours</button>
       </div>
-      <p class="cg-hint">Plafonds propres à cette méthode : compétence active ${LM.skillCap} — l'excédent est <strong>transféré</strong> à une compétence du même attribut, pas perdu — connaissances ${LM.knowledgeCap}, et tout rang d'attribut au-delà du maximum du métatype est <strong>perdu</strong>.</p>
+      <p class="cg-hint">Plafonds : compétence active ${LM.skillCap} (l'excédent passe à une compétence du même attribut), connaissance ${LM.knowledgeCap} ; un attribut au-delà du maximum du métatype est perdu.</p>
     </div>`;
   },
 
@@ -1662,13 +1667,13 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("modules")}
-      <p class="cg-hint">Trois modules imposés, puis <strong>exactement ${LM.adultSlots}</strong> modules d'âge adulte — ni plus, ni moins, et un seul peut être pris deux fois. L'ordre raconte votre vie. Les ressources s'additionnent et ne se dépensent qu'à la fin.</p>
+      <p class="cg-hint">Trois modules imposés, puis exactement ${LM.adultSlots} modules adultes ; un seul peut être pris deux fois. Les ressources s'additionnent et se dépensent à la fin.</p>
       <div class="cg-section-label">Les trois premiers, imposés</div>
       ${imposes}
       ${(grants.overflow || []).length ? `<div class="stack cg-step-errors"><div class="cg-hint">⚑ Rangs perdus au plafond : ${this._esc(grants.overflow.join(" · "))}. Le parcours donne plus que le métatype ne peut porter — c'est légal, mais l'excédent ne compte pas.</div></div>` : ""}
       <div class="cg-section-label">Âge adulte <span class="cg-section-note">${grants.modules}/${LM.adultSlots} · ${grants.nuyen.toLocaleString("fr-FR")} ¥ · ${grants.contactPts} points de contacts</span></div>
       ${slots.join("")}
-      <p class="cg-hint">Dans cette méthode, le Charisme n'apporte aucun point de contacts et ne plafonne plus les indices : ce sont les modules qui les donnent, et le plafond est ${LM.contacts.ratingCap}.</p>
+      <p class="cg-hint">Ici, ce sont les modules qui donnent les points de contacts (indice maximum ${LM.contacts.ratingCap}), pas le Charisme.</p>
     </div>`;
   },
 
@@ -1706,7 +1711,7 @@ export const CharGen = {
       `<button class="btn-secondary btn-small cg-dice-btn" data-cg-action="draw-narrative" data-field="${field}" title="Remplit les champs vides">⚄ Inspiration</button>`;
 
     return `<div class="stack">
-      <div class="cg-section-label">5 mots-clés (p.50-51) ${diceBtn("keywords")}</div>
+      <div class="cg-section-label">5 mots-clés ${diceBtn("keywords")}</div>
       <div class="cg-narrative-grid">${kwFields}</div>
       <div class="cg-section-label">4 comportements ${diceBtn("behaviors")}</div>
       <div class="cg-narrative-grid">${bhFields}</div>

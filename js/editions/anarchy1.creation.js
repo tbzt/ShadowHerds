@@ -393,7 +393,7 @@ Object.assign(EditionAnarchy1, {
       const used = this.attrPointsUsed(build);
       const total = this.attrPointsTotal(build);
       return {
-        hint: `Chaque attribut part de 1, puis on répartit ${total} points (p.78). Le bonus de métatype est OFFERT et ne coûte rien. La Chance ne se répartit pas ici : elle vaut ${this.luckValue(build)} et ne monte qu'en dépensant des points d'Atouts, un pour un.`,
+        hint: `Chaque attribut part de 1 ; ${total} points à répartir. Le bonus de métatype est offert. La Chance vaut ${this.luckValue(build)} et ne monte qu'avec des points d'Atouts.`,
         groups: [{ used, total, specs }],
         footer: `Points utilisés : ${used} / ${total}`,
       };
@@ -516,7 +516,7 @@ Object.assign(EditionAnarchy1, {
         }
       }
       const totalSpecs = (build.skills || []).reduce((n, s) => n + (s.specs || []).length, 0);
-      if (totalSpecs > 1) out.skills.push("Une seule spécialisation pour tout le personnage (p.78).");
+      if (totalSpecs > 1) out.skills.push("Une seule spécialisation pour tout le personnage.");
 
       const eU = this.edgePointsUsed(build);
       if (eU > lvl.edgePoints) out.edges.push(`Trop de points d'Atouts (${eU}/${lvl.edgePoints}).`);

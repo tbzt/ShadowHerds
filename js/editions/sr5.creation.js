@@ -533,8 +533,8 @@ Object.assign(EditionSR5, {
         columns: this.PRIORITY_COLUMNS,
         cost: method?.points ? this.priorityCost : null,
         hint: method?.points
-          ? `${method.label} : ${method.points} points à répartir (A = 4, B = 3, C = 2, D = 1, E = 0). Une même lettre peut resservir, mais chaque colonne ne se choisit qu'une fois (Run Faster p.138).`
-          : `${method?.label} : une lettre par colonne, et chaque lettre ne sert qu'une fois (Livre de Règles p.67).`,
+          ? `${method.points} points à répartir : A coûte 4, B 3, C 2, D 1, E 0. Une même lettre peut resservir.`
+          : `Une lettre par colonne, chacune une seule fois.`,
         footer: method?.points
           ? `Points de priorité : ${this.priorityPointsUsed(build)} / ${method.points}`
           : "",
@@ -801,7 +801,7 @@ Object.assign(EditionSR5, {
           type: "select",
           options: Object.entries(this.methods).map(([v, m]) => ({
             value: v,
-            label: `${m.label}${m.wip ? " — catalogue à venir" : ""} · ${m.source}`,
+            label: `${m.label}${m.wip ? " — catalogue à venir" : ""}`,
           })),
         },
         {
@@ -1068,8 +1068,8 @@ Object.assign(EditionSR5, {
 
       return {
         hint: isPriority
-          ? `Colonne Attributs « ${build.priorities.attrs} » : ${total} points, comptés DEPUIS l'indice de départ du métatype (p.68). Les points spéciaux viennent de la colonne Métatype et ne servent qu'à Chance, Magie et Résonance.`
-          : `Création par Karma : chaque point coûte le nouvel indice × 5 (p.107). Les attributs partent du minimum du métatype.`,
+          ? `${total} points à répartir depuis l'indice de départ du métatype. Les points spéciaux ne servent qu'à Chance, Magie et Résonance.`
+          : `Chaque point coûte le nouvel indice × 5, depuis le minimum du métatype.`,
         groups: [
           {
             label: "Attributs mentaux et physiques",
@@ -1111,7 +1111,7 @@ Object.assign(EditionSR5, {
       return {
         availability: level.availability,
         deviceRating: level.deviceRating,
-        hint: `À la création, indice maximum ${level.deviceRating} et Disponibilité maximum ${level.availability} (p.98).`,
+        hint: `Indice maximum ${level.deviceRating}, Disponibilité maximum ${level.availability}.`,
       };
     },
 
@@ -1137,7 +1137,7 @@ Object.assign(EditionSR5, {
       );
     },
     contactsHint(build) {
-      return `Connexion + Loyauté se paient en karma : ${this.contactKarmaUsed(build)} / ${this.contactKarmaTotal(build)} offerts (Charisme × ${this.gameLevels[build.gameLevel]?.contactMult || 3}, p.100).`;
+      return `Connexion + Loyauté se paient en karma : ${this.contactKarmaUsed(build)} / ${this.contactKarmaTotal(build)} offerts (Charisme × ${this.gameLevels[build.gameLevel]?.contactMult || 3}).`;
     },
 
     /** Nettoyage du brouillon : en SR5 les connaissances sont des OBJETS
@@ -1182,7 +1182,8 @@ Object.assign(EditionSR5, {
         par[t.type].push({
           id: t.id,
           label: t.nom,
-          detail: `${k} karma · ${t.source}${t.parNiveau ? " · par niveau" : ""}${t.desc ? " — " + t.desc : ""}`,
+          // La page du livre reste dans la donnée (`source`), pas à l'écran.
+          detail: `${k} karma${t.parNiveau ? " par niveau" : ""}${t.desc ? " — " + t.desc : ""}`,
         });
       }
       return [
@@ -1205,7 +1206,7 @@ Object.assign(EditionSR5, {
         et défauts, SR6 borne un nombre. Le contrôleur ne doit pas connaître
         la différence. */
     traitHint() {
-      return `Les Avantages coûtent du karma, les Défauts en rendent. Le plafond de ${this.QUALITY_CAP} karma s'applique SÉPARÉMENT aux uns et aux autres (p.73) : ce n'est pas un solde net. La différence pèse ensuite sur le karma de finition.`;
+      return `Les Avantages coûtent du karma, les Défauts en rendent : ${this.QUALITY_CAP} karma au plus de chaque côté. La différence pèse sur le karma de finition.`;
     },
 
     traitSummary(build) {
@@ -1443,7 +1444,7 @@ Object.assign(EditionSR5, {
        pas : elle est saisie. `MOD_RESERVE` nomme le champ et l'étiquette,
        pour que le contrôleur ne code ni « Structure » ni « Résistance ». */
     MOD_FAMILIES: ["Motorisation", "Protection", "Armement", "Châssis", "Électronique", "Habillage"],
-    MOD_RESERVE: { key: "structure", label: "Structure", hint: "Structure du véhicule (Rigger 5.0 p.151) : chacune des six réserves d'emplacements en vaut autant." },
+    MOD_RESERVE: { key: "structure", label: "Structure", hint: "Structure du véhicule : chacune des six réserves d'emplacements en vaut autant." },
 
     /** Les six réserves, ce qu'il en reste, et les mods qu'on ne peut pas
         compter (emplacements en formule : « Indice × 2 », « [Indice] »). */
@@ -1535,10 +1536,10 @@ Object.assign(EditionSR5, {
       meleeWeapons: [],
     },
     WEAPON_MOUNTS_NOTES: {
-      pistoletsPoche: "aucun emplacement (Run & Gun p.69)",
-      armesSpeciales: "à la discrétion du meneur de jeu (Run & Gun p.69)",
-      armesExotiques: "à la discrétion du meneur de jeu (Run & Gun p.69)",
-      meleeWeapons: "la table de Run & Gun p.69 ne couvre que les armes à feu",
+      pistoletsPoche: "aucun emplacement",
+      armesSpeciales: "à la discrétion du meneur de jeu",
+      armesExotiques: "à la discrétion du meneur de jeu",
+      meleeWeapons: "la table des emplacements ne couvre que les armes à feu",
     },
 
     /** Les montures qu'une arme offre. `montures: null` = le livre ne le dit
@@ -1551,7 +1552,7 @@ Object.assign(EditionSR5, {
       const montures = brut === "*" ? this.WEAPON_MOUNTS.slice() : brut;
       return {
         montures,
-        note: (kind && this.WEAPON_MOUNTS_NOTES[kind]) || (montures ? null : "emplacements non précisés pour ce type : les six sont supposés libres (Run & Gun p.69)"),
+        note: (kind && this.WEAPON_MOUNTS_NOTES[kind]) || (montures ? null : "emplacements non précisés pour ce type : les six sont supposés libres"),
         source: "Run & Gun p.69",
       };
     },
@@ -1563,7 +1564,7 @@ Object.assign(EditionSR5, {
       const argent = (x) => (x.cout != null ? `${x.supplement ? "+" : ""}${x.cout.toLocaleString("fr-FR")} ¥` : x.coutNote || "coût au livre");
       const arme = (a) => [
         a.montures === "*" ? "toute monture" : a.montures && a.montures.length ? "monture : " + a.montures.join(" ou ") : "sans monture",
-        `Disp. ${a.dispo}`, argent(a), a.note || "", a.source,
+        `Disp. ${a.dispo}`, argent(a), a.note || "",
       ].filter(Boolean).join(" · ");
       const TYPES = [["accessoire", "Accessoires d'armes"], ["modification", "Modifications d'armes"], ["option", "Options d'accessoires"]];
       const groupesArmes = TYPES.map(([t, nom]) => ({
@@ -1575,11 +1576,11 @@ Object.assign(EditionSR5, {
       const groupesArmure = [{
         category: "Modifications d'armure",
         famille: "armure",
-        items: ArmureModsSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m), m.source].filter(Boolean).join(" · ") })),
+        items: ArmureModsSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m)].filter(Boolean).join(" · ") })),
       }, {
         category: "Matériel installé dans une armure",
         famille: "armure",
-        items: ArmureCapaciteSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.groupe, m.note || "", m.source].filter(Boolean).join(" · ") })),
+        items: ArmureCapaciteSR5.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), m.groupe, m.note || ""].filter(Boolean).join(" · ") })),
       }];
       const places = (m) => {
         if (!m.famille) return "";
@@ -1596,7 +1597,7 @@ Object.assign(EditionSR5, {
           detail: [
             places(m), m.indice ? `indice ${m.indice}` : "", m.seuil ? `seuil ${m.seuil}` : "", m.outil || "",
             m.competence ? `+ ${m.competence}` : "", `Disp. ${m.dispo}`, argent(m), m.note || "",
-            m.statut === "proposé" ? `* traduction proposée (VO : ${m.sourceVO})` : "", m.errata ? "errata" : "", m.source,
+            m.statut === "proposé" ? `* traduction proposée (VO : ${m.sourceVO})` : "", m.errata ? "errata" : "",
           ].filter(Boolean).join(" · "),
         });
       }
@@ -1622,7 +1623,7 @@ Object.assign(EditionSR5, {
        (« Veste pare-balles [9] ») quand il est un nombre, saisi sinon.
        ⚠ Un coût en capacité « [Indice] » dépend de l'indice choisi, que
        l'app ne porte pas par objet : NOMMÉ, pas compté 0. */
-    ARMOR_RESERVE: { key: "capacite", label: "Capacité", hint: "égale à l'indice d'Armure (Livre de Règles p.437), sauf capacité propre donnée par Run & Gun (p.223-224)" },
+    ARMOR_RESERVE: { key: "capacite", label: "Capacité", hint: "égale à l'indice d'Armure, sauf capacité propre de la table des armures" },
 
     /** La réserve d'une armure au moment du choix. Run & Gun (p.223-224)
         donne à certaines armures une capacité PROPRE, différente de leur
@@ -1809,7 +1810,7 @@ Object.assign(EditionSR5, {
         groups.push({
           key: "adeptPowers",
           label: "Pouvoirs d'adepte",
-          hint: `${pp} point(s) de pouvoir (autant que la Magie, p.69). Le catalogue ne porte pas le coût de chaque pouvoir : à vérifier au livre.`,
+          hint: `${pp} point(s) de pouvoir, autant que la Magie. Le catalogue ne porte pas le coût de chaque pouvoir.`,
           total: null,
           used: (build.adeptPowers || []).length,
           chosen: build.adeptPowers || [],
@@ -1896,13 +1897,13 @@ Object.assign(EditionSR5, {
           de: "l_adolescence_ecole_preparatoire",
           cibles: ["enfance_fugitif", "enfance_education_rurale_en_zone_isolee"],
           texte:
-            "École préparatoire est incompatible avec Fugitif et avec Éducation rurale en zone isolée (p.147).",
+            "École préparatoire est incompatible avec Fugitif et avec Éducation rurale en zone isolée.",
         },
         {
           kind: "impose",
           de: "l_adolescence_education_magique",
           texte:
-            "Éducation magique exige d'avoir acheté une catégorie éveillée (p.141), puis impose le module Corporatiste — directement, ou après des Études supérieures qui restent facultatives.",
+            "Éducation magique exige d'avoir acheté une catégorie éveillée, puis impose le module Corporatiste — directement, ou après des Études supérieures qui restent facultatives.",
         },
         {
           kind: "impose",
@@ -2226,7 +2227,7 @@ Object.assign(EditionSR5, {
 
         // Une nationalité est le point de départ obligé (p.142).
         if (!pris.some((x) => this.lifePathById(x.id)?.section === "Nationalités")) {
-          out.modules.push("Il faut choisir une nationalité et sa région d'origine (p.142).");
+          out.modules.push("Il faut choisir une nationalité et sa région d'origine.");
         }
         // Sous-ligne à trancher quand le module en propose.
         for (const sl of pris) {
@@ -2244,7 +2245,7 @@ Object.assign(EditionSR5, {
            peuvent pas être conservés (ils sont utilisés ou perdus !) »
            (Run Faster p.142). On pouvait finir à 297/800 sans un mot. */
         if (used < method.karma) {
-          out.concept.push(`Tout le karma doit être dépensé (${used}/${method.karma}) — le reliquat est perdu, pas conservé (p.142).`);
+          out.concept.push(`Tout le karma doit être dépensé (${used}/${method.karma}) — le reliquat est perdu.`);
         }
         const cap = this.karmaNuyenCap(build);
         if (this.nuyenUsed(build) > cap) {
@@ -2316,10 +2317,10 @@ Object.assign(EditionSR5, {
 
       const tr = this.traitState(build);
       if (tr.coutAvantages > tr.cap) {
-        out.traits.push(`Au plus ${tr.cap} karma d'Avantages à la création (${tr.coutAvantages}) — p.73.`);
+        out.traits.push(`Au plus ${tr.cap} karma d'Avantages à la création (${tr.coutAvantages}).`);
       }
       if (tr.bonusDefauts > tr.cap) {
-        out.traits.push(`Au plus ${tr.cap} karma de Défauts à la création (${tr.bonusDefauts}) — p.73.`);
+        out.traits.push(`Au plus ${tr.cap} karma de Défauts à la création (${tr.bonusDefauts}).`);
       }
 
       if (method.family === "priority") {
@@ -2327,7 +2328,7 @@ Object.assign(EditionSR5, {
         if (kf.used > kf.total) out.finition.push(`Karma de finition dépassé (${kf.used}/${kf.total}).`);
         if (kf.left > kf.carryoverMax) {
           out.finition.push(
-            `On ne garde pas plus de ${kf.carryoverMax} karma après la création (p.102) : il en reste ${kf.left}.`,
+            `On ne garde pas plus de ${kf.carryoverMax} karma après la création : il en reste ${kf.left}.`,
           );
         }
         if (kf.nuyenKarma > kf.nuyenKarmaMax) {

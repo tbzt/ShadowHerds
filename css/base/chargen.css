@@ -2,28 +2,43 @@
    CHARGEN — assistant de création de personnage jouable
    ============================================================ */
 .chargen-modal {
-  width: min(760px, 96vw);
+  width: min(860px, 96vw);
 }
 /* CHARGEN — 2e écran témoin D3 : composé avec .cluster/.stack
    (foundation.css). Ce qui reste ci-dessous n'est que le vrai écart au
    défaut de la primitive — gap non standard, wrap forcé à nowrap, décor
    propre au site. */
+/* Le rail d'étapes : UNE ligne qui défile, à toute largeur. Sur téléphone,
+   les huit onglets se rangeaient sur trois lignes et mangeaient l'écran
+   avec le reste du chrome ; l'onglet courant est amené en vue par le
+   contrôleur. */
 .cg-steps {
   gap: var(--sp-1);
   margin-bottom: var(--sp-3);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.cg-steps::-webkit-scrollbar {
+  display: none;
 }
 .cg-step-tab {
-  /* CIBLE TACTILE — 22px avec le seul padding : deux pixels sous les 24 que
-     le projet tient partout. Ce sont les huit onglets d'étape, la navigation
-     principale de l'assistant sur téléphone. */
-  min-height: 24px;
-  padding: 4px 10px;
-  font-size: var(--fs-2xs);
+  /* CIBLE TACTILE — 32 px de haut ; c'est la navigation principale de
+     l'assistant sur téléphone. */
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px 4px 6px;
+  font-size: var(--fs-xs);
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   color: var(--text-dim);
   cursor: pointer;
+  white-space: nowrap;
   transition:
     border-color var(--dur-base),
     color var(--dur-base),
@@ -39,12 +54,17 @@
 }
 .cg-step-tab.active {
   border-color: var(--accent);
-  color: var(--accent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.cg-step-tab.active .cg-tab-num {
+  background: var(--accent);
+  color: var(--bg);
 }
 .cg-budget {
   margin-bottom: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
-  background: var(--glow);
+  background: color-mix(in srgb, var(--bg-raised) 70%, transparent);
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
@@ -54,6 +74,15 @@
 .cg-budget-cell {
   font-size: var(--fs-xs);
   color: var(--text-dim);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+  white-space: nowrap;
+  transition: opacity var(--dur-base);
+}
+.cg-budget-row > .cg-budget-cell:first-child {
+  background: transparent;
+  padding-left: 0;
 }
 .cg-budget-cell.over {
   color: var(--danger);
@@ -77,49 +106,180 @@
 .cg-step-section {
   margin-top: var(--sp-2);
 }
+/* Formulaire du Concept : deux colonnes, les textes libres en pleine
+   largeur. */
+.cg-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3) var(--sp-4);
+}
+.cg-field--wide {
+  grid-column: 1 / -1;
+}
 .cg-field {
   gap: var(--sp-1);
+  min-width: 0;
 }
 .cg-field label {
-  font-size: var(--fs-xs);
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+}
+.cg-field input:not([type="checkbox"]),
+.cg-field select {
+  width: 100%;
+  min-height: 40px;
+}
+/* Case à cocher : le libellé est la cible, la case reste une case. */
+.cg-field label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: var(--fs-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+.cg-field input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex: none;
 }
 .cg-hint {
   font-size: var(--fs-xs);
   color: var(--text-dim);
+  line-height: 1.45;
+}
+/* La consigne de tête d'une étape : un encart calme, une ligne d'action —
+   plus de paragraphe de règles avec ses renvois de page. */
+#chargen-body > .stack > .cg-hint:first-child,
+#chargen-body > .stack > .cg-step-errors + .cg-hint {
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 2px solid var(--accent2);
+  background: color-mix(in srgb, var(--accent2) 7%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  color: var(--text);
+}
+.cg-note {
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-left: 2px solid var(--accent2);
+  background: color-mix(in srgb, var(--accent2) 7%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 .cg-error-text {
   color: var(--danger);
   font-size: var(--fs-xs);
 }
-.cg-attr-row {
-  flex-wrap: nowrap;
+/* Tuiles d'attributs : code, valeur entre −/+, fourchette. */
+.cg-attr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+.cg-attr-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--sp-2) var(--sp-2) var(--sp-2);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--dur-base);
+}
+.cg-attr-tile:focus-within {
+  border-color: var(--accent);
+}
+.cg-attr-tile.is-max {
+  border-color: color-mix(in srgb, var(--accent2) 60%, var(--border));
+}
+.cg-attr-tile.is-out {
+  border-color: var(--danger);
 }
 .cg-attr-label {
-  width: 3em;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text);
+}
+.cg-attr-note {
+  font-family: var(--font-body);
+  font-style: normal;
+  font-weight: 400;
+  font-size: var(--fs-2xs);
+  color: var(--text-dim);
+  letter-spacing: 0;
 }
 .cg-attr-range {
-  font-size: var(--fs-xs);
+  font-family: var(--font-mono);
+  font-size: var(--fs-2xs);
   color: var(--text-dim);
+  letter-spacing: 0.08em;
 }
+/* Lignes de liste (compétences, traits, équipement, contacts) : des cartes
+   basses et calmes, pas des lignes de tableau tirées au cordeau. */
 .cg-list-row {
   flex-wrap: nowrap;
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--dur-base);
+}
+.cg-list-row:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+.cg-list-row > strong,
+.cg-list-row > .cg-pick-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  letter-spacing: 0.02em;
+}
+.cg-list-row input[type="number"] {
+  text-align: center;
+  min-height: 34px;
+}
+.cg-list-row > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Le retrait ferme la ligne, à droite. */
+.cg-list-row > .btn-icon-tiny.danger {
+  margin-left: auto;
+}
+.cg-pool {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .cg-add-row {
   margin-top: 6px;
+  align-items: center;
+}
+.cg-add-row > input[type="text"],
+.cg-add-row > select {
+  flex: 1 1 14em;
+  min-width: 0;
+  min-height: 38px;
 }
 .cg-section-label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);
   color: var(--accent2);
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  margin-top: 10px;
+  margin-top: var(--sp-4);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
 }
 .cg-check-grid {
   display: grid;
@@ -133,7 +293,7 @@
 }
 .cg-narrative-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: var(--sp-2);
 }
 .cg-review-errors {
@@ -268,16 +428,29 @@
 .cg-stepper {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 .cg-stepper input {
   width: 3.2em;
+  min-height: 44px;
   text-align: center;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
+.cg-stepper input::-webkit-outer-spin-button,
+.cg-stepper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+/* CIBLE TACTILE — 44 px : c'est le geste répété seize fois par personnage. */
 .cg-step-btn {
-  width: 1.8em;
-  height: 1.8em;
+  width: 44px;
+  height: 44px;
   line-height: 1;
+  font-size: var(--fs-md);
   background: var(--bg-mid);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
@@ -340,8 +513,8 @@
   gap: var(--sp-1);
 }
 .cg-resume-banner {
-  flex-wrap: nowrap;
-  padding: 6px 10px;
+  flex-wrap: wrap;
+  padding: 4px 10px;
   margin-bottom: var(--sp-3);
   border: 1px solid var(--accent2);
   border-radius: var(--radius);
@@ -909,4 +1082,17 @@
 @media (max-width: 700px) {
   .cg-pick-list { max-height: 50vh; }
   .cg-pick-cat { display: none; }
+  /* Chrome mobile : seules les cellules de l'étape courante restent, la
+     barre de tête se replie, l'identité passe sous le titre. */
+  .cg-budget-cats.has-current .cg-budget-cell:not(.is-current) { display: none; }
+  .cg-budget-bar { display: none; }
+  .cg-budget-cats { margin-top: 2px; }
+  #chargen-overlay .modal-header { flex-wrap: wrap; row-gap: 2px; }
+  #chargen-title { order: 1; font-size: var(--fs-md); }
+  #chargen-overlay .modal-close { order: 2; }
+  .cg-subtitle { order: 3; flex-basis: 100%; }
+  .cg-form-grid { grid-template-columns: 1fr; }
+  .cg-attr-grid { grid-template-columns: repeat(2, 1fr); }
+  .cg-step-title { font-size: var(--fs-md); }
+  .cg-list-row { flex-wrap: wrap; }
 }

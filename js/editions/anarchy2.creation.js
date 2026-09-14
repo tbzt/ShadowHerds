@@ -203,7 +203,7 @@ Object.assign(EditionAnarchy2, {
       const used = this.attrPointsUsed(build.attrs);
       const atMax = keys.filter((k) => (build.attrs[k] || 0) >= range[k][1]).length;
       return {
-        hint: `Table « ${table.label} » : ${table.attrPoints} points d'attributs, comptés depuis 0 (somme des indices, p.85). Dé d'Anarchy du ${build.meta} : ${range.anarchy}.`,
+        hint: `${table.attrPoints} points d'attributs à répartir, comptés depuis 0. Dé d'Anarchy du ${build.meta} : ${range.anarchy}.`,
         groups: [{ used, total: table.attrPoints, specs }],
         footer: `Points utilisés : ${used} / ${table.attrPoints} · <span class="${atMax > level.attrsAtMax ? "cg-error-text" : ""}">attributs au max : ${atMax} / ${level.attrsAtMax}</span>`,
       };
@@ -229,7 +229,7 @@ Object.assign(EditionAnarchy2, {
       ];
     },
     contactsHint() {
-      return "Contacts nommés du Réseau (niveau de base 0, p.61) — libre, narratif.";
+      return "Contacts nommés du Réseau — libre, narratif.";
     },
 
     /** Nettoyage du brouillon : les champs narratifs d'Anarchy sont des

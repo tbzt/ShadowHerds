@@ -635,7 +635,7 @@ Object.assign(EditionSR6, {
           type: "select",
           options: Object.entries(this.methods).map(([v, m]) => ({
             value: v,
-            label: `${m.label}${m.wip ? " — catalogue à venir" : ""} · ${m.source}`,
+            label: `${m.label}${m.wip ? " — catalogue à venir" : ""}`,
           })),
         },
         {
@@ -844,8 +844,8 @@ Object.assign(EditionSR6, {
         columns: this.PRIORITY_COLUMNS,
         cost: method?.points ? this.priorityCost : null,
         hint: method?.points
-          ? `${method.label} : ${method.points} points à répartir (A = 4, B = 3, C = 2, D = 1, E = 0). Une même lettre peut resservir (Compagnon p.26).`
-          : `${method?.label} : une lettre par colonne, chacune une seule fois (livre de base p.67).`,
+          ? `${method.points} points à répartir : A coûte 4, B 3, C 2, D 1, E 0. Une même lettre peut resservir.`
+          : `Une lettre par colonne, chacune une seule fois.`,
         footer: method?.points
           ? `Points de priorité : ${this.priorityPointsUsed(build)} / ${method.points}`
           : "",
@@ -887,7 +887,7 @@ Object.assign(EditionSR6, {
             if (pts == null) {
               return {
                 html: "—",
-                title: `${build.meta} n'a pas de ligne en priorité ${L} au Compagnon p.90`,
+                title: `${build.meta} n'est pas disponible en priorité ${L}`,
                 invalid: true,
               };
             }
@@ -943,7 +943,7 @@ Object.assign(EditionSR6, {
       const aUsed = this.adjustPointsUsed(build);
       const aTotal = this.adjustPointsTotal(build);
       return {
-        hint: `Les attributs partent tous de 1 et se paient un pour un (p.66). Les points d'ajustement, eux, montent l'Atout, la Magie ou la Résonance, et les attributs dont le maximum dépasse 6 pour ce métatype.`,
+        hint: `Chaque attribut part de 1 et se paie un pour un. Les points d'ajustement montent l'Atout, la Magie, la Résonance et les attributs dont le maximum dépasse 6.`,
         groups: [
           { label: "Attributs", used, total, specs },
           { label: "Ajustement (Atout, Magie, Résonance)", used: aUsed, total: aTotal, specs: specialSpecs },
@@ -1286,7 +1286,7 @@ Object.assign(EditionSR6, {
     gearLimits(build) {
       return {
         availability: this.ILLEGAL_AVAILABILITY_CAP - 1,
-        hint: `À la création, pas de matériel illégal de Disponibilité ${this.ILLEGAL_AVAILABILITY_CAP} ou plus (p.69). Il ne doit rester au plus ${this.CASH_MAX.toLocaleString("fr-FR")} ¥ en liquide.`,
+        hint: `Pas de matériel illégal de Disponibilité ${this.ILLEGAL_AVAILABILITY_CAP} ou plus ; au plus ${this.CASH_MAX.toLocaleString("fr-FR")} ¥ de liquide à la fin.`,
       };
     },
 
@@ -1313,7 +1313,7 @@ Object.assign(EditionSR6, {
       ];
     },
     contactsHint(build) {
-      return `Réseau + Loyauté se paient sur Charisme × ${this.CONTACT_MULT} : ${this.contactPointsUsed(build)} / ${this.contactPointsTotal(build)} points (p.69). Aucun indice ne peut dépasser le Charisme.`;
+      return `Réseau + Loyauté se paient sur Charisme × ${this.CONTACT_MULT} : ${this.contactPointsUsed(build)} / ${this.contactPointsTotal(build)} points. Aucun indice ne dépasse le Charisme.`;
     },
 
     /* ============================================================
@@ -1401,7 +1401,7 @@ Object.assign(EditionSR6, {
     MOD_CONVERSION: 2,
     /* Le champ saisi et son étiquette : le contrôleur les lit ici, il ne
        code ni « Résistance » (SR6) ni « Structure » (SR5). */
-    MOD_RESERVE: { key: "resistance", label: "Résistance", hint: "Résistance non modifiée du véhicule (p.122) : chaque réserve d'emplacements en vaut autant." },
+    MOD_RESERVE: { key: "resistance", label: "Résistance", hint: "Résistance non modifiée du véhicule : chaque réserve d'emplacements en vaut autant." },
 
     /** Les trois réserves d'un véhicule, ce qu'il en reste, et les mods
         qu'on NE PEUT PAS compter.
@@ -1478,7 +1478,7 @@ Object.assign(EditionSR6, {
       const outil = e < 2 ? "trousse à outils" : e <= 5 ? "atelier" : "installation";
       return {
         test: `Ingénierie + Logique [${e * 8}, ${e} heure(s)]`,
-        note: presume ? "aucun emplacement précisé : multiplicateur 1 (p.123)" : null,
+        note: presume ? "aucun emplacement précisé : compté ×1" : null,
         outil,
         remise: mod.cout == null ? null : Math.round(mod.cout / 2),
       };
@@ -1534,11 +1534,11 @@ Object.assign(EditionSR6, {
       "Colt M23": ["Dessus", "Canon", "Dessous", "Dessous", "Dessous", "Crosse"],
     },
     WEAPON_MOUNTS_NOTES: {
-      pistoletsPoche: "ni modification ni accessoire (Livre de base p.262)",
-      armesSpeciales: "lanceurs : au-dessus et en dessous du canon (p.268)",
-      armesTrait: "arcs et arbalètes : au-dessus et au-dessous (Feu nourri p.54) — sur un arc, l'emplacement exact diffère",
+      pistoletsPoche: "ni modification ni accessoire",
+      armesSpeciales: "lanceurs : au-dessus et en dessous du canon",
+      armesTrait: "arcs et arbalètes : au-dessus et au-dessous — sur un arc, l'emplacement exact diffère",
       armesJet: "une arme de jet n'offre aucune monture",
-      meleeWeapons: "pas de monture : les accessoires de mêlée de Feu nourri n'en occupent aucune",
+      meleeWeapons: "pas de monture : les accessoires de mêlée n'en occupent aucune",
     },
 
     /** Les montures qu'une arme offre — par nom d'abord (exceptions du
@@ -1554,7 +1554,7 @@ Object.assign(EditionSR6, {
       return {
         montures,
         deduit,
-        note: (kind && this.WEAPON_MOUNTS_NOTES[kind]) || (montures ? (deduit ? "Crosse : ajoutée par déduction, le Livre de base ne la cite pour aucune catégorie" : null) : "montures non précisées pour ce type : les quatre sont supposées libres"),
+        note: (kind && this.WEAPON_MOUNTS_NOTES[kind]) || (montures ? (deduit ? "Crosse : ajoutée par déduction, aucune catégorie ne la cite" : null) : "montures non précisées pour ce type : les quatre sont supposées libres"),
         source: parNom ? "Livre de base p.266" : "Livre de base p.261-268",
       };
     },
@@ -1564,9 +1564,9 @@ Object.assign(EditionSR6, {
       mitraillettes: 4, shotguns: 5, snipersLourds: 5, fusils: 6, armesSpeciales: 2,
     },
     WEAPON_MOD_SLOTS_NOTES: {
-      armesJet: "aucun emplacement de modification (Feu nourri p.41)",
-      pistoletsPoche: "ni modification ni accessoire (Feu nourri p.41)",
-      armesSpeciales: "armes exotiques : 2 (p.41)",
+      armesJet: "aucun emplacement de modification",
+      pistoletsPoche: "ni modification ni accessoire",
+      armesSpeciales: "armes exotiques : 2",
     },
 
     /** Les emplacements de modification d'une arme, et ce qu'ils portent.
@@ -1583,7 +1583,7 @@ Object.assign(EditionSR6, {
         utilises += a.emplacements;
         pris.push(a.nom);
       }
-      return { total, utilises, pris, note: (kind && this.WEAPON_MOD_SLOTS_NOTES[kind]) || (connu ? null : "type d'arme sans budget au livre — à lire p.41") };
+      return { total, utilises, pris, note: (kind && this.WEAPON_MOD_SLOTS_NOTES[kind]) || (connu ? null : "type d'arme sans budget connu") };
     },
 
     /** Les accessoires d'armes en deux groupes, puis les mods de véhicule
@@ -1594,7 +1594,7 @@ Object.assign(EditionSR6, {
         a.type === "modification" || a.emplacements ? `${a.emplacements || 1} emplacement de modification` : "",
         a.montures === "*" ? "toute monture" : a.montures && a.montures.length ? "monture : " + a.montures.join(" ou ") : a.type === "accessoire" ? "sans monture" : "",
         a.armes ? ["melee", "trait", "feu"].filter((k) => a.armes[k]).map((k) => ({ melee: "mêlée", trait: "trait/jet", feu: "feu" })[k]).join(", ") : "",
-        `Disp. ${a.dispo}`, argent(a), a.note || "", a.source,
+        `Disp. ${a.dispo}`, argent(a), a.note || "",
       ].filter(Boolean).join(" · ");
       const groupesArmes = [["accessoire", "Accessoires d'armes"], ["modification", "Modifications d'armes"]].map(([t, nom]) => ({
         category: nom,
@@ -1605,12 +1605,12 @@ Object.assign(EditionSR6, {
       groupesArmes.push({
         category: "Modifications d'armure",
         famille: "armure",
-        items: ArmureModsSR6.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), `Disp. ${m.dispo}`, argent(m), m.source].filter(Boolean).join(" · ") })),
+        items: ArmureModsSR6.map((m) => ({ id: m.id, label: m.nom, detail: [capa(m), `Disp. ${m.dispo}`, argent(m)].filter(Boolean).join(" · ") })),
       });
       const places = (m) => {
         if (!m.famille) return "accessoire, aucun emplacement";
         if (m.emplacements != null) return `${m.emplacements} empl. ${m.famille}`;
-        return `${m.famille} · empl. ${m.emplacementsNote || "non précisés (p.123 : ×1)"}`;
+        return `${m.famille} · empl. ${m.emplacementsNote || "non précisés (×1)"}`;
       };
       // Dans l'ordre du livre ; les entrées du livre de base sans section
       // (montures p.303) ferment la marche.
@@ -1621,7 +1621,7 @@ Object.assign(EditionSR6, {
         g.items.push({
           id: m.id,
           label: m.nom,
-          detail: [places(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m), m.note || "", m.source].filter(Boolean).join(" · "),
+          detail: [places(m), m.indice ? `indice ${m.indice}` : "", `Disp. ${m.dispo}`, argent(m), m.note || ""].filter(Boolean).join(" · "),
         });
       }
       return [...groupesArmes, ...sections.filter((g) => g.items.length)];
@@ -1640,7 +1640,7 @@ Object.assign(EditionSR6, {
        porte pas. `armorReserveFor` la lit par NOM dans `ArmuresSR6` au moment
        du choix ; inconnue → null, et l'écran demande la saisie.
        ⚠ Un coût « [Indice] » dépend de l'indice choisi : NOMMÉ, pas compté 0. */
-    ARMOR_RESERVE: { key: "capacite", label: "Capacité", hint: "Capacité de la protection, lue sur la table Armures (Livre de base p.274, Feu nourri p.152)" },
+    ARMOR_RESERVE: { key: "capacite", label: "Capacité", hint: "Capacité de la protection, lue sur la table des armures" },
 
     armorReserveFor(item) {
       const nom = String((item && item.name) || "").trim().toLowerCase();
@@ -1781,7 +1781,7 @@ Object.assign(EditionSR6, {
           key: "spells",
           label: "Formules",
           hint: parPriorite
-            ? `La colonne Magie ${build.priorities.magic} en accorde ${prof.formulas || 0}. Le livre compte sorts, rituels et préparations dans ce même quota ; seuls les sorts sont catalogués ici.`
+            ? `${prof.formulas || 0} formules accordées par la colonne Magie ${build.priorities.magic} — sorts, rituels et préparations comptent ensemble ; seuls les sorts sont catalogués.`
             : `${kc.spell} karma la formule.`,
           total: parPriorite ? prof.formulas || 0 : null,
           used: (build.spells || []).length,
@@ -1810,7 +1810,7 @@ Object.assign(EditionSR6, {
         groups.push({
           key: "adeptPowers",
           label: "Pouvoirs d'adepte",
-          hint: `${this.magicRating(build)} point(s) de pouvoir (autant que la Magie). Le catalogue ne porte pas le coût de chaque pouvoir : à vérifier au livre.`,
+          hint: `${this.magicRating(build)} point(s) de pouvoir, autant que la Magie. Le catalogue ne porte pas le coût de chaque pouvoir.`,
           total: null,
           used: (build.adeptPowers || []).length,
           chosen: build.adeptPowers || [],
@@ -1832,7 +1832,8 @@ Object.assign(EditionSR6, {
         par[t.type].push({
           id: t.id,
           label: t.nom,
-          detail: `${t.karma} karma${t.parNiveau ? " par niveau" : ""} · ${t.source}${t.desc ? " — " + t.desc : ""}`,
+          // La page du livre reste dans la donnée (`source`), pas à l'écran.
+          detail: `${t.karma} karma${t.parNiveau ? " par niveau" : ""}${t.desc ? " — " + t.desc : ""}`,
         });
       }
       return [
@@ -1848,7 +1849,7 @@ Object.assign(EditionSR6, {
     /** Résumé déclaré — SR6 borne le NOMBRE et l'écart net, pas un budget
         par catégorie comme SR5. */
     traitHint() {
-      return `Les traits positifs coûtent du karma, les négatifs en rendent. SR6 ne borne pas un budget par catégorie comme SR5 : il borne le NOMBRE de traits (${this.TRAIT_MAX} à la création) et l'écart net entre positifs et négatifs (${this.TRAIT_KARMA_NET_MAX} karma).`;
+      return `Les traits positifs coûtent du karma, les négatifs en rendent. Au plus ${this.TRAIT_MAX} traits, et ${this.TRAIT_KARMA_NET_MAX} karma d'écart entre positifs et négatifs.`;
     },
 
     traitSummary(build) {
@@ -1926,7 +1927,7 @@ Object.assign(EditionSR6, {
           }
         }
         if (!this.metaRow(build.meta)) {
-          out.concept.push(`${build.meta} n'a pas de ligne de priorité connue (Compagnon p.90).`);
+          out.concept.push(`${build.meta} n'a pas de ligne de priorité connue.`);
         } else if (this.adjustFor(build.meta, build.priorities.meta) == null) {
           out.priorites.push(
             `${build.meta} n'est pas disponible en priorité ${build.priorities.meta} (Métatypes).`,
@@ -2115,7 +2116,7 @@ Object.assign(EditionSR6, {
          que se taire. */
       const tr = this.traitState(build);
       if (tr.nombre > tr.max) {
-        out.traits.push(`Au plus ${tr.max} traits à la création (${tr.nombre}) — p.69.`);
+        out.traits.push(`Au plus ${tr.max} traits à la création (${tr.nombre}).`);
       }
       if (Math.abs(tr.net) > tr.netMax) {
         out.traits.push(`L'écart entre traits positifs et négatifs ne dépasse pas ${tr.netMax} karma (${tr.net}).`);
