@@ -34,6 +34,8 @@ import { Sprites } from "../catalogs/sprites.js";
 import { Statuses } from "../rules/statuses.js";
 import { Utils } from "../core/utils.js";
 import { Vehicles } from "../catalogs/vehicles.js";
+import { Implants } from "../rules/implants.js";
+import { ImplantsSR6 } from "./sr6.implants.js";
 import { WeaponRoll } from "../rules/weaponroll.js";
 
 export const EditionSR6 = {
@@ -5809,6 +5811,25 @@ export const EditionSR6 = {
     },
   },
 
+  /* ---- Membres cybernétiques et moniteur physique (Livre de base p.291) ----
+     « Chaque membre cybernétique complet ajoute une case au moniteur de
+     dommages physiques d'un personnage. » Complet : un bras, une jambe —
+     pas un avant-bras, un mollet, une main, un crâne ni un torse. Lu sur
+     l'équipement par la table du relevé ; rejoué à chaque `recalc`. */
+  _implantIdx: null,
+  cyberlimbMonitorBonus(pnj) {
+    if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR6);
+    let n = 0;
+    for (const it of ItemResolver.augItems(pnj, this.AUGS_KEYS)) {
+      const nom = ItemResolver.itemStr(it).split(" [")[0].split(" · ")[0].trim();
+      const hit = Implants.lookup(this._implantIdx, nom);
+      if (!hit || !hit.ref || !/membres cybern/i.test(hit.ref.categorie || "")) continue;
+      const k = Implants.normName(hit.ref.groupe || hit.ref.nom);
+      if (/^(bras|jambe)$/.test(k)) n += 1;
+    }
+    return n;
+  },
+
   recalc(pnj) {
     // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ
     // (plancher racial d'attrRange, pas de migration versionnée).
@@ -5818,11 +5839,12 @@ export const EditionSR6 = {
     const A = (k) => Actor.attr(pnj, k);
     // Recalcule selon le modèle figé à la génération du PNJ (pnj.stunMon
     // présent = separateMonitors était actif) plutôt que le réglage courant.
+    const membres = this.cyberlimbMonitorBonus(pnj);
     if (pnj.stunMon !== undefined) {
-      pnj.physMon = 8 + Math.ceil(A("CON") / 2);
+      pnj.physMon = 8 + Math.ceil(A("CON") / 2) + membres;
       pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
     } else {
-      pnj.me = 8 + Math.ceil(A("CON") / 2);
+      pnj.me = 8 + Math.ceil(A("CON") / 2) + membres;
     }
     pnj.initBase = A("RÉA") + A("INT");
     pnj.defense = A("RÉA") + A("INT");

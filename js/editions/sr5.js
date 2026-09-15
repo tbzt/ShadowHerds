@@ -19,6 +19,8 @@ import { ItemResolver } from "../rules/itemresolver.js";
 import { LoadoutEngine } from "../rules/loadoutengine.js";
 import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { Implants } from "../rules/implants.js";
+import { ImplantsSR5 } from "./sr5.implants.js";
 import { Resonance } from "../rules/resonance.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Spirits } from "../catalogs/spirits.js";
@@ -5104,6 +5106,27 @@ export const EditionSR5 = {
     return this.recalc(pnj);
   },
 
+  /* ---- Cybermembres et moniteur physique (Livre de Règles p.458) ----
+     « Chacun augmente la taille du moniteur de condition physique d'une
+     case (les mains et pieds sont ignorés et les membres partiels ne
+     comptent que pour un demi). » Lu sur l'équipement, par la table du
+     relevé (catégorie Cybermembres) ; deux demi-membres font une case, un
+     demi seul n'en fait pas. Rejoué à chaque `recalc`, comme les Limites. */
+  _implantIdx: null,
+  cyberlimbMonitorBonus(pnj) {
+    if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR5);
+    let n = 0;
+    for (const it of ItemResolver.augItems(pnj, this.AUGS_KEYS)) {
+      const nom = ItemResolver.itemStr(it).split(" [")[0].split(" · ")[0].trim();
+      const hit = Implants.lookup(this._implantIdx, nom);
+      if (!hit || !hit.ref || hit.ref.categorie !== "Cybermembres") continue;
+      const k = Implants.normName(hit.ref.nom);
+      if (/main|pied/.test(k)) continue;
+      n += /avant bras|mollet/.test(k) ? 0.5 : 1;
+    }
+    return Math.floor(n);
+  },
+
   recalc(pnj) {
     const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ
@@ -5127,7 +5150,7 @@ export const EditionSR5 = {
     pnj.limSoc =
       Math.ceil((A("CHA") * 2 + A("VOL") + (proRating || 0)) / 3) +
       (lm.soc || 0);
-    pnj.physMon = 8 + Math.ceil(A("CON") / 2);
+    pnj.physMon = 8 + Math.ceil(A("CON") / 2) + this.cyberlimbMonitorBonus(pnj);
     pnj.stunMon = 8 + Math.ceil(A("VOL") / 2);
     pnj.init = A("REA") + A("INT") + (pnj._initMod || 0);
     pnj.drainResist = pnj.traditionDrainAttr

@@ -2679,12 +2679,12 @@ Object.assign(EditionSR6, {
           ? [{ name: (this.lifestyleById(build.lifestyle) || {}).nom, city: "" }]
           : [],
         threatLevel: "forte",
-        me,
-        physMon,
-        stunMon,
-        meFilled: 0,
-        physFilled: 0,
-        stunFilled: 0,
+        /* ⚠ `recalc` lit la FORME des moniteurs sur la présence de `stunMon`
+           (`!== undefined`) : un `stunMon: null` la faisait passer pour la
+           forme à deux moniteurs, et le moniteur unique `me` n'était plus
+           recalculé — ni la case des cybermembres, ni une Constitution
+           modifiée. On n'émet que les champs de la forme choisie. */
+        ...(separate ? { physMon, stunMon, physFilled: 0, stunFilled: 0 } : { me, meFilled: 0 }),
         special,
         // L'attribut de Drain de la tradition : c'est lui que `recalc` lit
         // pour poser `drainResist`. Sans lui, la fiche n'avait pas de Drain.
