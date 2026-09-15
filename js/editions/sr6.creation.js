@@ -2431,12 +2431,19 @@ Object.assign(EditionSR6, {
       const special = profil ? SPECIAL[profil.key] || null : null;
       const armure = this.armorWorn(build);
 
+      /* Souche / métavariante / traits raciaux dans la langue du générateur —
+         la carte lit `metavariant` et `metaTraits`. Cf. sr5.creation.js. */
+      const mv = Metavariants.use("sr6").resolve(build.meta);
+
       const pnj = {
         id: Utils.uid(),
         edition: "sr6",
         isPC: true,
         name: build.name && build.name.trim() ? build.name.trim() : Utils.genName(),
-        meta: build.meta,
+        meta: mv ? mv.baseMetatype || build.meta : build.meta,
+        metavariant: mv ? mv.name : null,
+        metaFamily: mv ? mv.family : null,
+        metaTraits: mv ? mv.traits || [] : [],
         gender: build.gender || "NB",
         tier: "Runner",
         // Le concept du joueur, pas le libellé de la méthode : celui-ci vit

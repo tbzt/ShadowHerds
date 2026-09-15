@@ -177,18 +177,77 @@ Object.assign(EditionSR5, {
       Naga: { A: 4, B: 2, C: 0, karma: 25 },
       Pixie: { A: 6, B: 3, C: 0, karma: 15 },
       Sasquatch: { A: 5, B: 2, C: 0, karma: 20 },
+      // Zoocanthropes, par paire d'animaux (p.78).
+      Bovin: { A: 8, B: 6, C: 4, karma: 5 },
+      Vulpin: { A: 8, B: 6, C: 4, karma: 5 },
+      Canin: { A: 7, B: 5, C: 3, karma: 10 },
+      Falcin: { A: 7, B: 5, C: 3, karma: 10 },
+      Lupin: { A: 6, B: 4, C: 2, karma: 15 },
+      Équin: { A: 6, B: 4, C: 2, karma: 15 },
+      Ursin: { A: 4, B: 2, C: 0, karma: 20 },
+      Léonin: { A: 4, B: 2, C: 0, karma: 20 },
+      Panthérin: { A: 4, B: 2, C: 0, karma: 25 },
+      Tigrin: { A: 4, B: 2, C: 0, karma: 25 },
     },
     /** Colonne Chance de la table étendue (p.76-77) ; tout le reste est 1/6. */
-    CHC_EXTENDED: { Nartaki: [2, 7], Pixie: [2, 7], Centaure: [1, 5], Naga: [1, 5] },
+    CHC_EXTENDED: {
+      Nartaki: [2, 7], Pixie: [2, 7], Centaure: [1, 5], Naga: [1, 5],
+      Bovin: [1, 5], Canin: [1, 5], Équin: [1, 5], Falcin: [1, 5], Léonin: [1, 4],
+      Lupin: [1, 5], Panthérin: [1, 5], Tigrin: [1, 4], Ursin: [1, 5], Vulpin: [1, 5],
+    },
     /** Métaconsciences : Magie naturelle de 1, remplacée par celle de la
-        priorité si une est prise (p.74). */
+        priorité si une est prise (p.74). Les zoocanthropes aussi (p.77). */
     METACONSCIENCES: ["Centaure", "Naga", "Pixie", "Sasquatch"],
+
+    /* ---- Zoocanthropes (Run Faster VF p.73, p.77-78, p.140) ----
+       « Le joueur commence par choisir son type de zoocanthrope, payer son
+       coût en points de Karma et créer l'animal : les attributs listés dans
+       la table des attributs des zoocanthropes en forment sa base. […] le
+       joueur doit simplement noter combien de points d'attributs il place
+       dans chaque attribut et ceux-ci sont également appliqués à la base
+       métahumaine. Le joueur choisit ensuite une forme métahumaine et paie
+       son coût en points de Karma. Ce coût se rajoute à celui de l'espèce
+       animale choisie. Le choix par défaut, humain, ne coûte rien. »
+       Les bornes des dix animaux vivent dans `Metavariants` (p.77), la
+       priorité et le coût additionnel par PAIRE d'animaux (p.78), le coût
+       en création par Karma p.140, les formes métahumaines et leurs traits
+       absents p.78. */
+    ZOO: ["Bovin", "Canin", "Équin", "Falcin", "Léonin", "Lupin", "Panthérin", "Tigrin", "Ursin", "Vulpin"],
+    ZOO_FORMES: {
+      Humain: { karma: 0 },
+      Elfe: { karma: 5 },
+      Nain: { karma: 8 },
+      Ork: { karma: 10 },
+      Troll: { karma: 20 },
+      Cyclope: { karma: 15 },
+      Dryade: { karma: 2, absent: "Éclat" },
+      Fomori: { karma: 18, absent: "Amortisseur magique (1)" },
+      Géant: { karma: 20, absent: "Altération dermique (écorce)" },
+      Gnome: { karma: 0, absent: "Amortisseur magique (2)" },
+      Hanuman: { karma: 13 },
+      Hobgobelin: { karma: 10, absent: "Problèmes de maîtrise de soi (Vindicatif)" },
+      Koborokuru: { karma: 8 },
+      Menehune: { karma: 10 },
+      Minotaure: { karma: 20, absent: "Cornes perforantes (sauf zoocanthrope bovin)" },
+      Nartaki: { karma: 0 },
+      Nocturna: { karma: 5 },
+      Ogre: { karma: 13, absent: "Estomac d'ogre" },
+      Oni: { karma: 10 },
+      Satyre: { karma: 20 },
+      Wakyambi: { karma: 15 },
+      "Xapiri thëpë": { karma: 3, absent: "Photométabolisme" },
+    },
+    isZoo(meta) {
+      return this.ZOO.includes(meta);
+    },
     /** Coût du métatype en création par Karma (p.140). */
     META_KARMA: {
       Humain: 0, Nain: 50, Elfe: 40, Ork: 50, Troll: 90,
       Centaure: 60, Cyclope: 100, Dryade: 90, Fomori: 100, Géant: 90, Gnome: 50, Hanuman: 100, Hobgobelin: 40,
       Koborokuru: 70, Menehune: 50, Minotaure: 100, Naga: 95, Nartaki: 40, Nocturna: 60, Ogre: 40, Oni: 50,
       Pixie: 70, Sasquatch: 90, Satyre: 50, Wakyambi: 70, "Xapiri thëpë": 80,
+      Bovin: 100, Vulpin: 100, Canin: 110, Falcin: 110, Lupin: 120, Équin: 120,
+      Panthérin: 150, Tigrin: 150, Ursin: 160, Léonin: 160,
     },
 
     /** Colonnes de la table, dans l'ordre du livre. */
@@ -327,6 +386,8 @@ Object.assign(EditionSR5, {
            p.68). Un 0 littéral faisait sortir tout PJ qui n'y touchait pas
            avec Chance 0 — mesuré sur la fiche, Satyre comme Humain. */
         special: { CHC: null, MAG: 0, RES: 0 },
+        /** Forme métahumaine d'un zoocanthrope (RF p.73) ; « Humain » par défaut. */
+        zooForm: "Humain",
         skills: [],
         groups: [],
         knowledges: [],
@@ -385,9 +446,10 @@ Object.assign(EditionSR5, {
       const souches = Object.keys(EditionSR5.attrRange);
       const mv = Metavariants.use("sr5");
       const etendus = Object.keys(this.META_EXTENDED).filter((m) => this._metaKnown(m));
-      const variantes = souches.flatMap((s) => etendus.filter((m) => !this.METACONSCIENCES.includes(m) && mv.baseMetatype(m) === s));
+      const variantes = souches.flatMap((s) => etendus.filter((m) => !this.METACONSCIENCES.includes(m) && !this.isZoo(m) && mv.baseMetatype(m) === s));
       const conscientes = etendus.filter((m) => this.METACONSCIENCES.includes(m));
-      return [...souches, ...variantes, ...conscientes];
+      const zoo = this.ZOO.filter((m) => etendus.includes(m));
+      return [...souches, ...variantes, ...conscientes, ...zoo];
     },
 
     /** Libellé du sélecteur : la souche entre parenthèses pour une
@@ -395,6 +457,7 @@ Object.assign(EditionSR5, {
         métaconscience. */
     metaLabel(meta) {
       if (EditionSR5.attrRange[meta] || this.METACONSCIENCES.includes(meta)) return meta;
+      if (this.isZoo(meta)) return `${meta} (zoocanthrope)`;
       const souche = Metavariants.use("sr5").baseMetatype(meta);
       return souche && souche !== meta ? `${meta} (${souche})` : meta;
     },
@@ -404,11 +467,30 @@ Object.assign(EditionSR5, {
         le coût de la table p.140 en création par Karma. */
     metaKarma(build) {
       const fam = this.methods[build.method]?.family;
+      // Un zoocanthrope paie AUSSI sa forme métahumaine (p.73, p.78) ; l'humain
+      // ne coûte rien.
+      const forme = this.isZoo(build.meta) ? (this.ZOO_FORMES[build.zooForm] || this.ZOO_FORMES.Humain).karma : 0;
       // « La première chose à faire est de choisir un métatype et de déduire
       // son coût de votre Karma » — en modules comme en Karma (RF p.142).
-      if (fam === "karma" || fam === "modules") return this.META_KARMA[build.meta] || 0;
-      if (fam === "priority") return (this.META_EXTENDED[build.meta] || {}).karma || 0;
+      if (fam === "karma" || fam === "modules") return (this.META_KARMA[build.meta] || 0) + forme;
+      if (fam === "priority") return ((this.META_EXTENDED[build.meta] || {}).karma || 0) + forme;
       return 0;
+    },
+
+    /** Les attributs de la FORME MÉTAHUMAINE d'un zoocanthrope : la base de
+        la forme, plus les mêmes points que ceux placés sur l'animal (p.73),
+        sans dépasser le maximum de la forme. */
+    zooFormAttrs(build) {
+      if (!this.isZoo(build.meta)) return null;
+      const forme = this.ZOO_FORMES[build.zooForm] ? build.zooForm : "Humain";
+      const out = {};
+      for (const k of this.ATTRS) {
+        const [aMin] = this._range(build.meta, k);
+        const [fMin, fMax] = this._range(forme, k);
+        const points = Math.max(0, ((build.attrs || {})[k] ?? aMin) - aMin);
+        out[k] = Math.min(fMax, fMin + points);
+      }
+      return { forme, attrs: out };
     },
 
     /** Le niveau de campagne peut remplacer la colonne Ressources (p.66). */
@@ -894,6 +976,25 @@ Object.assign(EditionSR5, {
           ),
         });
       }
+      // Un zoocanthrope choisit sa forme métahumaine (RF p.73), qui a son
+      // propre coût (p.78) ; les points d'attributs placés valent pour les
+      // deux formes.
+      if (this.isZoo(build.meta)) {
+        fields.push({
+          path: "zooForm",
+          label: "Forme métahumaine",
+          type: "select",
+          options: Object.entries(this.ZOO_FORMES).map(([nom, f]) => ({
+            value: nom,
+            label: `${nom}${f.karma ? ` (${f.karma} karma)` : " (gratuit)"}${f.absent ? ` — sans ${f.absent}` : ""}`,
+          })),
+        });
+        fields.push({
+          path: "_zooNote",
+          label: "Les points d'attributs placés sur la forme animale valent aussi pour la forme métahumaine.",
+          type: "note",
+        });
+      }
       // Le métatype se paie en karma quand Run Faster le dit (p.78, p.140) —
       // rien d'autre ne le rappellerait avant la fin.
       const kMeta = this.metaKarma(build);
@@ -1137,9 +1238,15 @@ Object.assign(EditionSR5, {
             specs: specialSpecs,
           },
         ],
-        footer: isPriority
-          ? `Attributs : ${used} / ${total} · Spéciaux : ${usedSp} / ${totalSp} · <span class="${atMax > 1 ? "cg-error-text" : ""}">au maximum naturel : ${atMax} / 1</span>`
-          : `Karma dépensé : ${this.karmaUsed(build)} / ${method?.karma || 0}`,
+        footer:
+          (isPriority
+            ? `Attributs : ${used} / ${total} · Spéciaux : ${usedSp} / ${totalSp} · <span class="${atMax > 1 ? "cg-error-text" : ""}">au maximum naturel : ${atMax} / 1</span>`
+            : `Karma dépensé : ${this.karmaUsed(build)} / ${method?.karma || 0}`) +
+          // Zoocanthrope : les mêmes points, appliqués à la forme métahumaine (RF p.73).
+          (() => {
+            const z = this.zooFormAttrs(build);
+            return z ? `<br>Forme ${Utils.escHtml(z.forme)} : ${this.ATTRS.map((k) => `${k} ${z.attrs[k]}`).join(" · ")}` : "";
+          })(),
       };
     },
 
@@ -1956,7 +2063,7 @@ Object.assign(EditionSR5, {
     attrRangeFor(build, key) {
       if (this.SPECIAL_ATTRS.includes(key)) {
         if (key === "CHC") return this._range(build.meta, "CHC");
-        if (key === "MAG" && this.METACONSCIENCES.includes(build.meta)) return [1, 6];
+        if (key === "MAG" && (this.METACONSCIENCES.includes(build.meta) || this.isZoo(build.meta))) return [1, 6];
         return [0, 6];
       }
       return this._range(build.meta, key);
@@ -2442,6 +2549,9 @@ Object.assign(EditionSR5, {
         out.skills.push(`Trop de points de connaissances (${kUsed}/${kTotal} = (INT + LOG) × 2).`);
       }
 
+      if (this.isZoo(build.meta) && !this.ZOO_FORMES[build.zooForm]) {
+        out.concept.push(`${build.meta} : la forme métahumaine « ${build.zooForm || ""} » est inconnue — choisis-la au Concept.`);
+      }
       /* Le surplus de contacts n'est plus une erreur : il est CHARGÉ sur le
          karma (`contactKarmaExcess`) — l'ancien message le disait sans le
          faire. Reste la restriction du livre : 7 karma par contact au plus. */
@@ -2552,13 +2662,26 @@ Object.assign(EditionSR5, {
       const SPECIAL = { technomancien: "Technomancien", adepte: "Adepte", magicien: "Magicien", specialise: "Magicien spécialisé", mystique: "Adepte mystique" };
       const special = profil ? SPECIAL[profil.key] || null : null;
       const armure = this.armorWorn(build);
+      /* La fiche parle la langue du générateur : `meta` est la SOUCHE,
+         `metavariant` la variante, `metaTraits` ses traits raciaux — la
+         section « Traits de métavariante » de la carte les lit. Un Satyre
+         sortait en `meta: "Satyre"`, sans traits. Un zoocanthrope garde sa
+         forme animale en attributs (c'est là que les points sont placés) et
+         porte sa forme métahumaine à côté, calculée (RF p.73). */
+      const mv = Metavariants.use("sr5").resolve(build.meta);
+      const zoo = this.zooFormAttrs(build);
+      const souche = zoo ? zoo.forme : mv ? mv.baseMetatype || build.meta : build.meta;
 
       const pnj = {
         id: Utils.uid(),
         edition: "sr5",
         isPC: true,
         name: build.name && build.name.trim() ? build.name.trim() : Utils.genName(),
-        meta: build.meta,
+        meta: souche,
+        metavariant: mv ? mv.name : null,
+        metaFamily: mv ? mv.family : null,
+        metaTraits: mv ? mv.traits || [] : [],
+        ...(zoo ? { zooForm: zoo.forme, zooFormAttrs: zoo.attrs } : {}),
         gender: build.gender || "NB",
         tier: this.gameLevels[build.gameLevel]?.label || "Runner expérimenté",
         // Le concept du joueur, pas le libellé de la méthode : celui-ci vit
@@ -2630,7 +2753,8 @@ Object.assign(EditionSR5, {
         // Armure portée, lue sur l'équipement : `recalc` en tire l'Encaissement.
         armure: armure ? armure.armure : 0,
         armureNom: armure ? armure.nom : null,
-        initDice: 1,
+        // Dés d'initiative de la forme animale d'un zoocanthrope (p.77) ; 1 sinon.
+        initDice: mv && mv.init ? parseInt(mv.init, 10) || 1 : 1,
         contacts: build.contacts || [],
         notes: build.notes || "",
       };
