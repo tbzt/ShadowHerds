@@ -194,6 +194,9 @@ export const CharGen = {
     const parts = path.split(".");
     let cur = obj;
     for (let i = 0; i < parts.length - 1; i++) {
+      // Un sous-objet absent (« gear.2.membre ») se crée ; un index de liste
+      // absent, non — écrire hors d'une liste serait masquer une erreur.
+      if (cur[parts[i]] == null && !/^\d+$/.test(parts[i + 1])) cur[parts[i]] = {};
       cur = cur[parts[i]];
       if (cur == null) return;
     }
@@ -1264,8 +1267,26 @@ export const CharGen = {
         </select>`;
       if (!hotes.length && cap.doitEtreLoge) capHtml += `<span class="cg-section-note">aucun cybermembre dans l'équipement</span>`;
     }
-    return `<div class="cluster cg-add-row">
-      ${indice}
+    /* Un cybermembre a sa Force et son Agilité : base, personnalisation
+       (SR5 : saisie, jusqu'au maximum naturel, +5 000 ¥ et +1 Disp. le
+       point), améliorations logées. Une « Augmentation d'attribut » (SR6)
+       choisit l'attribut qu'elle monte. */
+    let membreHtml = "";
+    if (st.membre) {
+      const m = st.membre;
+      const perso = c.CYBERLIMB && c.CYBERLIMB.personnalisation;
+      const champ = (k) =>
+        perso
+          ? `<label class="cg-section-note cg-essence-in">${k} <input type="number" min="${m.base}" max="${c.attrRangeFor(b, k)[1]}" data-cg="gear.${i}.membre.${k}" value="${(g.membre || {})[k] ?? m.base}" style="width:3.5em" title="${k} du membre (base ${m.base}, personnalisable jusqu'au maximum naturel)"></label>${m.ameliorations[k] ? `<span class="cg-section-note">+${m.ameliorations[k]} = <strong>${m[k]}</strong></span>` : ""}`
+          : `<span class="cg-section-note">${k} <strong>${m[k]}</strong></span>`;
+      membreHtml = `<div class="cluster cg-add-row"><span class="cg-section-note">Membre</span>${champ("FOR")}${champ("AGI")}${m.armure ? `<span class="cg-section-note">Armure +${m.armure}</span>` : ""}${m.persoPoints ? `<span class="cg-section-note">personnalisé +${m.persoPoints} : +${(m.persoCout).toLocaleString("fr-FR")} ¥, Disp. +${m.persoDispo}</span>` : ""}</div>`;
+    }
+    const dAttr = c.implantDefaults ? c.implantDefaults(g.name, g.rating) : null;
+    const attribut = dAttr && dAttr.ref && /augmentation d.attribut/i.test(dAttr.ref.nom)
+      ? `<label class="cg-section-note">monte <select data-cg="gear.${i}.attribut"><option value="FOR" ${g.attribut !== "AGI" ? "selected" : ""}>Force</option><option value="AGI" ${g.attribut === "AGI" ? "selected" : ""}>Agilité</option></select></label>`
+      : "";
+    return `${membreHtml}<div class="cluster cg-add-row">
+      ${indice}${attribut}
       <span class="cg-section-note">Gamme</span>
       <select data-cg="gear.${i}.grade" aria-label="Gamme de l'implant">${opts}</select>
       ${

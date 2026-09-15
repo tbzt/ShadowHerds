@@ -790,7 +790,7 @@ Object.assign(EditionSR6, {
       return (
         this.lifestyleCost(build) +
         this.accessoryCost(build) +
-        (build.gear || []).reduce((sum, g) => sum + (this.isImplant(g) ? this.implantState(g).cost : Number(g.cost) || 0), 0)
+        (build.gear || []).reduce((sum, g) => sum + (this.isImplant(g) ? this.implantState(g, build).cost : Number(g.cost) || 0), 0)
       );
     },
 
@@ -837,11 +837,87 @@ Object.assign(EditionSR6, {
        cyberyeux et oreilles cybernétiques offrent « un indice de Capacité
        pour les améliorations ». Un objet du brouillon porte `uid` ; un
        implant logé porte `hote` = uid de son hôte. */
-    implantCapacity(gear) {
+
+    /* ---- Attributs propres des cybermembres (Livre de base p.291) ----
+       Un membre (hors crâne et torse) a sa Force et son Agilité : base
+       2, plus les améliorations LOGÉES dans ce membre (« Augmentation d'attribut », qui ne coûte pas de capacité tant que l'attribut du membre ne dépasse pas l'indice naturel, puis 2 points par point au-delà ; « Augmentation d'armure »).
+       Quand un membre agit seul, ses attributs comptent ; à plusieurs, la
+       moyenne ; en coordination fine, le plus faible — ce partage-là reste
+       au meneur, la fiche porte les valeurs. */
+    CYBERLIMB: { base: 2, personnalisation: null },
+
+    isCyberlimb(gear) {
+      const d = this.isImplant(gear) ? this.implantDefaults(gear.name, gear.rating) : null;
+      if (!d || !d.ref || !/membres cybern/i.test(d.ref.categorie || "")) return false;
+      return !/cr[aâ]ne|torse/i.test(d.ref.groupe || d.ref.nom);
+    },
+
+    /** Force, Agilité et Armure d'un membre : base, personnalisation
+        (SR5), améliorations logées ; et ce que la personnalisation coûte. */
+    cyberlimbAttrs(build, gear) {
+      const L = this.CYBERLIMB;
+      const membre = gear.membre || {};
+      const perso = { FOR: 0, AGI: 0 };
+      if (L.personnalisation) {
+        for (const k of ["FOR", "AGI"]) {
+          const max = this.attrRangeFor(build, k)[1];
+          const v = Number(membre[k]);
+          perso[k] = Number.isFinite(v) ? Math.max(0, Math.min(v, max) - L.base) : 0;
+        }
+      }
+      const amel = { FOR: 0, AGI: 0, armure: 0, doublons: [] };
+      const vus = new Set();
+      for (const g of build.gear || []) {
+        if (g.hote !== gear.uid) continue;
+        const d = this.implantDefaults(g.name, g.rating);
+        if (!d || !d.ref) continue;
+        const k = Implants.normName(d.ref.nom);
+        const n = Number(g.rating) || 0;
+        let cible = null;
+        if (/^force$/.test(k)) cible = "FOR";
+        else if (/^agilite$/.test(k)) cible = "AGI";
+        else if (/^armure$|augmentation d armure/.test(k)) cible = "armure";
+        else if (/augmentation d attribut/.test(k)) cible = g.attribut === "AGI" ? "AGI" : "FOR";
+        if (!cible) continue;
+        if (vus.has(cible)) amel.doublons.push(g.name);
+        vus.add(cible);
+        amel[cible] += n;
+      }
+      const points = perso.FOR + perso.AGI;
+      return {
+        base: L.base,
+        perso,
+        ameliorations: amel,
+        FOR: L.base + perso.FOR + amel.FOR,
+        AGI: L.base + perso.AGI + amel.AGI,
+        armure: amel.armure,
+        persoPoints: points,
+        persoCout: L.personnalisation ? points * L.personnalisation.cout : 0,
+        persoDispo: L.personnalisation ? points * L.personnalisation.dispo : 0,
+      };
+    },
+
+    /** Les cybermembres du brouillon avec leurs attributs — pour la fiche. */
+    cyberlimbs(build) {
+      return (build.gear || []).filter((g) => this.isCyberlimb(g)).map((g) => ({ uid: g.uid, nom: g.name, ...this.cyberlimbAttrs(build, g) }));
+    },
+
+    implantCapacity(gear, build) {
       const d = this.implantDefaults(gear.name, gear.rating);
+      let consommee = d ? d.capaciteConsommee : null;
+      /* « Les augmentations d'attribut ne coûtent pas de capacité tant que
+         l'attribut du membre ne dépasse pas l'indice naturel […] Chaque
+         point d'indice au-delà de l'attribut naturel coûte 2 points de
+         capacité. » (p.291) */
+      if (d && d.ref && /augmentation d attribut/.test(Implants.normName(d.ref.nom))) {
+        const k = gear.attribut === "AGI" ? "AGI" : "FOR";
+        const naturel = build ? ((build.attrs || {})[k] ?? 1) : 1;
+        const membre = this.CYBERLIMB.base + (Number(gear.rating) || 0);
+        consommee = 2 * Math.max(0, membre - naturel);
+      }
       return {
         offerte: d ? d.capaciteOfferte : null,
-        consommee: d ? d.capaciteConsommee : null,
+        consommee,
         doitEtreLoge: !!(d && d.doitEtreLoge),
       };
     },
@@ -858,7 +934,7 @@ Object.assign(EditionSR6, {
         if (!g.hote) continue;
         const h = hotes.find((x) => x.uid === g.hote);
         if (!h) continue;
-        const c = this.implantCapacity(g).consommee;
+        const c = this.implantCapacity(g, build).consommee;
         h.utilises += c || 0;
         h.pris.push(g.name);
       }
@@ -889,14 +965,19 @@ Object.assign(EditionSR6, {
       const grades = this.IMPLANT_GRADES;
       const vue = this._implantView(gear, build);
       const d = this.implantDefaults(gear.name, gear.rating);
-      const cap = this.implantCapacity(gear);
+      const cap = this.implantCapacity(gear, build);
+      // Un cybermembre personnalisé (SR5) paie +5 000 ¥ et +1 de Disponibilité
+      // par point de Force ou d'Agilité au-dessus de la base.
+      const membre = build && this.isCyberlimb(gear) ? this.cyberlimbAttrs(build, gear) : null;
+      const dispo = Implants.availability(grades, gear);
       return {
         grade: Implants.gradeOf(grades, gear).label,
         essence: Implants.essence(grades, vue),
         capacite: cap,
         hote: build ? this.implantHostOf(build, gear) : null,
-        cost: Implants.cost(grades, gear),
-        availability: Implants.availability(grades, gear),
+        membre,
+        cost: Implants.cost(grades, gear) + (membre ? membre.persoCout : 0),
+        availability: dispo == null ? null : dispo + (membre ? membre.persoDispo : 0),
         multiplicateurs: Implants.gradeOf(grades, gear),
         // Ce que la table sait de cet implant : plage d'indice à saisir,
         // prix standard résolu (pour le proposer quand le prix est vide).
@@ -1514,7 +1595,33 @@ Object.assign(EditionSR6, {
          l'objet, sans famille, se voyait offrir les mods des trois familles.
          Même motif que `gearCatalog` en septembre : l'accesseur était là,
          l'écran l'ignorait. */
-      return [...objets, ...this._vehicleGroups()];
+      return [...objets, ...this._tableImplantGroup(objets), ...this._vehicleGroups()];
+    },
+
+    /** Les augmentations que la table du livre connaît et que les rayons de
+        l'app n'ont pas (« Augmentation d'attribut » SR6, « Étui de bras »…) :
+        un rayon de plus, sans doublon avec l'existant, pour que tout ce qui
+        a un coût relevé soit choisissable. */
+    _tableImplantGroup(objets) {
+      const AUGS = EditionSR6.AUGS_KEYS;
+      const deja = new Set();
+      for (const g of objets) for (const it of g.items) if (AUGS.includes(it.kind)) deja.add(Implants.normName(it.label));
+      const items = [];
+      for (const r of this.implantTable()) {
+        if (/^(indice|cyberjack) /i.test(r.nom) || r.groupe === "Cyberjack") continue;
+        const noms = [r.nom, ...(r.alias || [])].map((n) => Implants.normName(n));
+        if (noms.some((n) => deja.has(n))) continue;
+        const bio = /bioware/i.test(r.categorie);
+        const detail = [
+          r.essence != null ? `Essence ${String(r.essence).replace(".", ",")}` : r.essenceNote ? `Essence ${r.essenceNote}` : "",
+          r.capacite != null ? (r.capaciteNote === "offerte" ? `capacité ${r.capacite}` : `[${r.capacite}]`) : r.capaciteNote && r.capaciteNote !== "offerte" && r.capaciteNote !== "consommée" ? `capacité ${r.capaciteNote}` : "",
+          r.dispo ? `Disp. ${r.dispo}` : "",
+          r.cout != null ? `${r.cout.toLocaleString("fr-FR")} ¥` : r.coutNote || "",
+        ].filter(Boolean).join(", ");
+        items.push({ label: r.nom, detail, kind: bio ? "bioware" : "cyberware" });
+        deja.add(Implants.normName(r.nom));
+      }
+      return items.length ? [{ category: "Augmentations (table du livre)", items }] : [];
     },
 
     /** Les deux rayons Véhicules / Drones, tirés du catalogue partagé. La
@@ -2480,12 +2587,24 @@ Object.assign(EditionSR6, {
       }
       for (const g of build.gear || []) {
         if (!this.isImplant(g)) continue;
-        const cap = this.implantCapacity(g);
+        const cap = this.implantCapacity(g, build);
         if (cap.doitEtreLoge && !this.implantHostOf(build, g)) {
           out.gear.push(`${g.name} : un accessoire de cybermembre se loge dans un membre — choisis son hôte.`);
         }
         if (g.hote && !this.implantHostOf(build, g)) {
           out.gear.push(`${g.name} : son hôte n'est plus dans l'équipement.`);
+        }
+        if (this.isCyberlimb(g)) {
+          const m = this.cyberlimbAttrs(build, g);
+          if (m.ameliorations.doublons.length) {
+            out.gear.push(`${g.name} : une seule amélioration de chaque type par membre (${m.ameliorations.doublons.join(", ")} en double).`);
+          }
+          for (const k of ["FOR", "AGI"]) {
+            const v = Number((g.membre || {})[k]);
+            const max = this.attrRangeFor(build, k)[1];
+            if (Number.isFinite(v) && v > max) out.gear.push(`${g.name} : ${k} du membre personnalisé à ${v}, au plus ${max} (maximum naturel).`);
+            if (Number.isFinite(v) && v < this.CYBERLIMB.base) out.gear.push(`${g.name} : ${k} du membre en dessous de la base ${this.CYBERLIMB.base}.`);
+          }
         }
       }
 
@@ -2666,7 +2785,9 @@ Object.assign(EditionSR6, {
             const st = this.implantState(g, build);
             const gamme = g.grade && g.grade !== "standard" ? ` · ${st.grade.toLowerCase()}` : "";
             const loge = st.hote ? ` · dans ${st.hote.name}` : "";
-            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(st.hote ? { hote: st.hote.name } : {}) };
+            // Un cybermembre porte ses attributs propres sur sa ligne.
+            const membre = st.membre ? ` · FOR ${st.membre.FOR}, AGI ${st.membre.AGI}${st.membre.armure ? `, Armure +${st.membre.armure}` : ""}` : "";
+            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${membre}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(st.hote ? { hote: st.hote.name } : {}), ...(st.membre ? { membre: { FOR: st.membre.FOR, AGI: st.membre.AGI, armure: st.membre.armure } } : {}) };
           }
           return nom;
         }),
