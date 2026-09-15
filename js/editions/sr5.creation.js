@@ -73,6 +73,7 @@ Object.assign(EditionSR5, {
         source: "Run Faster p.142",
         family: "modules",
         karma: 750,
+        nuyenKarmaCap: 225, // « en dépensant un maximum de 225 points de cette façon »
         hint: "750 points de Karma dépensés en modules de vie : on compose un parcours, on ne répartit pas des points.",
       },
     },
@@ -403,7 +404,9 @@ Object.assign(EditionSR5, {
         le coût de la table p.140 en création par Karma. */
     metaKarma(build) {
       const fam = this.methods[build.method]?.family;
-      if (fam === "karma") return this.META_KARMA[build.meta] || 0;
+      // « La première chose à faire est de choisir un métatype et de déduire
+      // son coût de votre Karma » — en modules comme en Karma (RF p.142).
+      if (fam === "karma" || fam === "modules") return this.META_KARMA[build.meta] || 0;
       if (fam === "priority") return (this.META_EXTENDED[build.meta] || {}).karma || 0;
       return 0;
     },
@@ -513,16 +516,20 @@ Object.assign(EditionSR5, {
     knowledgeKarma(build) {
       const kc = this.karmaCosts;
       const free = this.knowledgePointsTotal(build);
-      const vals = (build.knowledges || []).map((k) => Math.max(1, k.val || 1));
-      const ranks = vals.reduce((n, v) => n + v, 0);
-      const plein = vals.reduce((n, v) => n + this.karmaForSkill(v, kc.knowledgeMult), 0);
+      // En modules, les rangs offerts par le parcours sont déjà payés par lui :
+      // les points gratuits et le karma ne portent que sur ce qui dépasse.
+      const offert = this.lifePathGranted(build).knowledges || {};
+      const cible = (build.knowledges || []).map((k) => ({ base: Math.min(offert[k.name] || 0, Math.max(1, k.val || 1)), val: Math.max(1, k.val || 1) }));
+      const cout = (base, j) => this.karmaForSkill(base + j, kc.knowledgeMult) - this.karmaForSkill(base, kc.knowledgeMult);
+      const ranks = cible.reduce((n, x) => n + (x.val - x.base), 0);
+      const plein = cible.reduce((n, x) => n + cout(x.base, x.val - x.base), 0);
       // best[c] = plus grande somme de « nouveaux indices » couverts avec c points.
       let best = new Array(free + 1).fill(0);
-      for (const v of vals) {
+      for (const x of cible) {
         const next = best.slice();
         for (let c = 0; c <= free; c++) {
-          for (let j = 1; j <= v && j <= c; j++) {
-            const gain = best[c - j] + this.karmaForSkill(j, kc.knowledgeMult);
+          for (let j = 1; j <= x.val - x.base && j <= c; j++) {
+            const gain = best[c - j] + cout(x.base, j);
             if (gain > next[c]) next[c] = gain;
           }
         }
@@ -1043,8 +1050,8 @@ Object.assign(EditionSR5, {
          le refacturer ici compterait le parcours deux fois et ferait sauter
          les 750. Le report part donc du rang offert, pas du minimum. */
       const offert = this.lifePathGranted(build);
-      // Le métatype d'abord (RF p.140) — Humain 0, Troll 90, Naga 95.
-      if (this.methods[build.method]?.family === "karma") sum += this.META_KARMA[build.meta] || 0;
+      // Le métatype d'abord (RF p.140, p.142) — Humain 0, Troll 90, Naga 95.
+      sum += this.metaKarma(build);
       // Attributs : cumul de (nouvel indice × 5) depuis le minimum du métatype.
       for (const k of this.ATTRS) {
         const [min] = this._range(build.meta, k);
@@ -1068,18 +1075,13 @@ Object.assign(EditionSR5, {
         const base = offert.groups[g.name] || 0;
         sum += this.karmaForSkill(g.val || 0, kc.groupMult) - this.karmaForSkill(base, kc.groupMult);
       }
-      if (this.methods[build.method]?.family === "karma") {
-        /* Création par Karma : « vous bénéficiez de points gratuits pour les
-           compétences de connaissances et de langues » (RF p.140 → LdR p.93,
-           (INT + LOG) × 2). Tout était facturé au tarif de progression —
-           un sur-coût sur chaque personnage créé par cette méthode. */
-        sum += this.knowledgeKarma(build).karma;
-      } else {
-        for (const k of build.knowledges || []) {
-          const base = offert.knowledges[k.name] || 0;
-          sum += this.karmaForSkill(k.val || 1, kc.knowledgeMult) - this.karmaForSkill(base, kc.knowledgeMult);
-        }
-      }
+      /* « Vous bénéficiez de points gratuits pour les compétences de
+         connaissances et de langues » (RF p.140 → LdR p.93, (INT + LOG) × 2),
+         et en modules « une fois les attributs finalisés, vous pouvez
+         distribuer les points gratuits dans les compétences de connaissance
+         et de langue » (RF, Équilibre karmique). Tout était facturé au tarif
+         de progression — un sur-coût sur chaque personnage de ces méthodes. */
+      sum += this.knowledgeKarma(build).karma;
       sum += (build.spells || []).length * kc.spell;
       sum += (build.complexForms || []).length * kc.complexForm;
       if (build.awakened && this.awakenedKarma[build.awakened]) {
@@ -1386,7 +1388,7 @@ Object.assign(EditionSR5, {
     knowledgeSummary(build) {
       const used = this.knowledgePointsUsed(build);
       const total = this.knowledgePointsTotal(build);
-      if (this.methods[build.method]?.family === "karma") {
+      if (this.methods[build.method]?.family !== "priority") {
         const kk = this.knowledgeKarma(build);
         return `${used} / ${total} points gratuits — (INT + LOG) × 2${kk.karma ? ` · ${kk.karma} karma au-delà` : ""}`;
       }
@@ -2353,6 +2355,15 @@ Object.assign(EditionSR5, {
         if (total > method.karma) {
           out.modules.push(`Karma dépassé (${total}/${method.karma}) — parcours ${parcours}, reste dépensé ${this.karmaUsed(build)}.`);
         }
+        // Même départ que la création par Karma : le reliquat est perdu, et
+        // les nuyens au karma sont plafonnés (RF, Équilibre karmique).
+        if (total < method.karma) {
+          out.modules.push(`Tout le karma doit être dépensé (${total}/${method.karma}) — le reliquat est perdu.`);
+        }
+        const capM = this.karmaNuyenCap(build);
+        if (this.nuyenUsed(build) > capM) {
+          out.gear.push(`Plafond de nuyens achetés au karma dépassé : ${this.nuyenUsed(build).toLocaleString("fr-FR")} / ${capM.toLocaleString("fr-FR")} ¥ (${method.nuyenKarmaCap} karma).`);
+        }
 
         // Une nationalité est le point de départ obligé (p.142).
         if (!pris.some((x) => this.lifePathById(x.id)?.section === "Nationalités")) {
@@ -2427,7 +2438,7 @@ Object.assign(EditionSR5, {
       const kTotal = this.knowledgePointsTotal(build);
       // En création par Karma, l'au-delà n'est pas une faute : il est facturé
       // (`knowledgeKarma`). En priorités, il se paie à l'étape Karma.
-      if (kUsed > kTotal && method.family !== "karma") {
+      if (kUsed > kTotal && method.family === "priority") {
         out.skills.push(`Trop de points de connaissances (${kUsed}/${kTotal} = (INT + LOG) × 2).`);
       }
 

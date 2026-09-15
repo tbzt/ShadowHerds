@@ -398,6 +398,11 @@ export const CharGen = {
           <button class="cg-step-btn" data-cg-action="attr-inc" data-key="${this._esc(spec.key)}" data-path="${this._esc(path)}" ${val >= spec.max ? "disabled" : ""} aria-label="Augmenter ${this._esc(spec.key)}">＋</button>
         </div>
         <span class="cg-attr-range">${spec.min}–${spec.max}${atMax ? " · max" : ""}${outOfRange ? ' · <span class="cg-error-text">hors bornes</span>' : ""}</span>
+        ${
+          spec.adjust
+            ? `<label class="cg-attr-adjust" title="Points d'ajustement posés sur cet attribut (au plus ${spec.adjust.max})">dont ajust. <input type="number" min="0" max="${spec.adjust.max}" data-cg="${this._esc(spec.adjust.path)}" value="${spec.adjust.value}" ${spec.adjust.max ? "" : "disabled"}></label>`
+            : ""
+        }
       </div>`;
     };
 
@@ -1907,6 +1912,11 @@ export const CharGen = {
       const key = path.split(".")[1];
       const [min, max] = this._creation().attrRangeFor(this._build, key);
       val = Utils.clamp(val, min, max);
+    }
+    if (path.startsWith("adjust.") && this._creation().adjustRangeFor) {
+      const [min, max] = this._creation().adjustRangeFor(this._build, path.split(".")[1]);
+      this._build.adjust = this._build.adjust || {};
+      val = Utils.clamp(Number(val) || 0, min, max);
     }
     this._setPath(this._build, path, val);
     // Le 4e mot-clé (Train de vie) alimente aussi le champ lifestyle du PJ.

@@ -216,6 +216,19 @@
   color: var(--text-dim);
   letter-spacing: 0;
 }
+/* Points d'ajustement posés sur un attribut spécial de métatype. */
+.cg-attr-adjust {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-2xs);
+  color: var(--accent2);
+}
+.cg-attr-adjust input {
+  width: 3em;
+  min-height: 28px;
+  text-align: center;
+}
 .cg-attr-range {
   font-family: var(--font-mono);
   font-size: var(--fs-2xs);

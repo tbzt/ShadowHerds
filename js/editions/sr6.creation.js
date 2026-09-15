@@ -449,6 +449,10 @@ Object.assign(EditionSR6, {
         awakened: "",
         priorities: { meta: "D", attrs: "B", skills: "A", magic: "E", nuyen: "C" },
         attrs: {},
+        /** Points d'ajustement posés sur un attribut spécial de métatype
+            (« Points d'ajustement : Constitution (2) » sur la fiche du
+            samouraï troll du livre) : `{ CON: 2 }`. */
+        adjust: {},
         special: { ATO: 1, MAG: 0, RES: 0 },
         skills: [],
         knowledges: [],
@@ -729,13 +733,33 @@ Object.assign(EditionSR6, {
        chaque compte retranche ce que `karmaBought` a payé — sinon monter un
        attribut au karma ferait « Trop de points d'attributs ». Même parti
        qu'en SR5. */
-    attrPointsUsed(build) {
-      const achete = this.karmaBought(build).attrs;
-      return this.ATTRS.reduce((sum, k) => sum + Math.max(0, ((build.attrs || {})[k] ?? 1) - 1 - (achete[k] || 0)), 0);
+    /** Points d'ajustement POSÉS sur un attribut spécial de métatype, bornés
+        par les rangs réellement achetés (hors karma). « Les points
+        d'ajustement sont utilisés pour modifier la Magie/Résonance, acheter
+        de l'Atout et augmenter les attributs spéciaux de métatype » (p.66) —
+        un rang de Constitution de troll se paie d'un point d'attribut OU
+        d'un point d'ajustement, au choix du joueur, pas des deux.
+        L'ancien compte facturait les rangs au-delà de 6 deux fois. */
+    adjustOn(build, key) {
+      if (!this._isMetaSpecial(build.meta, key)) return 0;
+      const achete = this.karmaBought(build).attrs[key] || 0;
+      const rangs = Math.max(0, ((build.attrs || {})[key] ?? 1) - 1 - achete);
+      return Math.max(0, Math.min(Number((build.adjust || {})[key]) || 0, rangs));
+    },
+    /** Bornes d'ajustement possibles sur cet attribut : 0 à (rangs achetés). */
+    adjustRangeFor(build, key) {
+      if (!this._isMetaSpecial(build.meta, key)) return [0, 0];
+      const achete = this.karmaBought(build).attrs[key] || 0;
+      return [0, Math.max(0, ((build.attrs || {})[key] ?? 1) - 1 - achete)];
     },
 
-    /** Points d'ajustement : Atout au-dessus de 1, Magie/Résonance, et les
-        attributs « spéciaux de métatype » montés au-delà de 6. */
+    attrPointsUsed(build) {
+      const achete = this.karmaBought(build).attrs;
+      return this.ATTRS.reduce((sum, k) => sum + Math.max(0, ((build.attrs || {})[k] ?? 1) - 1 - (achete[k] || 0) - this.adjustOn(build, k)), 0);
+    },
+
+    /** Points d'ajustement : Atout au-dessus de 1, Magie/Résonance, et ce
+        que le joueur a posé sur ses attributs spéciaux de métatype. */
     adjustPointsUsed(build) {
       const sp = build.special || {};
       const achete = this.karmaBought(build).attrs;
@@ -743,10 +767,7 @@ Object.assign(EditionSR6, {
         Math.max(0, (sp.ATO ?? 1) - 1 - (achete.ATO || 0)) +
         Math.max(0, (sp.MAG || 0) - (achete.MAG || 0)) +
         Math.max(0, (sp.RES || 0) - (achete.RES || 0));
-      for (const k of this.ATTRS) {
-        if (!this._isMetaSpecial(build.meta, k)) continue;
-        sum += Math.max(0, ((build.attrs || {})[k] ?? 1) - 6);
-      }
+      for (const k of this.ATTRS) sum += this.adjustOn(build, k);
       return sum;
     },
 
@@ -1097,11 +1118,15 @@ Object.assign(EditionSR6, {
     attrsStep(build) {
       const specs = this.ATTRS.map((key) => {
         const [min, max] = this._range(build.meta, key);
+        const special = this._isMetaSpecial(build.meta, key);
         return {
           key,
           min,
           max,
-          note: this._isMetaSpecial(build.meta, key) ? "ajustement au-delà de 6" : "",
+          note: special ? "spécial de métatype" : "",
+          /* Un attribut spécial de métatype accepte des points d'ajustement :
+             l'écran offre le champ, borné par les rangs achetés. */
+          adjust: special ? { path: `adjust.${key}`, value: this.adjustOn(build, key), max: this.adjustRangeFor(build, key)[1] } : null,
         };
       });
       const [atoMin, atoMax] = this._range(build.meta, "ATO");
@@ -1118,7 +1143,7 @@ Object.assign(EditionSR6, {
       const aUsed = this.adjustPointsUsed(build);
       const aTotal = this.adjustPointsTotal(build);
       return {
-        hint: `Chaque attribut part de 1 et se paie un pour un. Les points d'ajustement montent l'Atout, la Magie, la Résonance et les attributs dont le maximum dépasse 6.`,
+        hint: `Chaque attribut part de 1 et se paie un pour un. Les points d'ajustement montent l'Atout, la Magie, la Résonance — ou, à ta place, les rangs d'un attribut spécial de métatype.`,
         groups: [
           { label: "Attributs", used, total, specs },
           { label: "Ajustement (Atout, Magie, Résonance)", used: aUsed, total: aTotal, specs: specialSpecs },
@@ -2208,6 +2233,11 @@ Object.assign(EditionSR6, {
       if (aUsed > aTotal) out.attrs.push(`Trop de points d'attributs (${aUsed}/${aTotal}).`);
       if (reserves && aUsed < aTotal) {
         out.attrs.push(`Tous les points d'attribut doivent être dépensés (${aUsed}/${aTotal}) — rien ne se conserve.`);
+      }
+      for (const k of this.ATTRS) {
+        const pose = Number((build.adjust || {})[k]) || 0;
+        const [, maxA] = this.adjustRangeFor(build, k);
+        if (pose > maxA) out.attrs.push(`${k} : ${pose} point(s) d'ajustement posés pour ${maxA} rang(s) acheté(s).`);
       }
       const adjUsed = this.adjustPointsUsed(build);
       const adjTotal = this.adjustPointsTotal(build);
