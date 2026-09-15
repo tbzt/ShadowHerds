@@ -5016,6 +5016,54 @@ export const EditionSR5 = {
     return out;
   },
 
+  /* ---- Implants et transformation (RF p.75) ----
+     « Les implants deltaware purement internes sont conservés sous sa
+     nouvelle forme ; les autres implants sont automatiquement rejetés lors
+     de la transformation causant des dommages de VD (coût en Essence total
+     × 10)P (arrondi à l'inférieur). Le personnage ne regagne pas l'Essence
+     des implants perdus de cette façon. »
+     ⚠ L'app ne modélise pas le GRADE des implants : est conservé ce dont la
+     ligne dit « deltaware », ou ce que le meneur a marqué
+     (`pnj.zooImplantsConserves`). L'Essence se lit sur la ligne du livre
+     (« [Essence 0.5, … ] ») ; inconnue → comptée « ? », pas 0. */
+  transformationImplants(pnj) {
+    const items = ItemResolver.augItems(pnj, this.AUGS_KEYS);
+    const gardes = new Set(pnj.zooImplantsConserves || []);
+    const rejetes = [];
+    const conserves = [];
+    for (const item of items) {
+      const s = ItemResolver.itemStr(item);
+      if (!s) continue;
+      const nom = s.split(" [")[0].trim();
+      const m = s.match(/Essence\s*:?\s*(\d+(?:[.,]\d+)?)/i);
+      const essence = m ? Number(m[1].replace(",", ".")) : null;
+      const garde = /deltaware/i.test(s) || gardes.has(s) || gardes.has(nom);
+      (garde ? conserves : rejetes).push({ item, nom, essence });
+    }
+    const essence = Math.round(rejetes.reduce((n, x) => n + (x.essence || 0), 0) * 100) / 100;
+    return {
+      rejetes,
+      conserves,
+      essence,
+      inconnus: rejetes.filter((x) => x.essence == null).length,
+      degats: Math.floor(essence * 10),
+    };
+  },
+
+  /** Rejette ces implants : hors de l'équipement, leurs bonus retirés, la
+      trace gardée sur l'entité. L'Essence n'est PAS regagnée — `attrs.ESS`
+      reste où il est, c'est la règle. Rend l'entité recalculée. */
+  rejectImplants(pnj, rejetes) {
+    if (!rejetes || !rejetes.length) return pnj;
+    const items = rejetes.map((x) => x.item);
+    const strs = new Set(items.map((i) => ItemResolver.itemStr(i)));
+    BonusEngine.stripItems(pnj, "sr5", items);
+    pnj.equip = (pnj.equip || []).filter((i) => !strs.has(ItemResolver.itemStr(i)));
+    if (Array.isArray(pnj.augs)) pnj.augs = pnj.augs.filter((i) => !strs.has(ItemResolver.itemStr(i)));
+    pnj.zooImplantsRejetes = [...(pnj.zooImplantsRejetes || []), ...rejetes.map((x) => x.nom)];
+    return this.recalc(pnj);
+  },
+
   /** Bascule la forme et rend l'entité recalculée. Idempotent par paire :
       deux bascules rendent exactement les bases de départ. */
   shapeShift(pnj) {

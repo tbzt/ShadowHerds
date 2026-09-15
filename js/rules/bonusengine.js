@@ -453,6 +453,42 @@ export const BonusEngine = {
     }
   },
 
+  /** RETIRE les bonus d'une liste d'items (le miroir de `_applySR` sur un
+      sous-ensemble) : dés et score d'initiative, armure, SD, Limites, mods
+      d'attribut étiquetés `type: "cyber"` de cette source. Sert au rejet des
+      implants d'un zoocanthrope qui se transforme (Run Faster p.75). Ne
+      touche pas aux compétences ni aux traits — les implants n'en posent pas
+      par cette table. Rend true si un dérivé doit être recalculé. */
+  stripItems(pnj, edition, items) {
+    if (!pnj || !items || !items.length) return false;
+    const totals = this._collectCyberBonuses({ equip: items, augs: [] }, edition);
+    let touched = false;
+    if (totals.initDice) pnj.initDice = Math.max(0, (pnj.initDice || 0) - totals.initDice);
+    if (totals.initScore) {
+      pnj._initMod = (pnj._initMod || 0) - totals.initScore;
+      touched = true;
+    }
+    if (totals.armor) pnj.armure = Math.max(0, (pnj.armure || 0) - totals.armor);
+    if (totals.sd) pnj.sdBase = Math.max(0, (pnj.sdBase || 0) - totals.sd);
+    for (const [k, v] of Object.entries(totals.limits)) {
+      if (!v) continue;
+      pnj._limitMods = pnj._limitMods || { phys: 0, ment: 0, soc: 0 };
+      pnj._limitMods[k] = (pnj._limitMods[k] || 0) - v;
+      touched = true;
+    }
+    for (const m of totals.attrMods) {
+      const t = pnj.attrs && pnj.attrs[m.attr];
+      if (!t || !Array.isArray(t.mods)) continue;
+      const i = t.mods.findIndex((x) => x && x.type === "cyber" && x.source === m.source && x.value === m.val);
+      if (i >= 0) {
+        t.mods.splice(i, 1);
+        touched = true;
+      }
+    }
+    pnj.smartlink = this.detectSmartlink({ ...pnj, equip: (pnj.equip || []).filter((i) => !items.includes(i)) });
+    return touched;
+  },
+
   /** Point d'entrée unique, appelé en fin de generate() de chaque édition. */
   apply(pnj, edition) {
     if (!pnj) return pnj;

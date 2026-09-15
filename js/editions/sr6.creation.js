@@ -37,6 +37,7 @@ import { Magic } from "../rules/magic.js";
 import { EditionSR6 } from "./sr6.js";
 import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { BonusEngine } from "../rules/bonusengine.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
@@ -1454,7 +1455,9 @@ Object.assign(EditionSR6, {
         — Capacité d'une armure (table Armures), Résistance d'un véhicule
         (catalogue). Inconnue → rien d'écrit, l'écran demande la saisie. */
     gearFromCatalog({ name, detail, kind }) {
-      const item = { name, cost: 0, ...(kind ? { kind } : {}) };
+      // `detail` (la ligne de stats du livre) suit l'objet : la fiche en a
+      // besoin pour une augmentation (Essence, bonus).
+      const item = { name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
       const fam = this.gearFamily(item);
       if (fam === "armure") {
         const base = this.armorReserveFor({ name, detail });
@@ -2482,7 +2485,16 @@ Object.assign(EditionSR6, {
             const n = ModRefs.indice(ref);
             return a ? `${a.nom}${n ? " " + n : ""}` : null;
           }).filter(Boolean);
-          return mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+          const nom = mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+          /* Une AUGMENTATION entre dans la langue du générateur : un objet
+             `{str, cat}` (cf. ItemResolver.addEquipString), avec la ligne de
+             stats du livre — c'est elle que lisent le routage Augmentations,
+             BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
+             d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
+          if (g.kind && EditionSR6.AUGS_KEYS.includes(g.kind)) {
+            return { str: g.detail ? `${nom} [${g.detail}]` : nom, cat: g.kind };
+          }
+          return nom;
         }),
         awakened: build.awakened || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
@@ -2522,6 +2534,8 @@ Object.assign(EditionSR6, {
          PNJ générés et de toute édition manuelle. La fiche du PJ en
          recopiait deux à la main et n'avait pas les autres ; deux
          consommateurs d'un même fait doivent lire la même expression. */
+      // Bonus des augmentations (BonusEngine), comme pour un PNJ généré.
+      BonusEngine.apply(pnj, "sr6");
       return EditionSR6.recalc(pnj);
     },
   },

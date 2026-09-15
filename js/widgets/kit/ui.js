@@ -7,6 +7,7 @@
    ============================================================ */
 import { Campaign } from "../../rules/campaign.js";
 import { CardRenderer } from "../card/cardrenderer.js";
+import { Dialog } from "./dialog.js";
 import { Drugs } from "../../catalogs/drugs.js";
 import { PersonaRenderer } from "../card/personarenderer.js";
 import { Statuses } from "../../rules/statuses.js";
@@ -207,17 +208,37 @@ export const UI = {
       l'entité change de forme et comment (`shapeOptions`/`shapeShift`) ;
       ici on mute toutes les copies, on persiste, on rafraîchit. Aucune
       branche d'édition. */
-  shiftShape(pnjId) {
+  async shiftShape(pnjId) {
     const copies = this._entityCopies(pnjId);
     if (!copies.length) return;
     const mod = App.getEditionModule(copies[0].edition);
     if (!mod || typeof mod.shapeShift !== "function" || !mod.shapeOptions?.(copies[0])) return;
+    /* Les implants qui ne survivent pas à la transformation (le module sait
+       lesquels) sont perdus pour de bon, Essence comprise : c'est LE dialogue
+       que la table admet — la destruction confirmée. Refuser, c'est ne pas se
+       transformer. */
+    const info = typeof mod.transformationImplants === "function" ? mod.transformationImplants(copies[0]) : null;
+    let note = "";
+    if (info && info.rejetes.length) {
+      const liste = info.rejetes.map((x) => `${x.nom} (Essence ${x.essence != null ? x.essence : "?"})`).join(" · ");
+      const vd = `VD ${info.degats}P${info.inconnus ? ` au moins — Essence inconnue sur ${info.inconnus} implant(s)` : ""}`;
+      const ok = await Dialog.confirm({
+        title: "Transformation : implants rejetés",
+        message: `Seuls les implants deltaware purement internes survivent à la transformation. Ceux-ci seront rejetés, définitivement, sans regagner l'Essence : ${liste}. Dommages à résister : ${vd}.`,
+        confirmLabel: `Se transformer (${info.rejetes.length} implant${info.rejetes.length > 1 ? "s" : ""} rejeté${info.rejetes.length > 1 ? "s" : ""})`,
+        danger: true,
+      });
+      if (!ok) return;
+      for (const pnj of copies) mod.rejectImplants(pnj, info.rejetes);
+      note = `Transformation : implants rejetés — ${info.rejetes.map((x) => x.nom).join(", ")}. ${vd} à résister (Constitution + Armure). Essence non regagnée.`;
+    }
     for (const pnj of copies) mod.shapeShift(pnj);
     this.persistEntity(pnjId);
     CardRenderer.refresh(copies[0]);
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
+    if (note) this.addJournalEntry(pnjId, note);
     const o = mod.shapeOptions(copies[0]);
-    if (o && typeof toast === "function") toast(`${copies[0].name} : ${o.label.toLowerCase()}.`);
+    if (o && typeof toast === "function") toast(`${copies[0].name} : ${o.label.toLowerCase()}${note ? ` — ${info.rejetes.length} implant(s) rejeté(s), VD ${info.degats}P à résister` : ""}.`);
   },
 
   /** DRAIN D'ESSENCE (lot E) — l'action dirigée d'un Infecté vers sa victime.

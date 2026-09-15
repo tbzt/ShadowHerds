@@ -38,6 +38,7 @@ import { EditionSR5 } from "./sr5.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { TraitsSR5 } from "./sr5.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
+import { BonusEngine } from "../rules/bonusengine.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Utils } from "../core/utils.js";
 
@@ -828,7 +829,9 @@ Object.assign(EditionSR5, {
     },
 
     gearFromCatalog({ name, detail, kind }) {
-      const item = { name, cost: 0, ...(kind ? { kind } : {}) };
+      // `detail` (la ligne de stats du livre) suit l'objet : la fiche en a
+      // besoin pour une augmentation (Essence, bonus).
+      const item = { name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
       const fam = this.gearFamily(item);
       if (fam === "armure") {
         const base = this.armorReserveFor({ name, detail });
@@ -2745,7 +2748,16 @@ Object.assign(EditionSR5, {
             const n = ModRefs.indice(ref);
             return a ? `${a.nom}${n ? " " + n : ""}` : null;
           }).filter(Boolean);
-          return mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+          const nom = mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+          /* Une AUGMENTATION entre dans la langue du générateur : un objet
+             `{str, cat}` (cf. ItemResolver.addEquipString), avec la ligne de
+             stats du livre — c'est elle que lisent le routage Augmentations,
+             BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
+             d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
+          if (g.kind && EditionSR5.AUGS_KEYS.includes(g.kind)) {
+            return { str: g.detail ? `${nom} [${g.detail}]` : nom, cat: g.kind };
+          }
+          return nom;
         }),
         awakened: build.awakened || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
@@ -2774,7 +2786,10 @@ Object.assign(EditionSR5, {
       /* ⚠ La fiche d'un PJ n'avait NI initiative, NI limites, NI défense :
          `generate()` les calcule pour un PNJ, et rien ne les posait ici.
          Une seule source pour les dérivés — `EditionSR5.recalc`, celle des
-         PNJ générés et de l'édition manuelle. */
+         PNJ générés et de l'édition manuelle. Et les bonus des augmentations
+         (Réflexes câblés → +1D6…) passent par BonusEngine, comme pour un
+         PNJ : un PJ créé avec des réflexes câblés n'en avait pas les dés. */
+      BonusEngine.apply(pnj, "sr5");
       return EditionSR5.recalc(pnj);
     },
   },
