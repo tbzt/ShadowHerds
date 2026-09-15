@@ -38,6 +38,7 @@ import { EditionSR6 } from "./sr6.js";
 import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { BonusEngine } from "../rules/bonusengine.js";
+import { Implants } from "../rules/implants.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
@@ -783,9 +784,59 @@ Object.assign(EditionSR6, {
 
     nuyenUsed(build) {
       // ⚠ Le premier mois de style de vie est payé d'avance : il fait
-      // partie des ressources dépensées, pas d'un budget à côté.
-      return this.lifestyleCost(build) + this.accessoryCost(build) + (build.gear || []).reduce((sum, g) => sum + (Number(g.cost) || 0), 0);
+      // partie des ressources dépensées, pas d'un budget à côté. Un implant
+      // se paie à sa gamme (prix standard × multiplicateur).
+      return (
+        this.lifestyleCost(build) +
+        this.accessoryCost(build) +
+        (build.gear || []).reduce((sum, g) => sum + (this.isImplant(g) ? this.implantState(g).cost : Number(g.cost) || 0), 0)
+      );
     },
+
+    /* ---- Gammes d'implants (Livre de base p.283 — aucune restriction de gamme à la création, seule la Disponibilité borne) ----
+       Cinq gammes, trois multiplicateurs ; le moteur neutre `Implants`
+       applique la table. Un objet d'équipement d'une catégorie
+       d'augmentation porte `grade` (« standard » par défaut) ; prix et
+       Disponibilité se saisissent au tarif standard, l'écran montre l'effet. */
+    IMPLANT_GRADES: {
+      occasion: { label: "D'occasion", essence: 1.1, cout: 0.5, dispo: -1 },
+      standard: { label: "Standard", essence: 1, cout: 1, dispo: 0 },
+      alphaware: { label: "Alphaware", essence: 0.8, cout: 1.2, dispo: 1 },
+      betaware: { label: "Betaware", essence: 0.7, cout: 1.5, dispo: 2 },
+      deltaware: { label: "Deltaware", essence: 0.5, cout: 2.5, dispo: 3 },
+    },
+    /** Les gammes qu'on peut prendre à la création. */
+    IMPLANT_GRADES_AT_CREATION: ["occasion", "standard", "alphaware", "betaware", "deltaware"],
+    ESSENCE_MAX: 6,
+
+    isImplant(gear) {
+      return !!(gear && gear.kind && EditionSR6.AUGS_KEYS.includes(gear.kind));
+    },
+    /** Options du sélecteur de gamme, avec l'effet en toutes lettres. */
+    implantGrades() {
+      const x = (n) => String(n).replace(".", ",");
+      return this.IMPLANT_GRADES_AT_CREATION.map((k) => {
+        const g = this.IMPLANT_GRADES[k];
+        return { value: k, label: `${g.label} — Essence ×${x(g.essence)}, coût ×${x(g.cout)}${g.dispo ? `, Disp. ${g.dispo > 0 ? "+" : ""}${g.dispo}` : ""}` };
+      });
+    },
+    /** Ce que la gamme fait à cet implant : Essence, coût et Disponibilité effectifs. */
+    implantState(gear) {
+      const grades = this.IMPLANT_GRADES;
+      return {
+        grade: Implants.gradeOf(grades, gear).label,
+        essence: Implants.essence(grades, gear),
+        cost: Implants.cost(grades, gear),
+        availability: Implants.availability(grades, gear),
+        multiplicateurs: Implants.gradeOf(grades, gear),
+      };
+    },
+    /** Essence perdue aux augmentations : `{total, inconnus}` — un implant
+        sans Essence lisible est nommé, pas compté 0. */
+    essenceUsed(build) {
+      return Implants.total(this.IMPLANT_GRADES, (build.gear || []).filter((g) => this.isImplant(g)));
+    },
+
 
     /** PC dépensés — méthode par points uniquement. */
     pcUsed(build) {
@@ -977,6 +1028,7 @@ Object.assign(EditionSR6, {
         { label: "Ajustement", used: this.adjustPointsUsed(build), total: this.adjustPointsTotal(build), step: "attrs" },
         { label: "Compétences", used: this.skillPointsUsed(build), total: this.skillPointsTotal(build), step: "skills" },
         { label: "Nuyens", used: this.nuyenUsed(build), total: this.nuyenTotal(build), step: "gear" },
+        { label: "Essence", used: this.essenceUsed(build).total, total: this.ESSENCE_MAX, step: "gear" },
       ];
 
       if (method.family === "modules") {
@@ -2314,12 +2366,28 @@ Object.assign(EditionSR6, {
         out.finition.push(`${kf.left} karma non dépensés — ils seront perdus : monte un attribut ou une compétence, ou convertis-les en nuyens.`);
       }
       for (const g of build.gear || []) {
-        if (g.availability != null && g.availability !== "" && Number(g.availability) >= this.ILLEGAL_AVAILABILITY_CAP) {
+        // Un implant porte la Disponibilité de sa gamme (standard + modificateur).
+        const dispo = this.isImplant(g) ? this.implantState(g).availability : g.availability != null && g.availability !== "" ? Number(g.availability) : null;
+        if (dispo != null && dispo >= this.ILLEGAL_AVAILABILITY_CAP) {
           out.gear.push(
-            `${g.name} : Disponibilité ${g.availability} — l'illégal de ${this.ILLEGAL_AVAILABILITY_CAP} ou plus est interdit à la création.`,
+            `${g.name} : Disponibilité ${dispo} — l'illégal de ${this.ILLEGAL_AVAILABILITY_CAP} ou plus est interdit à la création.`,
           );
         }
       }
+      /* Implants : la gamme doit être ouverte à la création, et l'Essence
+         ne s'épuise pas — à 0, le personnage n'est plus (les fractions
+         perdues rognent déjà Magie/Résonance via `recalc`). */
+      for (const g of build.gear || []) {
+        if (!this.isImplant(g)) continue;
+        if (g.grade && !this.IMPLANT_GRADES_AT_CREATION.includes(g.grade)) {
+          out.gear.push(`${g.name} : la gamme ${(this.IMPLANT_GRADES[g.grade] || {}).label || g.grade} n'est pas disponible à la création.`);
+        }
+      }
+      const ess = this.essenceUsed(build);
+      if (ess.total >= this.ESSENCE_MAX) {
+        out.gear.push(`Essence épuisée : ${ess.total} perdue sur ${this.ESSENCE_MAX} — retire ou allège des implants.`);
+      }
+
 
       const cUsed = this.contactPointsUsed(build);
       const cTotal = this.contactPointsTotal(build);
@@ -2390,7 +2458,9 @@ Object.assign(EditionSR6, {
         if (sp.MAG) attrs.MAG = sp.MAG;
         if (sp.RES) attrs.RES = sp.RES;
       }
-      attrs.ESS = 6;
+      // L'Essence perdue aux implants (à leur gamme) ; `recalc` en tire la
+      // pénalité de Magie/Résonance. Elle valait 6 quel que soit le chrome.
+      attrs.ESS = Math.max(0, Math.round((this.ESSENCE_MAX - this.essenceUsed(build).total) * 100) / 100);
 
       const listeSkills = parModules
         ? Object.entries(grants.skills).map(([name, val]) => ({
@@ -2491,8 +2561,10 @@ Object.assign(EditionSR6, {
              stats du livre — c'est elle que lisent le routage Augmentations,
              BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
              d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
-          if (g.kind && EditionSR6.AUGS_KEYS.includes(g.kind)) {
-            return { str: g.detail ? `${nom} [${g.detail}]` : nom, cat: g.kind };
+          if (this.isImplant(g)) {
+            const st = this.implantState(g);
+            const gamme = g.grade && g.grade !== "standard" ? ` · ${st.grade.toLowerCase()}` : "";
+            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${gamme}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence };
           }
           return nom;
         }),

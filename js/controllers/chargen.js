@@ -1182,15 +1182,17 @@ export const CharGen = {
           )
           .join("");
         const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g) + this._armorCapacity(c, g, i);
+        const implant = c.isImplant && c.isImplant(g);
         return `<div class="stack cg-list-row">
         <div class="cluster">
           <span>${this._esc(g.name || "")}</span>
-          <input type="number" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" style="width:7em" title="Coût en nuyens">
+          <input type="number" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" style="width:7em" title="${implant ? "Prix au tarif standard — la gamme s'applique ensuite" : "Coût en nuyens"}">
           <span class="cg-section-note">¥</span>
-          <input type="number" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" style="width:4.5em" title="Disponibilité">
+          <input type="number" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" style="width:4.5em" title="${implant ? "Disponibilité standard — la gamme s'applique ensuite" : "Disponibilité"}">
           <span class="cg-section-note">Disp.</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
         </div>
+        ${implant ? this._implantRow(c, g, i) : ""}
         ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
         ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
         ${reserves}
@@ -1223,6 +1225,31 @@ export const CharGen = {
         <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
       </div>
     </div>`;
+  },
+
+  /* La GAMME d'un implant : le sélecteur, et ce qu'elle fait — Essence,
+     prix, Disponibilité effectifs. Les gammes ouvertes à la création et
+     leurs multiplicateurs viennent du module ; l'Essence introuvable sur la
+     ligne du livre est dite « ? », pas comptée 0. */
+  _implantRow(c, g, i) {
+    const st = c.implantState(g);
+    const x = (n) => Number(n).toLocaleString("fr-FR");
+    const opts = c.implantGrades()
+      .map((o) => `<option value="${this._esc(o.value)}" ${(g.grade || "standard") === o.value ? "selected" : ""}>${this._esc(o.label)}</option>`)
+      .join("");
+    return `<div class="cluster cg-add-row">
+      <span class="cg-section-note">Gamme</span>
+      <select data-cg="gear.${i}.grade" aria-label="Gamme de l'implant">${opts}</select>
+      ${
+        st.essence == null || g.essenceBase != null
+          ? `<label class="cg-section-note cg-essence-in">Essence standard <input type="number" min="0" step="0.05" data-cg="gear.${i}.essenceBase" value="${g.essenceBase ?? ""}" style="width:4.5em" placeholder="?" title="Coût en Essence au livre, gamme standard"></label>`
+          : ""
+      }
+      <span class="cg-pick-tag${st.essence == null ? " cg-tag-libre" : ""}" title="Essence perdue à cette gamme">Essence ${st.essence == null ? "?" : x(st.essence)}</span>
+      ${st.multiplicateurs.cout !== 1 ? `<span class="cg-section-note">coût ${x(st.cost)} ¥</span>` : ""}
+      ${st.multiplicateurs.dispo && st.availability != null ? `<span class="cg-section-note">Disp. ${st.availability}</span>` : ""}
+    </div>
+    ${st.essence == null ? `<p class="cg-hint">⚑ Le catalogue ne donne pas l'Essence de cet implant : saisis-la, sinon elle n'est pas comptée.</p>` : ""}`;
   },
 
   /* La CAPACITÉ d'une armure (SR5, Livre de Règles p.437 ; Run & Gun p.100),

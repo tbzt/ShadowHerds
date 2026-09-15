@@ -5035,9 +5035,11 @@ export const EditionSR5 = {
       const s = ItemResolver.itemStr(item);
       if (!s) continue;
       const nom = s.split(" [")[0].trim();
+      // L'objet porte sa gamme et son Essence effective quand il vient de la
+      // création (1.196.0) ; sinon on lit la ligne.
       const m = s.match(/Essence\s*:?\s*(\d+(?:[.,]\d+)?)/i);
-      const essence = m ? Number(m[1].replace(",", ".")) : null;
-      const garde = /deltaware/i.test(s) || gardes.has(s) || gardes.has(nom);
+      const essence = item && typeof item === "object" && item.essence != null ? item.essence : m ? Number(m[1].replace(",", ".")) : null;
+      const garde = (item && typeof item === "object" && item.grade === "deltaware") || /deltaware/i.test(s) || gardes.has(s) || gardes.has(nom);
       (garde ? conserves : rejetes).push({ item, nom, essence });
     }
     const essence = Math.round(rejetes.reduce((n, x) => n + (x.essence || 0), 0) * 100) / 100;
