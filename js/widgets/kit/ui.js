@@ -202,6 +202,24 @@ export const UI = {
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
   },
 
+  /** BASCULEMENT DE FORME d'un zoocanthrope (Run Faster, Transformation) —
+      un geste de table, un tap, réversible. Le module d'édition sait si
+      l'entité change de forme et comment (`shapeOptions`/`shapeShift`) ;
+      ici on mute toutes les copies, on persiste, on rafraîchit. Aucune
+      branche d'édition. */
+  shiftShape(pnjId) {
+    const copies = this._entityCopies(pnjId);
+    if (!copies.length) return;
+    const mod = App.getEditionModule(copies[0].edition);
+    if (!mod || typeof mod.shapeShift !== "function" || !mod.shapeOptions?.(copies[0])) return;
+    for (const pnj of copies) mod.shapeShift(pnj);
+    this.persistEntity(pnjId);
+    CardRenderer.refresh(copies[0]);
+    if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
+    const o = mod.shapeOptions(copies[0]);
+    if (o && typeof toast === "function") toast(`${copies[0].name} : ${o.label.toLowerCase()}.`);
+  },
+
   /** DRAIN D'ESSENCE (lot E) — l'action dirigée d'un Infecté vers sa victime.
       SR5 p.401 / SR6 p.228 : test ÉTENDU Charisme + Magie, seuil
       (10 − Essence de la cible), intervalle 1 minute. Un point par réussite du

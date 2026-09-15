@@ -693,6 +693,23 @@
 /* Vitesse à pied (lot P7) : une distance PLAFONNÉE par un état (SR6 Fatigué
    fixe 5/10 m, Entravé divise par 2) se signale, sinon un « 5 / 10 m » sans
    cause se lit comme un bug. L'infobulle nomme l'état. */
+/* Forme d'un zoocanthrope : une puce-bouton, même gabarit qu'une pastille
+   de combat, qui bascule d'un tap (Transformation, action gratuite). */
+.stat-pill.shape-pill {
+  cursor: pointer;
+  border: 1px solid var(--accent2);
+  color: inherit;
+  font: inherit;
+  background: color-mix(in srgb, var(--accent2) 10%, transparent);
+  transition: border-color var(--dur-fast), background var(--dur-fast);
+}
+.stat-pill.shape-pill:hover {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+.stat-pill.shape-pill.is-metahumaine {
+  border-style: dashed;
+}
 .stat-pill.move-pill.is-capped {
   border-color: color-mix(in srgb, var(--warning) 40%, transparent);
 }

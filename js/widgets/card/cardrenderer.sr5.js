@@ -98,6 +98,7 @@ Object.assign(CardRenderer, {
     // plus que les autres : c'est la seule édition où dépasser sa vitesse de
     // marche a une conséquence mécanique (l'état « En course »).
     combatBody += this._movePill(pnj);
+    combatBody += this._shapePill(pnj);
     if (drainResist != null)
       combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), {
         title: "Résistance au Drain",

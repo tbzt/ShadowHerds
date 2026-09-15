@@ -2681,7 +2681,20 @@ Object.assign(EditionSR5, {
         metavariant: mv ? mv.name : null,
         metaFamily: mv ? mv.family : null,
         metaTraits: mv ? mv.traits || [] : [],
-        ...(zoo ? { zooForm: zoo.forme, zooFormAttrs: zoo.attrs } : {}),
+        /* Zoocanthrope : la fiche part en forme animale, avec ce qu'il faut
+            pour basculer en jeu (`EditionSR5.shapeShift`) — bases animales,
+            forme et ses attributs, trait absent de la forme, déplacement de
+            l'animal. */
+        ...(zoo
+          ? {
+              zooForm: zoo.forme,
+              zooFormAttrs: zoo.attrs,
+              zooFormAbsent: (this.ZOO_FORMES[zoo.forme] || {}).absent || null,
+              zooShape: "animale",
+              zooAnimalBase: Object.fromEntries(this.ATTRS.map((k) => [k, attrs[k]])),
+              ...(mv && mv.move ? { move: mv.move } : {}),
+            }
+          : {}),
         gender: build.gender || "NB",
         tier: this.gameLevels[build.gameLevel]?.label || "Runner expérimenté",
         // Le concept du joueur, pas le libellé de la méthode : celui-ci vit

@@ -4966,6 +4966,94 @@ export const EditionSR5 = {
     },
   },
 
+  /* ============================================================
+     ZOOCANTHROPES — basculement de forme en jeu (Run Faster p.73-75,
+     pouvoir Transformation : action gratuite, « sous sa nouvelle forme, la
+     créature bénéficie de toutes les capacités innées non-paranormales de
+     cette race […] conserve toutes ses capacités paranormales propres »).
+     Un geste de table : il écrit sur l'ENTITÉ (attributs de base, dés
+     d'initiative, déplacement, traits raciaux), jamais sur la fiche de
+     création. Les cases de moniteur cochées restent : la blessure ne
+     change pas de corps.
+     ⚠ Les attributs sont des Trait {base, mods, total} : on change la BASE
+     et les mods (augmentations, effets) suivent ; c'est `recalc` qui refait
+     les dérivés. Les implants qui seraient rejetés à la transformation
+     (RF p.75) ne sont pas modélisés.
+     ============================================================ */
+  ZOO_ATTRS: ["CON", "AGI", "REA", "FOR", "VOL", "LOG", "INT", "CHA"],
+
+  /** Ce qu'une entité peut prendre comme forme, ou null si elle n'est pas
+      un zoocanthrope. `shape` : « animale » (défaut) ou « metahumaine ». */
+  shapeOptions(pnj) {
+    if (!pnj || pnj.metaFamily !== "zoocanthrope" || !pnj.metavariant) return null;
+    const forme = pnj.zooForm || pnj.meta || "Humain";
+    const shape = pnj.zooShape || "animale";
+    const regle = (Metavariants.zooTraitsCommuns.find((t) => /^Transformation/.test(t.name)) || {}).desc || "";
+    return {
+      shape,
+      animal: pnj.metavariant,
+      forme,
+      label: shape === "animale" ? `Forme animale · ${pnj.metavariant}` : `Forme ${forme}`,
+      next: shape === "animale" ? `Prendre la forme ${forme}` : `Reprendre la forme animale (${pnj.metavariant})`,
+      regle,
+    };
+  },
+
+  /** Les bases de la forme métahumaine : celles enregistrées à la création
+      (`zooFormAttrs`), sinon calculées — base de la forme + les points placés
+      sur l'animal, sans dépasser le maximum de la forme (RF p.73). */
+  _zooFormBase(pnj, animalBase) {
+    if (pnj.zooFormAttrs) return pnj.zooFormAttrs;
+    const forme = pnj.zooForm || pnj.meta || "Humain";
+    const mv = Metavariants.use("sr5").resolve(pnj.metavariant);
+    const fr = this.attrRange[forme] || Metavariants.use("sr5").resolve(forme)?.ranges || this.attrRange.Humain;
+    const out = {};
+    for (const k of this.ZOO_ATTRS) {
+      const [aMin] = (mv && mv.ranges[k]) || [1, 6];
+      const [fMin, fMax] = fr[k] || [1, 6];
+      out[k] = Math.min(fMax, fMin + Math.max(0, (animalBase[k] ?? aMin) - aMin));
+    }
+    return out;
+  },
+
+  /** Bascule la forme et rend l'entité recalculée. Idempotent par paire :
+      deux bascules rendent exactement les bases de départ. */
+  shapeShift(pnj) {
+    const o = this.shapeOptions(pnj);
+    if (!o) return pnj;
+    const mv = Metavariants.use("sr5").resolve(pnj.metavariant);
+    if (!mv) return pnj;
+    // Les bases animales sont mémorisées AVANT la première bascule : c'est la
+    // seule source pour y revenir sans perte.
+    if (!pnj.zooAnimalBase) {
+      pnj.zooAnimalBase = {};
+      for (const k of this.ZOO_ATTRS) pnj.zooAnimalBase[k] = Actor.base(pnj, k);
+    }
+    const versMeta = o.shape === "animale";
+    const cible = versMeta ? this._zooFormBase(pnj, pnj.zooAnimalBase) : pnj.zooAnimalBase;
+    for (const k of this.ZOO_ATTRS) {
+      if (pnj.attrs && pnj.attrs[k] != null && cible[k] != null) Actor.setBase(pnj, k, cible[k]);
+    }
+    pnj.zooShape = versMeta ? "metahumaine" : "animale";
+    // Dés d'initiative de l'animal (p.77) ; 1D6 en forme métahumaine.
+    pnj.initDice = versMeta ? 1 : parseInt(mv.init, 10) || 1;
+    // Déplacement : celui de l'animal en forme animale (`Movement` lit
+    // `pnj.move` en premier), celui de la souche sinon.
+    if (versMeta) delete pnj.move;
+    else if (mv.move) pnj.move = mv.move;
+    // Traits : les capacités innées de la forme prise ; les pouvoirs propres
+    // du zoocanthrope (Régénération, Nature duale, argent…) restent.
+    if (versMeta) {
+      const formeMv = Metavariants.use("sr5").resolve(o.forme);
+      const absent = (pnj.zooFormAbsent || "").toLowerCase();
+      const innes = formeMv ? (formeMv.traits || []).filter((t) => !absent || !String(t.name || t).toLowerCase().startsWith(absent.split(" (")[0])) : [];
+      pnj.metaTraits = [...Metavariants.zooTraitsCommuns, ...innes];
+    } else {
+      pnj.metaTraits = mv.traits || [];
+    }
+    return this.recalc(pnj);
+  },
+
   recalc(pnj) {
     const { proRating } = pnj;
     // Chance : init douce pour les PNJ sauvegardés avant l'ajout du champ

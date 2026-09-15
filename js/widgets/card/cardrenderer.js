@@ -1332,6 +1332,16 @@ export const CardRenderer = {
     )}">Vitesse&nbsp;<strong>${this._esc(Movement.short(r))}</strong></span>`;
   },
 
+  /** Forme d'un zoocanthrope : une puce qui DIT la forme et bascule d'un
+      tap (Transformation, action gratuite). Le module d'édition décide si
+      l'entité en a une (`shapeOptions`) — rien ici ne nomme le zoocanthrope. */
+  _shapePill(pnj) {
+    const mod = App.getEditionModule(pnj.edition);
+    const o = mod && typeof mod.shapeOptions === "function" ? mod.shapeOptions(pnj) : null;
+    if (!o) return "";
+    return `<button type="button" class="stat-pill shape-pill is-${this._esc(o.shape)}" data-action="shape-shift" data-id="${pnj.id}" title="${this._esc(`${o.next}\n${o.regle}`)}" aria-label="${this._esc(o.next)}">${o.shape === "animale" ? "🐾" : "⇄"} <strong>${this._esc(o.label)}</strong></button>`;
+  },
+
   /* ---- Réserves de dés utiles au MJ ---- */
   _gmPoolRow(label, value, title, opts = {}) {
     if (value == null) return "";

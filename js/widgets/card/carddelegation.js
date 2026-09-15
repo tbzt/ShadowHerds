@@ -224,6 +224,10 @@ export const CardDelegation = {
         case "status-sheet":
           CardRenderer._toggleStatusSheet(id, actionEl);
           break;
+        case "shape-shift":
+          Utils.haptic(10);
+          UI.shiftShape(id);
+          break;
         case "status-more":
           // A1 — mémorisé avec sa feuille (cf. `Sheets`), comme le « tous… »
           // des actions l'était déjà seul : rouvrir le second étage entre deux
