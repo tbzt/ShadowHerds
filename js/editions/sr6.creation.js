@@ -39,6 +39,7 @@ import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { BonusEngine } from "../rules/bonusengine.js";
 import { Implants } from "../rules/implants.js";
+import { ImplantsSR6 } from "./sr6.implants.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
@@ -809,6 +810,27 @@ Object.assign(EditionSR6, {
     IMPLANT_GRADES_AT_CREATION: ["occasion", "standard", "alphaware", "betaware", "deltaware"],
     ESSENCE_MAX: 6,
 
+    /** La table du livre pour cet implant (nom ou alias du catalogue), et
+        ce qu'elle lui donne au tarif standard : Essence, prix, Disponibilité.
+        Une formule (« Indice × 0,3 ») se résout avec l'indice porté par le
+        nom (« Armure dermique 3 ») ; sans indice, elle reste inconnue. */
+    _implantIdx: null,
+    implantDefaults(name, rating) {
+      if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR6);
+      return Implants.defaults(this._implantIdx, name, rating);
+    },
+    /** L'objet tel que le moteur le lit : l'Essence standard saisie, sinon
+        celle de la table (résolue avec l'indice de l'objet), sinon la ligne. */
+    _implantView(gear) {
+      if (gear.essenceBase != null && gear.essenceBase !== "") return gear;
+      const d = this.implantDefaults(gear.name, gear.rating);
+      return d && d.essenceBase != null ? { ...gear, essenceBase: d.essenceBase } : gear;
+    },
+    /** Toutes les entrées de la table, pour le catalogue et les tests. */
+    implantTable() {
+      return ImplantsSR6;
+    },
+
     isImplant(gear) {
       return !!(gear && gear.kind && EditionSR6.AUGS_KEYS.includes(gear.kind));
     },
@@ -823,18 +845,23 @@ Object.assign(EditionSR6, {
     /** Ce que la gamme fait à cet implant : Essence, coût et Disponibilité effectifs. */
     implantState(gear) {
       const grades = this.IMPLANT_GRADES;
+      const vue = this._implantView(gear);
+      const d = this.implantDefaults(gear.name, gear.rating);
       return {
         grade: Implants.gradeOf(grades, gear).label,
-        essence: Implants.essence(grades, gear),
+        essence: Implants.essence(grades, vue),
         cost: Implants.cost(grades, gear),
         availability: Implants.availability(grades, gear),
         multiplicateurs: Implants.gradeOf(grades, gear),
+        // Ce que la table sait de cet implant : plage d'indice à saisir,
+        // prix standard résolu (pour le proposer quand le prix est vide).
+        table: d ? { plage: d.plage, indice: d.indice, cost: d.cost, availability: d.availability, source: d.ref.source } : null,
       };
     },
     /** Essence perdue aux augmentations : `{total, inconnus}` — un implant
         sans Essence lisible est nommé, pas compté 0. */
     essenceUsed(build) {
-      return Implants.total(this.IMPLANT_GRADES, (build.gear || []).filter((g) => this.isImplant(g)));
+      return Implants.total(this.IMPLANT_GRADES, (build.gear || []).filter((g) => this.isImplant(g)).map((g) => this._implantView(g)));
     },
 
 
@@ -1510,6 +1537,18 @@ Object.assign(EditionSR6, {
       // `detail` (la ligne de stats du livre) suit l'objet : la fiche en a
       // besoin pour une augmentation (Essence, bonus).
       const item = { name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
+      /* Un implant connu de la table du livre entre avec ses valeurs
+         standard — Essence, prix, Disponibilité — que la gamme modifie
+         ensuite. Ce que la table ne donne pas (formule sans indice, objet
+         d'un supplément) reste à saisir. */
+      if (this.isImplant(item)) {
+        const d = this.implantDefaults(name);
+        if (d) {
+          if (d.essenceBase != null) item.essenceBase = d.essenceBase;
+          if (d.cost != null) item.cost = d.cost;
+          if (d.availability != null) item.availability = d.availability;
+        }
+      }
       const fam = this.gearFamily(item);
       if (fam === "armure") {
         const base = this.armorReserveFor({ name, detail });

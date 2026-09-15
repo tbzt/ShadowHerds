@@ -1212,7 +1212,7 @@ export const CharGen = {
 
     return `<div class="stack">
       ${this._stepErrorBox("gear")}
-      <p class="cg-hint">${this._esc(limits.hint)} Les prix ne sont pas au catalogue : saisissez-les.</p>
+      <p class="cg-hint">${this._esc(limits.hint)} Les implants entrent avec l'Essence et le prix du livre ; le reste se saisit.</p>
       ${rows || '<p class="cg-hint">Aucun équipement.</p>'}
       ${this._catalogPicker({
         id: "gear",
@@ -1237,7 +1237,14 @@ export const CharGen = {
     const opts = c.implantGrades()
       .map((o) => `<option value="${this._esc(o.value)}" ${(g.grade || "standard") === o.value ? "selected" : ""}>${this._esc(o.label)}</option>`)
       .join("");
+    // Un implant à indice (« Orthoderme (indice 1–4) ») : l'indice se choisit
+    // ici, borné par la table ; il résout l'Essence et le prix en formule.
+    const plage = st.table && st.table.plage;
+    const indice = plage
+      ? `<label class="cg-section-note cg-essence-in">Indice <input type="number" min="${plage.min}" max="${plage.max}" data-cg="gear.${i}.rating" value="${g.rating ?? ""}" style="width:3.5em" placeholder="${plage.min}–${plage.max}" title="Indice de cet implant (${plage.min}–${plage.max})"></label>`
+      : "";
     return `<div class="cluster cg-add-row">
+      ${indice}
       <span class="cg-section-note">Gamme</span>
       <select data-cg="gear.${i}.grade" aria-label="Gamme de l'implant">${opts}</select>
       ${
@@ -1939,6 +1946,18 @@ export const CharGen = {
       const key = path.split(".")[1];
       const [min, max] = this._creation().attrRangeFor(this._build, key);
       val = Utils.clamp(val, min, max);
+    }
+    /* L'indice d'un implant vient d'être choisi : la table du livre donne
+       alors son prix et sa Disponibilité standard — proposés si les champs
+       sont encore vides, jamais écrasés. */
+    const mRating = path.match(/^gear\.(\d+)\.rating$/);
+    if (mRating && this._creation().implantDefaults) {
+      const g = (this._build.gear || [])[Number(mRating[1])];
+      const d = g ? this._creation().implantDefaults(g.name, val) : null;
+      if (g && d) {
+        if (!g.cost && d.cost != null) g.cost = d.cost;
+        if ((g.availability == null || g.availability === "") && d.availability != null) g.availability = d.availability;
+      }
     }
     if (path.startsWith("adjust.") && this._creation().adjustRangeFor) {
       const [min, max] = this._creation().adjustRangeFor(this._build, path.split(".")[1]);

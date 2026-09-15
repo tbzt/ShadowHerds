@@ -18,7 +18,83 @@
    le résultat. Une Essence introuvable sur la ligne est `null` — nommée,
    pas comptée 0.
    ============================================================ */
+import { Formule } from "./formule.js";
+
 export const Implants = {
+  /** Clé de rapprochement entre le nom d'un objet du catalogue de l'app et
+      le nom d'une entrée de table : minuscules, sans accent, sans mot
+      d'habillage (« implanté », « cybernétique »), sans ponctuation. */
+  normName(s) {
+    return String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[’']/g, " ")
+      .replace(/\b(implantes?|cybernetiques?|cyber)\b/g, " ")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+  },
+
+  /** Index nom normalisé → {ref, indice} sur une table (`nom` + `alias`).
+      Un nom terminé par un indice (« Réflexes câblés 1 ») trouve d'abord
+      son entrée exacte, sinon l'entrée sans indice avec l'indice retenu. */
+  index(table) {
+    const idx = new Map();
+    for (const ref of table || []) {
+      for (const n of [ref.nom, ...(ref.alias || [])]) idx.set(this.normName(n), ref);
+    }
+    return idx;
+  },
+  lookup(idx, name) {
+    if (!idx) return null;
+    const key = this.normName(name);
+    const m = key.match(/^(.*?)\s(\d+)$/);
+    if (idx.has(key)) {
+      const ref = idx.get(key);
+      // « Armure dermique 3 » trouvé par alias exact : l'entrée est à indice
+      // (« 1–4 »), le 3 du nom est son indice.
+      return { ref, indice: m && ref.indice ? Number(m[2]) : null };
+    }
+    if (m && idx.has(m[1])) return { ref: idx.get(m[1]), indice: Number(m[2]) };
+    return null;
+  },
+
+  /** Évalue une cellule de table : nombre tel quel, formule du livre avec
+      l'indice (« Indice × 0,1 », « (indice × 5)R » → 5 × indice), sinon null. */
+  cell(valeur, note, indice) {
+    if (valeur != null) return valeur;
+    if (!note) return null;
+    const txt = String(note).replace(/[()]/g, " ").replace(/[A-Z]+\s*$/, "").trim();
+    if (!/indice/i.test(txt)) return null;
+    if (indice == null) return null;
+    const v = Formule.eval(txt, { indice });
+    return v == null ? null : v;
+  },
+
+  /** Les valeurs STANDARD qu'une entrée de table donne à un objet nommé :
+      Essence, prix, Disponibilité (partie numérique). Un indice porté par
+      le nom (« Armure dermique 3 ») résout les formules ; sans indice, une
+      formule reste inconnue (null), jamais 0. */
+  defaults(idx, name, rating) {
+    const hit = this.lookup(idx, name);
+    if (!hit) return null;
+    const { ref, indice } = hit;
+    // L'indice : celui saisi sur l'objet, sinon celui du nom ; une entrée
+    // sans plage d'indice n'en a pas besoin.
+    const ind = rating != null && rating !== "" ? Number(rating) : indice;
+    const dispoTxt = ref.dispo ? String(ref.dispo) : "";
+    const dispoNum = /^\d+/.test(dispoTxt) ? parseInt(dispoTxt, 10) : this.cell(null, dispoTxt, ind);
+    const plage = ref.indice ? String(ref.indice).match(/(\d+)\s*[–-]\s*(\d+)/) : null;
+    return {
+      ref,
+      indice: ind,
+      plage: plage ? { min: Number(plage[1]), max: Number(plage[2]) } : null,
+      essenceBase: this.cell(ref.essence, ref.essenceNote, ind),
+      cost: this.cell(ref.cout, ref.coutNote, ind),
+      availability: dispoNum,
+    };
+  },
+
   /** L'Essence STANDARD : saisie sur l'objet (`essenceBase`) quand le
       catalogue ne la porte pas, sinon lue sur la ligne du livre (« Essence
       0.5 », « Essence 0,5 ») ; null quand elle n'y est pas (« Essence
