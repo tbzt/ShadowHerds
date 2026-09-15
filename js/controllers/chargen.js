@@ -1145,6 +1145,9 @@ export const CharGen = {
            mis à cette forme ici, une fois pour toutes : les anciens (ids nus)
            n'ont pas besoin de migration, ils sont relus tels quels. */
         g.mods = ModRefs.normalize(g.mods);
+        // Un objet porte un `uid` (les hôtes d'implants s'y réfèrent) ; les
+        // brouillons d'avant en reçoivent un au premier rendu.
+        if (!g.uid) g.uid = Utils.uid();
         const mods = g.mods;
         const conflits = c.accessoryConflicts ? c.accessoryConflicts(g) : [];
         const tags = mods
@@ -1192,7 +1195,7 @@ export const CharGen = {
           <span class="cg-section-note">Disp.</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
         </div>
-        ${implant ? this._implantRow(c, g, i) : ""}
+        ${implant ? this._implantRow(c, g, i, b) : ""}
         ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
         ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
         ${reserves}
@@ -1231,8 +1234,8 @@ export const CharGen = {
      prix, Disponibilité effectifs. Les gammes ouvertes à la création et
      leurs multiplicateurs viennent du module ; l'Essence introuvable sur la
      ligne du livre est dite « ? », pas comptée 0. */
-  _implantRow(c, g, i) {
-    const st = c.implantState(g);
+  _implantRow(c, g, i, b) {
+    const st = c.implantState(g, b);
     const x = (n) => Number(n).toLocaleString("fr-FR");
     const opts = c.implantGrades()
       .map((o) => `<option value="${this._esc(o.value)}" ${(g.grade || "standard") === o.value ? "selected" : ""}>${this._esc(o.label)}</option>`)
@@ -1243,6 +1246,24 @@ export const CharGen = {
     const indice = plage
       ? `<label class="cg-section-note cg-essence-in">Indice <input type="number" min="${plage.min}" max="${plage.max}" data-cg="gear.${i}.rating" value="${g.rating ?? ""}" style="width:3.5em" placeholder="${plage.min}–${plage.max}" title="Indice de cet implant (${plage.min}–${plage.max})"></label>`
       : "";
+    /* Capacité : un hôte (cybermembre, cyberœil…) montre ce qu'il offre et
+       ce qui y est logé ; un implant à coût de capacité choisit son hôte —
+       ou la chair, au prix de l'Essence. */
+    const cap = st.capacite || {};
+    const hotes = c.implantHosts ? c.implantHosts(b).filter((h) => h.uid !== g.uid) : [];
+    let capHtml = "";
+    if (cap.offerte != null) {
+      const moi = c.implantHosts(b).find((h) => h.uid === g.uid) || { utilises: 0, total: cap.offerte, pris: [] };
+      capHtml += `<span class="cg-pick-tag${moi.utilises > moi.total ? " cg-tag-over" : ""}" title="${this._esc(moi.pris.join(", ") || "rien de logé")}">Capacité ${moi.utilises}/${moi.total}</span>`;
+    }
+    if (cap.consommee != null) {
+      const opts = hotes.map((h) => `<option value="${this._esc(h.uid)}" ${g.hote === h.uid ? "selected" : ""}>${this._esc(h.name)} (${h.libre} libre${h.libre > 1 ? "s" : ""})</option>`).join("");
+      capHtml += `<span class="cg-section-note">[${cap.consommee}]</span>
+        <select data-cg="gear.${i}.hote" aria-label="Logé dans" ${hotes.length ? "" : "disabled"}>
+          <option value="">${cap.doitEtreLoge ? "— à loger dans un membre —" : "dans la chair (Essence)"}</option>${opts}
+        </select>`;
+      if (!hotes.length && cap.doitEtreLoge) capHtml += `<span class="cg-section-note">aucun cybermembre dans l'équipement</span>`;
+    }
     return `<div class="cluster cg-add-row">
       ${indice}
       <span class="cg-section-note">Gamme</span>
@@ -1255,6 +1276,7 @@ export const CharGen = {
       <span class="cg-pick-tag${st.essence == null ? " cg-tag-libre" : ""}" title="Essence perdue à cette gamme">Essence ${st.essence == null ? "?" : x(st.essence)}</span>
       ${st.multiplicateurs.cout !== 1 ? `<span class="cg-section-note">coût ${x(st.cost)} ¥</span>` : ""}
       ${st.multiplicateurs.dispo && st.availability != null ? `<span class="cg-section-note">Disp. ${st.availability}</span>` : ""}
+      ${capHtml}
     </div>
     ${st.essence == null ? `<p class="cg-hint">⚑ Le catalogue ne donne pas l'Essence de cet implant : saisis-la, sinon elle n'est pas comptée.</p>` : ""}`;
   },

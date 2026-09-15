@@ -668,11 +668,53 @@ Object.assign(EditionSR5, {
       return Implants.defaults(this._implantIdx, name, rating);
     },
     /** L'objet tel que le moteur le lit : l'Essence standard saisie, sinon
-        celle de la table (résolue avec l'indice de l'objet), sinon la ligne. */
-    _implantView(gear) {
+        celle de la table (résolue avec l'indice de l'objet), sinon la ligne.
+        LOGÉ dans un hôte (cybermembre, cyberœil, oreille cybernétique), un
+        implant « consomme de la Capacité plutôt que de l'Essence » : son
+        Essence est 0. */
+    _implantView(gear, build) {
+      if (gear.hote && build && this.implantHostOf(build, gear)) return { ...gear, essenceBase: 0 };
       if (gear.essenceBase != null && gear.essenceBase !== "") return gear;
       const d = this.implantDefaults(gear.name, gear.rating);
       return d && d.essenceBase != null ? { ...gear, essenceBase: d.essenceBase } : gear;
+    },
+
+    /* ---- Capacité des hôtes ----
+       « Les cybermembres peuvent contenir des implants qui ont un coût en
+       capacité (améliorations visuelles et auditives comprises) » ; les
+       cyberyeux et oreilles cybernétiques offrent « un indice de Capacité
+       pour les améliorations ». Un objet du brouillon porte `uid` ; un
+       implant logé porte `hote` = uid de son hôte. */
+    implantCapacity(gear) {
+      const d = this.implantDefaults(gear.name, gear.rating);
+      return {
+        offerte: d ? d.capaciteOfferte : null,
+        consommee: d ? d.capaciteConsommee : null,
+        doitEtreLoge: !!(d && d.doitEtreLoge),
+      };
+    },
+    /** Les hôtes du brouillon, avec leur capacité offerte, prise, libre. */
+    implantHosts(build) {
+      const hotes = [];
+      for (const g of build.gear || []) {
+        if (!this.isImplant(g)) continue;
+        const cap = this.implantCapacity(g);
+        if (cap.offerte == null) continue;
+        hotes.push({ uid: g.uid, name: g.name, total: cap.offerte, utilises: 0, pris: [] });
+      }
+      for (const g of build.gear || []) {
+        if (!g.hote) continue;
+        const h = hotes.find((x) => x.uid === g.hote);
+        if (!h) continue;
+        const c = this.implantCapacity(g).consommee;
+        h.utilises += c || 0;
+        h.pris.push(g.name);
+      }
+      for (const h of hotes) h.libre = h.total - h.utilises;
+      return hotes;
+    },
+    implantHostOf(build, gear) {
+      return gear.hote ? this.implantHosts(build).find((h) => h.uid === gear.hote) || null : null;
     },
     /** Toutes les entrées de la table, pour le catalogue et les tests. */
     implantTable() {
@@ -691,25 +733,28 @@ Object.assign(EditionSR5, {
       });
     },
     /** Ce que la gamme fait à cet implant : Essence, coût et Disponibilité effectifs. */
-    implantState(gear) {
+    implantState(gear, build) {
       const grades = this.IMPLANT_GRADES;
-      const vue = this._implantView(gear);
+      const vue = this._implantView(gear, build);
       const d = this.implantDefaults(gear.name, gear.rating);
+      const cap = this.implantCapacity(gear);
       return {
         grade: Implants.gradeOf(grades, gear).label,
         essence: Implants.essence(grades, vue),
+        capacite: cap,
+        hote: build ? this.implantHostOf(build, gear) : null,
         cost: Implants.cost(grades, gear),
         availability: Implants.availability(grades, gear),
         multiplicateurs: Implants.gradeOf(grades, gear),
         // Ce que la table sait de cet implant : plage d'indice à saisir,
         // prix standard résolu (pour le proposer quand le prix est vide).
-        table: d ? { plage: d.plage, indice: d.indice, cost: d.cost, availability: d.availability, source: d.ref.source } : null,
+        table: d ? { plage: d.plage, indice: d.indice, cost: d.cost, availability: d.availability, source: d.ref ? d.ref.source : null } : null,
       };
     },
     /** Essence perdue aux augmentations : `{total, inconnus}` — un implant
         sans Essence lisible est nommé, pas compté 0. */
     essenceUsed(build) {
-      return Implants.total(this.IMPLANT_GRADES, (build.gear || []).filter((g) => this.isImplant(g)).map((g) => this._implantView(g)));
+      return Implants.total(this.IMPLANT_GRADES, (build.gear || []).filter((g) => this.isImplant(g)).map((g) => this._implantView(g, build)));
     },
 
 
@@ -909,7 +954,8 @@ Object.assign(EditionSR5, {
     gearFromCatalog({ name, detail, kind }) {
       // `detail` (la ligne de stats du livre) suit l'objet : la fiche en a
       // besoin pour une augmentation (Essence, bonus).
-      const item = { name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
+      // `uid` : un implant logé désigne son hôte par lui (les index bougent).
+      const item = { uid: Utils.uid(), name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
       /* Un implant connu de la table du livre entre avec ses valeurs
          standard — Essence, prix, Disponibilité — que la gamme modifie
          ensuite. Ce que la table ne donne pas (formule sans indice, objet
@@ -2677,6 +2723,22 @@ Object.assign(EditionSR5, {
       if (ess.total >= this.ESSENCE_MAX) {
         out.gear.push(`Essence épuisée : ${ess.total} perdue sur ${this.ESSENCE_MAX} — retire ou allège des implants.`);
       }
+      /* Capacité des hôtes : un cybermembre, un cyberœil ou une oreille
+         cybernétique n'accueille pas plus que sa capacité ; un accessoire
+         de cybermembre doit être logé. */
+      for (const h of this.implantHosts(build)) {
+        if (h.utilises > h.total) out.gear.push(`${h.name} : capacité ${h.utilises}/${h.total} dépassée (${h.pris.join(", ")}).`);
+      }
+      for (const g of build.gear || []) {
+        if (!this.isImplant(g)) continue;
+        const cap = this.implantCapacity(g);
+        if (cap.doitEtreLoge && !this.implantHostOf(build, g)) {
+          out.gear.push(`${g.name} : un accessoire de cybermembre se loge dans un membre — choisis son hôte.`);
+        }
+        if (g.hote && !this.implantHostOf(build, g)) {
+          out.gear.push(`${g.name} : son hôte n'est plus dans l'équipement.`);
+        }
+      }
 
 
       const tr = this.traitState(build);
@@ -2864,9 +2926,10 @@ Object.assign(EditionSR5, {
              BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
              d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
           if (this.isImplant(g)) {
-            const st = this.implantState(g);
+            const st = this.implantState(g, build);
             const gamme = g.grade && g.grade !== "standard" ? ` · ${st.grade.toLowerCase()}` : "";
-            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${gamme}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence };
+            const loge = st.hote ? ` · dans ${st.hote.name}` : "";
+            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(st.hote ? { hote: st.hote.name } : {}) };
           }
           return nom;
         }),

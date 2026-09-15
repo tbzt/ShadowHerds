@@ -45,7 +45,7 @@ export const Implants = {
     }
     return idx;
   },
-  lookup(idx, name) {
+  lookup(idx, name, rating) {
     if (!idx) return null;
     const key = this.normName(name);
     const m = key.match(/^(.*?)\s(\d+)$/);
@@ -56,6 +56,18 @@ export const Implants = {
       return { ref, indice: m && ref.indice ? Number(m[2]) : null };
     }
     if (m && idx.has(m[1])) return { ref: idx.get(m[1]), indice: Number(m[2]) };
+    /* Un nom sans indice dont la table connaît les versions numérotées
+       (« Yeux cybernétiques » → « Cyberyeux 1 » … « Cyberyeux 4ux ») :
+       l'indice choisi sur l'objet désigne la ligne ; sans lui, on rend la
+       plage pour que l'écran la demande. */
+    const freres = [];
+    for (let n = 1; n <= 12; n++) if (idx.has(`${key} ${n}`)) freres.push(n);
+    if (freres.length) {
+      const r = rating != null && rating !== "" ? Number(rating) : null;
+      const plage = { min: Math.min(...freres), max: Math.max(...freres) };
+      if (r != null && idx.has(`${key} ${r}`)) return { ref: idx.get(`${key} ${r}`), indice: r, fixe: true, plage };
+      return { ref: null, indice: null, plage };
+    }
     return null;
   },
 
@@ -76,22 +88,46 @@ export const Implants = {
       le nom (« Armure dermique 3 ») résout les formules ; sans indice, une
       formule reste inconnue (null), jamais 0. */
   defaults(idx, name, rating) {
-    const hit = this.lookup(idx, name);
+    const hit = this.lookup(idx, name, rating);
     if (!hit) return null;
     const { ref, indice } = hit;
+    if (!ref) {
+      // Versions numérotées connues, indice pas encore choisi.
+      return { ref: null, indice: null, plage: hit.plage, essenceBase: null, cost: null, availability: null, capaciteOfferte: null, capaciteConsommee: null };
+    }
     // L'indice : celui saisi sur l'objet, sinon celui du nom ; une entrée
     // sans plage d'indice n'en a pas besoin.
-    const ind = rating != null && rating !== "" ? Number(rating) : indice;
+    const ind = hit.fixe ? indice : rating != null && rating !== "" ? Number(rating) : indice;
     const dispoTxt = ref.dispo ? String(ref.dispo) : "";
     const dispoNum = /^\d+/.test(dispoTxt) ? parseInt(dispoTxt, 10) : this.cell(null, dispoTxt, ind);
     const plage = ref.indice ? String(ref.indice).match(/(\d+)\s*[–-]\s*(\d+)/) : null;
+    /* Capacité : OFFERTE par un hôte (cybermembre, cyberœil, oreille
+       cybernétique), ou CONSOMMÉE par un implant qui s'y loge (« [2] »,
+       « [indice] »). */
+    const offerte = ref.capaciteNote === "offerte" ? ref.capacite : null;
+    const consommee =
+      ref.capaciteNote === "consommée"
+        ? ref.capacite
+        : ref.capaciteNote && /^\[?indice\]?$/i.test(ref.capaciteNote.trim())
+          ? ind != null
+            ? ind
+            : null
+          : null;
     return {
       ref,
       indice: ind,
-      plage: plage ? { min: Number(plage[1]), max: Number(plage[2]) } : null,
+      // La plage : celle de l'entrée (« 1–4 »), ou celle des versions
+      // numérotées (Cyberyeux 1 à 4) pour que l'écran garde le champ Indice.
+      plage: plage ? { min: Number(plage[1]), max: Number(plage[2]) } : hit.plage || null,
       essenceBase: this.cell(ref.essence, ref.essenceNote, ind),
       cost: this.cell(ref.cout, ref.coutNote, ind),
       availability: dispoNum,
+      capaciteOfferte: offerte,
+      capaciteConsommee: consommee,
+      // Un accessoire ou une amélioration DE cybermembre (« — [3] ») n'existe
+      // que dans un membre : il DOIT être logé. Une bombe corticale (0 [1])
+      // ou un smartlink (0,2 [3]) peuvent l'être, sans obligation.
+      doitEtreLoge: consommee != null && /accessoire|am[ée]lioration/i.test(String(ref.categorie || "")),
     };
   },
 
