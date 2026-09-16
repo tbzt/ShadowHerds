@@ -29,6 +29,7 @@ import { LoadoutEngine } from "../rules/loadoutengine.js";
 import { Magic } from "../rules/magic.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { Resonance } from "../rules/resonance.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Spirits } from "../catalogs/spirits.js";
 import { Sprites } from "../catalogs/sprites.js";
 import { Statuses } from "../rules/statuses.js";
@@ -5888,6 +5889,22 @@ export const EditionSR6 = {
   setActiveLimb(pnj, value) {
     pnj.membreActif = value == null || value === "" ? null : String(value);
     return pnj;
+  },
+  /** L'attribut qui entre dans la réserve d'une compétence — « Compétence +
+      Attribut » (p.36) : `{key, label, value}`, ou null si la compétence est
+      inconnue du catalogue. Si un membre agit (`membreActif`), sa Force ou
+      son Agilité remplace celle du corps — « on ne bénéficie des bonus de
+      Force et d'Agilité que si le membre est utilisé » (p.291) ; le meneur
+      l'a dit sur la carte. */
+  skillAttr(pnj, skill) {
+    const name = String((skill && skill.name) || skill || "").trim();
+    if (!name) return null;
+    let key = (skill && skill.attr) || SkillCatalog.attrFor("sr6", name);
+    if (!key) return null;
+    if (key === "REA") key = "RÉA"; // le catalogue écrit REA, la fiche SR6 RÉA
+    const membre = this.limbAttr(pnj, key);
+    if (membre) return { key, label: membre.label, value: membre.value };
+    return { key, label: key, value: Actor.attr(pnj, key) };
   },
   /** L'Augmentation d'armure d'un membre : « Le bonus d'Armure augmente en
       permanence votre Score Défensif » (p.291) — contrairement à la Force et

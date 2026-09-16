@@ -578,6 +578,14 @@ export const EditionAnarchy2 = {
     steps: () => Spirits.ANARCHY_TIERS.map((label, i) => ({ value: i, label })),
   },
   skillModel: { shape: "extended", valRange: [0, 6], hasGroups: false },
+  /** Le nombre porté par une puce de compétence Anarchy EST la réserve
+      lancée (convention de l'app : les PNJ sont notés en réserves 0-6 et le
+      panneau de risque les prend telles quelles) — aucun attribut ne s'y
+      ajoute, donc rien à substituer. Déclaré pour que la carte n'ait pas à
+      deviner l'édition. */
+  skillAttr() {
+    return null;
+  },
   hasEdges: true,
   /** Les drogues Anarchy 2.0 sont vendues comme « atouts d'équipement »
       (p.150) : elles peuvent apparaître aussi bien dans les atouts que

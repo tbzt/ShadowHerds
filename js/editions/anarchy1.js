@@ -567,6 +567,14 @@ export const EditionAnarchy1 = {
       ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
   },
   skillModel: { shape: "simple", valRange: [0, 6], hasGroups: false },
+  /** Le nombre porté par une puce de compétence Anarchy EST la réserve
+      lancée (convention de l'app : les PNJ sont notés en réserves 0-6 et le
+      panneau de risque les prend telles quelles) — aucun attribut ne s'y
+      ajoute, donc rien à substituer. Déclaré pour que la carte n'ait pas à
+      deviner l'édition. */
+  skillAttr() {
+    return null;
+  },
   hasEdges: true,
   /** Les drogues de combat V1 sont un Atout, pas un équipement catalogué
       comme en V2 — pas de correspondance universelle nécessaire ici. */

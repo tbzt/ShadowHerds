@@ -5187,6 +5187,32 @@ export const EditionSR5 = {
     pnj.membreActif = value == null || value === "" ? null : String(value);
     return pnj;
   },
+  /** L'attribut qui entre dans la réserve d'une compétence active — « le
+      rang de la compétence plus l'attribut lié » (p.44) : `{key, label,
+      value}`, ou null quand aucun attribut unique ne s'impose (groupe aux
+      attributs mêlés comme Athlétisme, compétence inconnue). Si un
+      cybermembre agit (`membreActif`), la Force ou l'Agilité est la sienne,
+      comme pour les armes (limbAttr) — le meneur a choisi sur la carte, la
+      puce de compétence le suit. */
+  skillAttr(pnj, skill) {
+    const name = String((skill && skill.name) || skill || "").trim();
+    if (!name) return null;
+    const key = (skill && skill.attr) || SkillCatalog.attrFor("sr5", name) || this._skillGroupAttr(name);
+    if (!key) return null;
+    const membre = this.limbAttr(pnj, key);
+    if (membre) return { key, label: membre.label, value: membre.value };
+    return { key, label: key, value: Actor.attr(pnj, key) };
+  },
+  /** Un groupe « Armes à feu (GC) » roule avec l'attribut de ses membres —
+      s'ils le partagent tous ; Athlétisme (Course FOR, Gymnastique AGI) n'a
+      pas d'attribut unique et rend null. */
+  _skillGroupAttr(name) {
+    const base = name.replace(/\s*\(GC\)\s*$/i, "").trim();
+    const membres = SkillCatalog.sr5Groups[base];
+    if (!membres || !membres.length) return null;
+    const attrs = new Set(membres.map((m) => SkillCatalog.sr5[m]).filter(Boolean));
+    return attrs.size === 1 ? [...attrs][0] : null;
+  },
   /** L'amélioration d'Armure d'un cybermembre : « un bonus d'Armure égal à
       leur indice, cumulatif avec les autres armures et ne causant pas
       d'encombrement » (p.460). Lu par BonusEngine item par item, qui l'ajoute

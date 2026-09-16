@@ -1864,9 +1864,20 @@ export const CardRenderer = {
     // l'attribution (Edge pré-jet, journal). Inoffensif dans la carte : la
     // délégation préfère cet attribut, qui vaut le `.pnj-card` englobant.
     const pnjAttr = pnj ? ` data-roll-pnj="${pnj.id}"` : "";
+    /* ⚠ La puce lançait le RANG seul : « Pistolets 4 » → 4 dés, quand la
+       ligne d'arme (compétence + AGI), la magie (compétence + MAG) et les
+       connaissances (indice + LOG/INT) ajoutaient déjà l'attribut. Le module
+       d'édition dit lequel — et lequel du corps ou du cybermembre qui agit
+       (`skillAttr`) ; Anarchy rend null et garde sa convention « le nombre
+       est la réserve ». */
+    const edMod = pnj ? App.getEditionModule(pnj.edition) : null;
+    const attrOf = (s) => (edMod && typeof edMod.skillAttr === "function" ? edMod.skillAttr(pnj, s) : null);
     const tags = skills
       .map((s) => {
         const n = Number(s.val);
+        const a = attrOf(s);
+        const attrVal = a ? Number(a.value) || 0 : 0;
+        const attrTxt = a ? ` + ${a.label} ${attrVal}` : "";
         // Bonus de pool d'objet (SkillEffects) cuit
         // dans la réserve cliquable, avec sa source. Contributions
         // {value, source} — même vocabulaire que WeaponEffects.
@@ -1878,10 +1889,11 @@ export const CardRenderer = {
         const srcTxt = contribs.length
           ? " — dont " + contribs.map((c) => `${c.source} +${c.value}`).join(", ")
           : "";
-        const eff = Number.isFinite(n) ? Math.max(0, n + bonus - malus) : n;
+        const eff = Number.isFinite(n) ? Math.max(0, n + attrVal + bonus - malus) : n;
         const rollable = Number.isFinite(eff) && eff >= 1;
+        const detail = `${s.name} ${n}${attrTxt}${srcTxt}`;
         const rollAttrs = rollable
-          ? ` data-roll="${eff}"${pnjAttr} data-roll-label="${this._esc(s.name)}"${srcTxt ? ` data-roll-detail="${this._esc(s.name + " " + eff + srcTxt)}"` : ""} title="Lancer ${eff} dés — ${this._esc(s.name)}${malusTxt}${this._esc(srcTxt)}"`
+          ? ` data-roll="${eff}"${pnjAttr} data-roll-label="${this._esc(s.name)}"${a || srcTxt ? ` data-roll-detail="${this._esc(detail)}"` : ""} title="Lancer ${eff} dés — ${this._esc(detail)}${malusTxt}"`
           : "";
         let html = this._rollableTag(
           rollable,
@@ -1892,10 +1904,10 @@ export const CardRenderer = {
         if (s.spec && s.spec !== true) {
           // Spécialité : +2 dés sur le pool en SR5/SR6 (le bonus d'objet
           // s'ajoute aussi à la spécialité, même réserve de base).
-          const specN = Number.isFinite(n) ? Math.max(0, n + 2 + bonus - malus) : null;
+          const specN = Number.isFinite(n) ? Math.max(0, n + 2 + attrVal + bonus - malus) : null;
           const specRollable = !!(specN && specN >= 1);
           const specRoll = specRollable
-            ? ` data-roll="${specN}"${pnjAttr} data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}" title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${malusTxt}${this._esc(srcTxt)}"`
+            ? ` data-roll="${specN}"${pnjAttr} data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}"${a ? ` data-roll-detail="${this._esc(`${s.name} ${n} + 2${attrTxt}${srcTxt}`)}"` : ""} title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${this._esc(attrTxt)}${malusTxt}${this._esc(srcTxt)}"`
             : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
           html += this._rollableTag(
             specRollable,
