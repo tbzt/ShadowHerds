@@ -1304,6 +1304,14 @@ input[type="range"]#risk-dice-slider {
   border-color: var(--accent2);
   background: rgba(0, 0, 0, 0.3);
 }
+/* La VD de l'arme lancée — une information, pas une alarme. */
+.dice-summary-tag.damage {
+  color: var(--label-tint);
+  border-color: var(--border);
+  background: rgba(0, 0, 0, 0.3);
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
 
 /* ============================================================
    INITIATIVE AFFICHÉE — résultat persistant sur la pastille

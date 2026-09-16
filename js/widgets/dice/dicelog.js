@@ -302,6 +302,8 @@ export const DiceLog = {
       e.main = String(res.hits);
       e.unit = `succès`;
       e.sub = opts.detail ? `${opts.detail} = ${res.n} dés` : `${res.n} dés`;
+      // Jet d'arme : la VD annoncée avec les succès (résolue par la carte).
+      if (opts.damage) e.sub += ` · ${opts.damage}`;
       // V6 : textures d'édition, lues de champs neutres de `res` (aucune branche
       // App.edition). La Limite (`limited`) n'est posée que sur le chemin SR5
       // (plafond de Précision) ; l'Edge pré-jet (`edgeDice`) sur SR5 « Repousser

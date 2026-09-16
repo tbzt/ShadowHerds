@@ -263,6 +263,18 @@ export const WeaponRoll = {
     return inner.replace(/,\s*/g, " · ");
   },
 
+  /** La Valeur de Dommages à annoncer avec le jet : « 6P » quand le module
+      l'a résolue (`resolved.dvResolved`), sinon le token brut de la chaîne
+      (« 8P », « (FOR+2)P » si personne ne sait la résoudre), null si l'arme
+      n'en déclare pas. Même source pour l'overlay, le bandeau rapide, le
+      journal et le panneau d'attaque. */
+  damageLabel(weaponStr, resolved) {
+    const dv = resolved && resolved.dvResolved;
+    if (dv && Number.isFinite(dv.value)) return `${dv.value}${dv.type}`;
+    const m = String(weaponStr || "").match(/\bVD\s*([^,\]]+)/i);
+    return m ? m[1].trim() : null;
+  },
+
   /** Compétence canonique gouvernant cette arme. */
   skillFor(weaponName, edition) {
     const rules = this.KEYWORD_SKILL[edition] || [];

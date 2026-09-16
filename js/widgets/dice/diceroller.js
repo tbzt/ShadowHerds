@@ -330,11 +330,17 @@ export const DiceRoller = {
     const detail = (r.contributions || [])
       .map((c, i) => (i === 0 ? `${c.label} ${c.value}` : `${c.value >= 0 ? "+" : "−"} ${c.label} ${Math.abs(c.value)}`))
       .join(" ");
+    // La VD part avec le jet : c'est à l'annonce des succès que le MJ en a
+    // besoin, et la carte l'a déjà résolue (Force de ce qui agit, mains nues
+    // d'un cybermembre en P). Le mot vient du module (facetLabels).
+    const fl = (App.getEditionModule(edition)?.weaponModel || {}).facetLabels || {};
+    const damage = WeaponRoll.damageLabel(weapon, r);
     this.show(res, {
       label: `${r.weaponName} (${r.matchedSkill || r.skill}${approxTxt})`,
       detail: this._appendEdgeDetail(detail, edge),
       who: pnj.name || "",
       pnjId: pnj.id || "",
+      ...(damage ? { damage: `${fl.dv || "VD"} ${damage}` } : {}),
     });
   },
 
@@ -1861,7 +1867,15 @@ export const DiceRoller = {
           .join("")}</div>`
       : "";
 
-    el.innerHTML = `<div class="cluster preroll-attack-head">${esc(a.name)} ${chargeur}${this._reloadHtml(a)}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${greffons}`;
+    // La VD, telle que la carte la résout (Force de ce qui agit) — le MJ la
+    // voit avant de lancer, sans revenir à la fiche.
+    const pnj = this._preRoll.pnj;
+    const rp = pnj && a.weapon ? WeaponRoll.resolvePool(pnj, a.weapon, pnj.edition) : null;
+    const dmg = WeaponRoll.damageLabel(a.weapon, rp);
+    const fl = (App.getEditionModule(pnj && pnj.edition)?.weaponModel || {}).facetLabels || {};
+    const degats = dmg ? `<span class="preroll-ammo" title="Valeur de Dommages">${esc(fl.dv || "VD")} ${esc(dmg)}</span>` : "";
+
+    el.innerHTML = `<div class="cluster preroll-attack-head">${esc(a.name)} ${degats}${chargeur}${this._reloadHtml(a)}${recul}${crosse}${modeSeul}</div>${modes}${verdict}${greffons}`;
   },
 
   /** La phrase que le MJ va annoncer, pour un mode donné : ce que `rollDetail`
@@ -2201,12 +2215,17 @@ export const DiceRoller = {
     if (res.limited) {
       limitTag = `<span class="dice-summary-tag limit">Limité par la précision (${res.cappedFrom}→${res.limit})</span>`;
     }
+    // La VD de l'arme, à côté des succès qui s'y ajoutent.
+    const damageTag = opts.damage
+      ? `<span class="dice-summary-tag damage" title="Valeur de Dommages — les succès nets s'y ajoutent">${Utils.escHtml(opts.damage)}</span>`
+      : "";
 
     summary.innerHTML = `
       ${this._whoHtml(opts)}
       ${labelHtml}
       <div class="cluster dice-summary-main">${big}</div>
       ${breakdownHtml}
+      ${damageTag}
       ${tag}
       ${limitTag}
       ${poolHtml}
