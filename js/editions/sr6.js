@@ -5569,17 +5569,28 @@ export const EditionSR6 = {
     const count = this.skillCount[p] || 4;
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const existingNames = new Set();
-    const skills = shuffled.slice(0, count).map((name) => {
-      existingNames.add(name);
-      return { name, val: Utils.clamp(p + 1 + Utils.randInt(0, 2), 1, 12) };
-    });
+    /* Les pools parlent encore la langue de SR5 pour la saveur (« Intimidation »,
+       « Leadership », « Survie ») : en SR6 ce sont des spécialisations
+       (p.94-100). Chaque nom passe par `SkillCatalog.canonical` — la
+       compétence du livre, et la spécialisation qu'il désignait ; deux
+       tirages qui tombent sur la même compétence n'en font qu'une, la
+       spécialisation gardée. */
+    const skills = [];
+    const poser = (name, val) => {
+      const c = SkillCatalog.canonical("sr6", name);
+      const deja = skills.find((s) => s.name === c.name);
+      if (deja) {
+        deja.val = Math.max(deja.val, val);
+        if (c.spec && !deja.spec) deja.spec = c.spec;
+        return;
+      }
+      skills.push({ name: c.name, val, ...(c.spec ? { spec: c.spec } : {}) });
+      existingNames.add(c.name);
+    };
+    for (const name of shuffled.slice(0, count)) poser(name, Utils.clamp(p + 1 + Utils.randInt(0, 2), 1, 12));
     for (const s of this.specialSkills[special] || []) {
-      if (!existingNames.has(s.name)) {
-        skills.push({
-          name: s.name,
-          val: Utils.clamp(p + s.bonus + Utils.randInt(0, 1), 1, 12),
-        });
-        existingNames.add(s.name);
+      if (!existingNames.has(SkillCatalog.canonical("sr6", s.name).name)) {
+        poser(s.name, Utils.clamp(p + s.bonus + Utils.randInt(0, 1), 1, 12));
       }
     }
 

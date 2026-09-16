@@ -39,6 +39,7 @@ import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { BonusEngine } from "../rules/bonusengine.js";
 import { Implants } from "../rules/implants.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
 import { PrixCatalogue } from "../rules/prixcatalogue.js";
 import { ArmesSR6 } from "./sr6.armes.js";
 import { ImplantsSR6 } from "./sr6.implants.js";
@@ -381,33 +382,13 @@ Object.assign(EditionSR6, {
       complexForm: 5,
     },
 
-    /** Les 19 compétences officielles (core p.66).
-        ⚠ `SkillCatalog.sr6` de l'app diverge : il porte des compétences SR5
-        (Discrétion, Intimidation, Leadership, Survie) et omet Armes exotiques,
-        Plein air et Technomancie. Il sert l'édition manuelle de PNJ ; la
-        création a besoin de la liste du livre, donc elle la porte elle-même —
-        même parti que `anarchy2.creation.js`, pour la même raison. */
-    SKILLS: [
-      { name: "Armes à feu", attr: "AGI" },
-      { name: "Armes exotiques", attr: "AGI" },
-      { name: "Astral", attr: "INT" },
-      { name: "Athlétisme", attr: "AGI" },
-      { name: "Biotech", attr: "LOG" },
-      { name: "Combat rapproché", attr: "AGI" },
-      { name: "Conjuration", attr: "MAG" },
-      { name: "Électronique", attr: "LOG" },
-      { name: "Enchantement", attr: "MAG" },
-      { name: "Escroquerie", attr: "CHA" },
-      { name: "Furtivité", attr: "AGI" },
-      { name: "Influence", attr: "CHA" },
-      { name: "Ingénierie", attr: "LOG" },
-      { name: "Perception", attr: "INT" },
-      { name: "Pilotage", attr: "RÉA" },
-      { name: "Piratage", attr: "LOG" },
-      { name: "Plein air", attr: "INT" },
-      { name: "Sorcellerie", attr: "MAG" },
-      { name: "Technomancie", attr: "RES" },
-    ],
+    /** Les 19 compétences officielles (core p.66), lues dans le catalogue
+        partagé — une seule liste depuis 1.213.0 (`SkillCatalog.sr6` portait
+        quatre compétences de SR5 et en omettait trois ; la création portait
+        la sienne). Anarchy 2 garde la sienne pour d'autres raisons. */
+    get SKILLS() {
+      return Object.entries(SkillCatalog.sr6).map(([name, attr]) => ({ name, attr }));
+    },
 
     /* ============================================================
        CONTRAT LU PAR CHARGEN

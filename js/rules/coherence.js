@@ -288,7 +288,10 @@ export const Coherence = {
     const overlay = this.MILIEUX[milieu]?.skillOverlay || [];
     if (typeof SkillCatalog === "undefined") return [];
     const known = new Set(SkillCatalog.skillsFor(edition));
-    return overlay.filter((s) => known.has(s));
+    // Un libellé hérité (« Intimidation » en SR6) vaut par sa compétence du
+    // livre (Influence) : gardé tel quel, le générateur en fera la
+    // spécialisation (SkillCatalog.canonical).
+    return overlay.filter((s) => known.has(s) || known.has(SkillCatalog.canonical(edition, s).name));
   },
 
   /**

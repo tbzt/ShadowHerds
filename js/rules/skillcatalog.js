@@ -166,27 +166,47 @@ export const SkillCatalog = {
   },
 
   /* ---- SR6 : 18 compétences regroupées (Livre de Règles p.106) ---- */
+  /* ---- SR6 : les 19 compétences du Livre de base (p.66, p.94-100), avec
+     leur attribut associé. ⚠ Jusqu'en 1.213.0 cette liste portait quatre
+     compétences de SR5 (Discrétion, Intimidation, Leadership, Survie) et
+     omettait Armes exotiques, Plein air et Technomancie : en SR6, ces
+     quatre-là sont des SPÉCIALISATIONS (Furtivité, Influence ×2, Plein air)
+     — voir `sr6Legacy`. */
   sr6: {
     "Armes à feu": "AGI",
+    "Armes exotiques": "AGI",
     "Astral": "INT",
     "Athlétisme": "AGI",
     "Biotech": "LOG",
     "Combat rapproché": "AGI",
     "Conjuration": "MAG",
-    "Discrétion": "AGI",
     "Électronique": "LOG",
     "Enchantement": "MAG",
     "Escroquerie": "CHA",
     "Furtivité": "AGI",
     "Influence": "CHA",
     "Ingénierie": "LOG",
-    "Intimidation": "CHA",
-    "Leadership": "CHA",
     "Perception": "INT",
-    "Pilotage": "REA",
+    "Pilotage": "RÉA",
     "Piratage": "LOG",
+    "Plein air": "INT",
     "Sorcellerie": "MAG",
-    "Survie": "VOL",
+    "Technomancie": "RES",
+  },
+
+  /* Les noms de SR5 que des fiches SR6 portent encore (générateur d'avant
+     1.213.0, saisie à la main) : en SR6 ce sont des spécialisations d'une
+     compétence du livre (p.94-100). `attrFor` les résout à l'attribut de la
+     compétence-mère ; `canonical` les rend en {name, spec} pour le
+     générateur. Ils ne sont PAS proposés à l'ajout. */
+  sr6Legacy: {
+    "Discrétion": { name: "Furtivité", spec: "Discrétion" },
+    "Intimidation": { name: "Influence", spec: "Intimidation" },
+    "Leadership": { name: "Influence", spec: "Leadership" },
+    "Survie": { name: "Plein air", spec: "Survie" },
+    "Cybercombat": { name: "Piratage", spec: "Cybercombat" },
+    "Hacking": { name: "Piratage", spec: "Hacking" },
+    "Guerre électronique": { name: "Piratage", spec: "Guerre électronique" },
   },
 
   /* ---- Anarchy 2.0 : compétences (extraites des statBlocks du jeu) ---- */
@@ -291,9 +311,19 @@ export const SkillCatalog = {
   attrFor(edition, skillName) {
     const map = this[edition] || this.anarchy2;
     const knowMap = this[`${edition}Knowledges`] || {};
+    const legacy = this[`${edition}Legacy`] || {};
     // Tolère un suffixe de spécialisation entre parenthèses.
     const base = String(skillName).replace(/\s*\(.*\)\s*$/, "").trim();
-    return map[base] || map[skillName] || knowMap[base] || knowMap[skillName] || null;
+    const viaLegacy = legacy[base] ? map[legacy[base].name] : null;
+    return map[base] || map[skillName] || viaLegacy || knowMap[base] || knowMap[skillName] || null;
+  },
+
+  /** Le nom qu'une compétence a dans le livre de l'édition, et la
+      spécialisation qu'un ancien nom désigne : « Intimidation » en SR6 →
+      { name: "Influence", spec: "Intimidation" } ; un nom du livre → lui-même. */
+  canonical(edition, skillName) {
+    const legacy = (this[`${edition}Legacy`] || {})[skillName];
+    return legacy ? { ...legacy } : { name: skillName, spec: null };
   },
 };
 
