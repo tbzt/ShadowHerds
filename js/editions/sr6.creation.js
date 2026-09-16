@@ -39,6 +39,8 @@ import { TraitsSR6 } from "./sr6.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { BonusEngine } from "../rules/bonusengine.js";
 import { Implants } from "../rules/implants.js";
+import { PrixCatalogue } from "../rules/prixcatalogue.js";
+import { ArmesSR6 } from "./sr6.armes.js";
 import { ImplantsSR6 } from "./sr6.implants.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Settings } from "../controllers/settings.js";
@@ -815,6 +817,42 @@ Object.assign(EditionSR6, {
         Une formule (« Indice × 0,3 ») se résout avec l'indice porté par le
         nom (« Armure dermique 3 ») ; sans indice, elle reste inconnue. */
     _implantIdx: null,
+    /** Le prix et la Disponibilité qu'une ARME ou une ARMURE du catalogue a au
+        livre (Livre de base, suppléments) — `{cost, costNote, availability,
+        dispoText, ref}`, ou null quand aucune table ne connaît ce nom. Le
+        prix en formule (« Indice × 100 ¥ ») reste en note : à saisir, pas 0.
+        Les implants ont leur propre table (implantDefaults). */
+    /* Les libellés du catalogue de l'app pour des objets que les tables du livre
+       nomment autrement — coquilles comprises (« Silvergun »), qu'on ne réécrit
+       pas : les fiches sauvegardées les portent. */
+    PRIX_ALIAS: {
+      "Ares Viper Silvergun": "Ares Viper Slivergun",
+      "Colt Government 2076": "Colt Government 2076/Manhunter",
+      "Colt Manhunter": "Colt Government 2076/Manhunter",
+      "HK P50": "HK P50 Tactical",
+      "Arc rEVOlution Iron Hawk (Indice 6)": "Arc à poulies Iron Hawk",
+      "Arme d'hast": "Armes d’hast",
+      "Couteau de combat": "Couteau de combat/survie",
+      "Couteau de survie": "Couteau de combat/survie",
+      "Couteaux de lancer (2)": "Couteau de lancer",
+      "Glaive Xiphos": "Gladius Xiphos",
+      "rEVOlution Hell Turtle": "Hell Turtle",
+      "Tronçonneuse monofilament": "Tronçonneuse monofilament Ash Arms",
+      "Manteaux Mortimer of London": "Mortimer of London — Manteau",
+      "Système d'équipement modulaire (SEM)": "Système d’équipement modulaire (Harnais)",
+      "Tenues de service standard (TSS)": "Tenue de service standard",
+    },
+
+    gearDefaults(name) {
+      if (!this._prixIdx) {
+        // le livre de base précède le supplément ; les armures ont leur table
+        this._prixIdx = { armes: PrixCatalogue.index(ArmesSR6), armures: PrixCatalogue.index(ArmuresSR6) };
+      }
+      const nom = this.PRIX_ALIAS[name] || name;
+      const ref = PrixCatalogue.find(this._prixIdx.armes, nom) || PrixCatalogue.find(this._prixIdx.armures, nom);
+      return PrixCatalogue.defaults(ref);
+    },
+
     implantDefaults(name, rating) {
       if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR6);
       return Implants.defaults(this._implantIdx, name, rating);
@@ -1713,6 +1751,16 @@ Object.assign(EditionSR6, {
         if (d) {
           if (d.essenceBase != null) item.essenceBase = d.essenceBase;
           if (d.cost != null) item.cost = d.cost;
+          if (d.availability != null) item.availability = d.availability;
+        }
+      } else {
+        /* Une arme ou une armure connue des tables du livre entre avec son
+           prix et sa Disponibilité ; un prix en formule reste à saisir, et
+           l'objet le dit (`costNote`). */
+        const d = this.gearDefaults(name);
+        if (d) {
+          if (d.cost != null) item.cost = d.cost;
+          else if (d.costNote) item.costNote = d.costNote;
           if (d.availability != null) item.availability = d.availability;
         }
       }

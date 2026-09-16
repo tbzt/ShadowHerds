@@ -1194,6 +1194,7 @@ export const CharGen = {
           <span>${this._esc(g.name || "")}</span>
           <input type="number" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" style="width:7em" title="${implant ? "Prix au tarif standard — la gamme s'applique ensuite" : "Coût en nuyens"}">
           <span class="cg-section-note">¥</span>
+          ${g.costNote && !g.cost ? `<span class="cg-section-note" title="Le livre donne une formule, pas un nombre : à calculer">${this._esc(g.costNote)}</span>` : ""}
           <input type="number" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" style="width:4.5em" title="${implant ? "Disponibilité standard — la gamme s'applique ensuite" : "Disponibilité"}">
           <span class="cg-section-note">Disp.</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>

@@ -40,6 +40,8 @@ import { TraitsSR5 } from "./sr5.traits.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { BonusEngine } from "../rules/bonusengine.js";
 import { Implants } from "../rules/implants.js";
+import { PrixCatalogue } from "../rules/prixcatalogue.js";
+import { ArmesSR5 } from "./sr5.armes.js";
 import { ImplantsSR5 } from "./sr5.implants.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Utils } from "../core/utils.js";
@@ -663,6 +665,72 @@ Object.assign(EditionSR5, {
         Une formule (« Indice × 0,3 ») se résout avec l'indice porté par le
         nom (« Armure dermique 3 ») ; sans indice, elle reste inconnue. */
     _implantIdx: null,
+    /** Le prix et la Disponibilité qu'une ARME ou une ARMURE du catalogue a au
+        livre (Livre de Règles, suppléments) — `{cost, costNote, availability,
+        dispoText, ref}`, ou null quand aucune table ne connaît ce nom. Le
+        prix en formule (« Indice × 100 ¥ ») reste en note : à saisir, pas 0.
+        Les implants ont leur propre table (implantDefaults). */
+    /* Les libellés du catalogue de l'app pour des objets que les tables du livre
+       nomment autrement — coquilles comprises (« Silvergun »), qu'on ne réécrit
+       pas : les fiches sauvegardées les portent. */
+    PRIX_ALIAS: {
+      "Pistolet Lourd Pliant PSK-3 v2": "Pistolet lourd pliant PSK-3",
+      "HK XM30": "Fusil d’assaut HK XM30",
+      "HK XM30 - Carabine": "Fusil d’assaut HK XM30 — Carabine",
+      "HK XM30 - Fusil": "Fusil d’assaut HK XM30 — Fusil de précision",
+      "HK XM30 - Lance-grenades": "Fusil d’assaut HK XM30 — Lance-grenades (sous le canon)",
+      "HK XM30 - Mitrailleuse légère": "Fusil d’assaut HK XM30 — Mitrailleuse légère",
+      "HK XM30 - Shotgun": "Fusil d’assaut HK XM30 — Shotgun (sous le canon)",
+      "Onotari JP-K50": "Onotari Arms JP-K50",
+      "Springfield Reproduction du Model 1855": "Springfield reproduction Model 1855",
+      "Canon d'Assaut Ares Vigorous": "Ares Vigorous",
+      "Canon d'Assaut Ogre Hammer SWS": "Ogre Hammer SWS",
+      "Fusil Gauss Ares Thunderstruck": "Ares Thunderstruck",
+      "Ares Shocknet (Bolas)": "Bolas Ares ShockNet",
+      "Bolas - Modèle Standard": "Bolas standard",
+      "Lance-Filet - Modèle Standard": "Lance-filet standard",
+      "Lance-Filet - Modèle XL": "Lance-filet XL",
+      "Arbalète de Poing Ranger Sliver": "Arbalète — De poing",
+      "Boomerang - Horizon BoomEye": "Boomerang Horizon BoomerEye",
+      "Boomerang - Modèle Standard": "Boomerang standard",
+      "Bouteille (brisée, après 1er coup)": "Bouteille (brisée, après le premier coup)",
+      "Cougar Fineblade - Lame Courte": "Cougar Fineblade (courte)",
+      "Cougar Fineblade - Lame Longue": "Cougar Fineblade (longue)",
+      "Filet - Ares Shocknet": "Filet standard Ares ShockNet",
+      "Filet - Modèle Standard": "Filet standard",
+      "Tronçonneuse de Combat Ash Arms": "Tronçonneuse de combat",
+      "Tronçonneuse Monofilament Ash Arms": "Tronçonneuse monofilament",
+      "Bâton étourdissant Nemesis Arms Maul": "Bâton étourdissant Nemesis",
+      "Grenade à fragmentation": "Fragmentation",
+      "Grenade flash-bang": "Flashbang",
+      "Grenade hautement explosive": "Hautement explosive",
+      "Armure de sécurité légère": "Armures de sécurité — Légère",
+      "Armure de sécurité moyenne": "Armures de sécurité — Moyenne",
+      "Armure de sécurité lourde": "Armures de sécurité — Lourde",
+      "Casque anti-émeutes": "Armure anti-émeutes — Casque",
+      "Casque armure de sécurité": "Armures de sécurité — Casque",
+      "Casque armure militaire": "Armure militaire renforcée — Casque",
+      "Casque moto de course": "Combinaison de moto de course — Casque",
+      "Casque pompier": "Combinaison de pompier — Casque",
+      "Casque SWAT": "Armure SWAT — Casque",
+      "Costume Armanté": "Costume / Robe Armanté",
+      "Robe Armanté": "Costume / Robe Armanté",
+      "Kit SecureTech PPP pour bras": "Système SecureTech PPP pour bras",
+      "Kit SecureTech PPP pour jambes": "Système SecureTech PPP pour jambes",
+      "Kit SecureTech PPP pour organes vitaux": "Système SecureTech PPP pour organes vitaux",
+      "Veste blindée": "Veste pare-balles",
+    },
+
+    gearDefaults(name) {
+      if (!this._prixIdx) {
+        // le livre de base précède le supplément ; les armures ont leur table
+        this._prixIdx = { armes: PrixCatalogue.index(ArmesSR5), armures: PrixCatalogue.index(ArmuresSR5) };
+      }
+      const nom = this.PRIX_ALIAS[name] || name;
+      const ref = PrixCatalogue.find(this._prixIdx.armes, nom) || PrixCatalogue.find(this._prixIdx.armures, nom);
+      return PrixCatalogue.defaults(ref);
+    },
+
     implantDefaults(name, rating) {
       if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR5);
       return Implants.defaults(this._implantIdx, name, rating);
@@ -1061,6 +1129,16 @@ Object.assign(EditionSR5, {
         if (d) {
           if (d.essenceBase != null) item.essenceBase = d.essenceBase;
           if (d.cost != null) item.cost = d.cost;
+          if (d.availability != null) item.availability = d.availability;
+        }
+      } else {
+        /* Une arme ou une armure connue des tables du livre entre avec son
+           prix et sa Disponibilité ; un prix en formule reste à saisir, et
+           l'objet le dit (`costNote`). */
+        const d = this.gearDefaults(name);
+        if (d) {
+          if (d.cost != null) item.cost = d.cost;
+          else if (d.costNote) item.costNote = d.costNote;
           if (d.availability != null) item.availability = d.availability;
         }
       }
