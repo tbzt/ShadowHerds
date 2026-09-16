@@ -1465,9 +1465,11 @@ Object.assign(EditionSR6, {
 
         `value: ""` marque une option que le moteur ne sait pas appliquer.
         `addAttr` / `addSkill` l'ignorent (garde `if (k)`) et le libellé dit au
-        joueur de la traiter lui-même. Un seul cas subsiste : le second
-        attribut de Drain de l'Alchimiste (p.33), qui dépend de la tradition —
-        que la création ne demande à aucun moment. */
+        joueur de la traiter lui-même. Le second attribut de Drain de
+        l'Alchimiste (p.33) n'en est plus un : sa valeur est le jeton `DRAIN`,
+        résolu à chaque lecture par la tradition du brouillon
+        (`moduleAttr`) — changer de tradition change l'attribut, et sans
+        tradition le point est NOMMÉ manquant (stepErrors), pas perdu. */
     expandParmi(parmi, kind, build) {
       const codes = new Set([...this.ATTRS, ...this.ATTR_GROUPS.special]);
       const out = [];
@@ -1497,8 +1499,10 @@ Object.assign(EditionSR6, {
              question. Sans tradition choisie, on retombe sur l'aveu. */
           if (/drain/i.test(o)) {
             const dr = build ? this.drainAttr(build) : null;
-            if (dr) pousser(dr, `${dr} — second attribut de Drain de votre tradition`);
-            else pousser("", `${opt} — choisissez d'abord votre tradition`);
+            pousser(
+              this.DRAIN_TOKEN,
+              dr ? `${dr} — second attribut de Drain (${build.tradition})` : "Second attribut de Drain de votre tradition — à choisir à l'étape Concept",
+            );
             continue;
           }
           // Un nom de compétence est libre ; un attribut doit être un code.
@@ -1578,7 +1582,7 @@ Object.assign(EditionSR6, {
         if (!m) continue;
         out.modules++;
         if (m.type === "evenement") out.evenements++;
-        (m.attrs || []).forEach((a, k) => addAttr((slot.attrs || [])[k], a.n));
+        (m.attrs || []).forEach((a, k) => addAttr(this.moduleAttr(build, (slot.attrs || [])[k]), a.n));
         (m.skills || []).forEach((sk, k) => {
           const choisi = (slot.skills || [])[k];
           if (choisi) addSkill(choisi, sk.n);
@@ -2247,6 +2251,19 @@ Object.assign(EditionSR6, {
       }));
     }, 
 
+    /** Le jeton qu'un module de vie pose à la place d'un attribut quand le
+        livre écrit « votre second attribut employé pour le Drain »
+        (Alchimiste, Compagnon p.33) : résolu par la tradition au moment de
+        lire, jamais figé dans le brouillon. */
+    DRAIN_TOKEN: "DRAIN",
+
+    /** L'attribut qu'un choix de module désigne : un code tel quel, ou le
+        jeton de Drain résolu par la tradition — null tant qu'elle manque. */
+    moduleAttr(build, value) {
+      if (value === this.DRAIN_TOKEN) return this.drainAttr(build);
+      return value || null;
+    },
+
     /** L'attribut de Drain de la tradition retenue, ou null. */
     drainAttr(build) {
       const t = (Magic.traditions?.sr6 || []).find((x) => x.name === build.tradition);
@@ -2487,7 +2504,13 @@ Object.assign(EditionSR6, {
           if (!m) continue;
           const manque = [];
           (m.attrs || []).forEach((a, k) => {
-            if (!(sl.attrs || [])[k]) manque.push(`attribut ${k + 1}`);
+            const v = (sl.attrs || [])[k];
+            if (!v) manque.push(`attribut ${k + 1}`);
+            // « votre second attribut employé pour le Drain » : choisi, mais la
+            // tradition qui le nomme manque — le point ne part pas en silence
+            else if (v === this.DRAIN_TOKEN && !this.drainAttr(build)) {
+              out.modules.push(`${m.nom} : le second attribut de Drain dépend de la tradition — choisis-la à l'étape Concept.`);
+            }
           });
           (m.skills || []).forEach((sk, k) => {
             if (!(sl.skills || [])[k]) manque.push(`compétence ${k + 1}`);

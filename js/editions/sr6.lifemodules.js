@@ -112,7 +112,7 @@ EditionSR6.creation.lifeModules.adult = [
     ],
     nuyen: 25000,
     know: { n: 2, parmi: ["Arcanes", "Sociétés magiques", "Traditions magiques"], ouLangue: true },
-    special: "la 4ᵉ option d'attribut n'est pas un attribut nommé mais « votre second attribut employé pour le Drain » (dépend de la tradition) — relevée telle quelle. Module **sans** puce Ressources de contacts : ni Points de contacts, ni Catégories de contacts.",
+    special: "la 4ᵉ option d'attribut n'est pas un attribut nommé mais « votre second attribut employé pour le Drain » (dépend de la tradition) — relevée telle quelle ; l'app la résout par la tradition choisie à l'étape Concept. Module **sans** puce Ressources de contacts : ni Points de contacts, ni Catégories de contacts.",
   },
   { id: "animateur", nom: "Animateur", type: "choix", page: 33,
     attrs: [
