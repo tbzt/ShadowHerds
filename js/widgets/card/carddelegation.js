@@ -415,6 +415,12 @@ export const CardDelegation = {
       if (!el) return;
       UI.setDeckTarget(el.dataset.id, el.value);
     });
+    // Membre qui agit (cybermembres) : même patron, un <select> en pastille.
+    document.addEventListener("change", (e) => {
+      const el = e.target.closest('[data-action="limb-select"]');
+      if (!el) return;
+      UI.setActiveLimb(el.dataset.id, el.value);
+    });
 
     // AUD-4 — le moniteur de condition au clavier. C'était le geste le plus
     // fréquent du meneur et le seul entièrement inatteignable : 85 `<div>`

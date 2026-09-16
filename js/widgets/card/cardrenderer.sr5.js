@@ -99,6 +99,7 @@ Object.assign(CardRenderer, {
     // marche a une conséquence mécanique (l'état « En course »).
     combatBody += this._movePill(pnj);
     combatBody += this._shapePill(pnj);
+    combatBody += this._limbPill(pnj);
     if (drainResist != null)
       combatBody += this._rollPill("Drain", Math.max(0, drainResist - malus5), {
         title: "Résistance au Drain",

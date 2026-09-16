@@ -3027,7 +3027,14 @@ Object.assign(EditionSR5, {
             const n = ModRefs.indice(ref);
             return a ? `${a.nom}${n ? " " + n : ""}` : null;
           }).filter(Boolean);
-          const nom = mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+          /* ⚠ L'arme sortait sans sa ligne de stats : « Ares Predator V » nu.
+             Or la fiche ne reconnaît une arme qu'à son bloc « [PRE…, VD…] »
+             (ItemResolver.splitEquip) — un PJ du générateur n'avait donc AUCUN
+             jet d'arme, quand le même Predator saisi à la main en avait un.
+             Tout objet du catalogue reprend la langue de l'app : « Nom
+             [détail, accessoires] », comme « Veste pare-balles [9] ». */
+          const detailArme = !this.isImplant(g) && g.detail ? `${g.detail}${mods.length ? `, ${mods.join(", ")}` : ""}` : "";
+          const nom = detailArme ? `${g.name} [${detailArme}]` : mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
           /* Une AUGMENTATION entre dans la langue du générateur : un objet
              `{str, cat}` (cf. ItemResolver.addEquipString), avec la ligne de
              stats du livre — c'est elle que lisent le routage Augmentations,

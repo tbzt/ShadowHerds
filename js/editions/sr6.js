@@ -5830,6 +5830,66 @@ export const EditionSR6 = {
     return n;
   },
 
+
+  /* ---- Attributs de membre aux jets (Livre de base p.291) ----
+     Les attributs du membre valent pour les tests qui l'emploient ; « un bonus de Force ou d'Agilité n'a aucun effet sur les tests qui utilisent l'ensemble du corps ».
+     Le meneur désigne ce qui agit — `pnj.membreActif` : rien (le corps), un
+     membre (son index dans l'équipement), rien d'autre — et
+     `WeaponRoll.resolvePool` lit l'attribut par `limbAttr`. État de table,
+     sur l'entité, réversible. */
+  LIMB_BASE: 2,
+  cyberlimbsOf(pnj) {
+    if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR6);
+    const out = [];
+    (pnj.equip || []).forEach((it, idx) => {
+      const s = ItemResolver.itemStr(it);
+      if (!s) return;
+      const nom = s.split(" [")[0].split(" · ")[0].trim();
+      const hit = Implants.lookup(this._implantIdx, nom);
+      if (!hit || !hit.ref || !/membres cybern/i.test(hit.ref.categorie || "")) return;
+      // Le groupe SR5 est « Membres apparents » pour tous : le nom seul distingue le crâne.
+      if (/cr[aâ]ne|torse/i.test(`${hit.ref.groupe || ""} ${hit.ref.nom || ""}`)) return;
+      const m = it && typeof it === "object" && it.membre ? it.membre : {};
+      out.push({ idx, nom, FOR: Number(m.FOR) || this.LIMB_BASE, AGI: Number(m.AGI) || this.LIMB_BASE, armure: Number(m.armure) || 0 });
+    });
+    return out;
+  },
+  /** Les choix offerts au meneur, ou null si l'entité n'a pas de membre. */
+  limbOptions(pnj) {
+    const membres = this.cyberlimbsOf(pnj);
+    if (!membres.length) return null;
+    const cur = pnj.membreActif == null ? "" : String(pnj.membreActif);
+    const opts = [{ value: "", label: "Corps", chosen: cur === "" }];
+    for (const m of membres) opts.push({ value: String(m.idx), label: `${m.nom} — FOR ${m.FOR}, AGI ${m.AGI}`, chosen: cur === String(m.idx) });
+    
+    return opts;
+  },
+  /** L'attribut (FOR ou AGI) tel qu'il compte pour un jet, selon ce qui agit :
+      `{value, label}`, ou null quand c'est le corps qui joue. */
+  limbAttr(pnj, key) {
+    if (key !== "FOR" && key !== "AGI") return null;
+    const mode = pnj.membreActif;
+    if (mode == null || mode === "") return null;
+    const membres = this.cyberlimbsOf(pnj);
+    if (!membres.length) return null;
+    const naturel = Actor.attr(pnj, key);
+    if (mode === "moyenne") {
+      // « La moyenne des attributs des membres utilisés » — les membres et le
+      // corps ensemble, arrondie au supérieur (règle générale SR5).
+      const vals = [naturel, ...membres.map((m) => m[key])];
+      return { value: Math.ceil(vals.reduce((a, b) => a + b, 0) / vals.length), label: `${key} (moyenne des membres)` };
+    }
+    if (mode === "faible") {
+      return { value: Math.min(naturel, ...membres.map((m) => m[key])), label: `${key} (le plus faible)` };
+    }
+    const m = membres.find((x) => String(x.idx) === String(mode));
+    return m ? { value: m[key], label: `${key} (${m.nom})` } : null;
+  },
+  setActiveLimb(pnj, value) {
+    pnj.membreActif = value == null || value === "" ? null : String(value);
+    return pnj;
+  },
+
   recalc(pnj) {
     // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ
     // (plancher racial d'attrRange, pas de migration versionnée).

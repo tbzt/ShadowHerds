@@ -1342,6 +1342,21 @@ export const CardRenderer = {
     return `<button type="button" class="stat-pill shape-pill is-${this._esc(o.shape)}" data-action="shape-shift" data-id="${pnj.id}" title="${this._esc(`${o.next}\n${o.regle}`)}" aria-label="${this._esc(o.next)}">${o.shape === "animale" ? "🐾" : "⇄"} <strong>${this._esc(o.label)}</strong></button>`;
   },
 
+  /** Ce qui agit : un sélecteur en pastille pour désigner le cybermembre (ou
+      le corps, la moyenne, le plus faible) dont la Force et l'Agilité entrent
+      dans les jets. Le module dit s'il y a un choix (`limbOptions`) — rien
+      ici ne nomme le cybermembre. Un `<select>` : plusieurs membres, un tap
+      chacun serait un cycle trop long. */
+  _limbPill(pnj) {
+    const mod = App.getEditionModule(pnj.edition);
+    const opts = mod && typeof mod.limbOptions === "function" ? mod.limbOptions(pnj) : null;
+    if (!opts) return "";
+    const cur = opts.find((o) => o.chosen) || opts[0];
+    return `<label class="stat-pill limb-pill${cur.value ? " is-limb" : ""}" title="Quel membre agit : sa Force et son Agilité comptent dans les jets d'arme">🦾 <select data-action="limb-select" data-id="${pnj.id}" aria-label="Membre qui agit">${opts
+      .map((o) => `<option value="${this._esc(o.value)}" ${o.chosen ? "selected" : ""}>${this._esc(o.label)}</option>`)
+      .join("")}</select></label>`;
+  },
+
   /* ---- Réserves de dés utiles au MJ ---- */
   _gmPoolRow(label, value, title, opts = {}) {
     if (value == null) return "";

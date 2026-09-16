@@ -397,6 +397,17 @@ export const WeaponRoll = {
     const cat = SkillCatalog[edition] || {};
     let attr = cat[canonical] || "AGI";
     let attrVal = Actor.attr(pnj, attr);
+    /* Ce qui agit : un cybermembre a sa propre Force et son Agilité (SR5
+       p.458, SR6 p.291) ; si le meneur l'a désigné (`membreActif`), c'est
+       son attribut qui entre dans la réserve, et l'explication le dit. Le
+       module décide — rien ici ne nomme le cybermembre. */
+    const EdMod = App.getEditionModule(edition);
+    let attrLabel = attr;
+    const membre = EdMod && typeof EdMod.limbAttr === "function" ? EdMod.limbAttr(pnj, attr) : null;
+    if (membre) {
+      attrVal = membre.value;
+      attrLabel = membre.label;
+    }
 
     // Spécialisation couvrant l'arme : c'est elle qui gouverne le jet
     // (ex. « Attaque élémentaire » des esprits, « Lames » d'un ganger).
@@ -413,7 +424,9 @@ export const WeaponRoll = {
       if (specSkill && specSkill.specVal != null) {
         skillVal = specSkill.specVal;
         attr = specSkill.specAttr || specSkill.skill.attr || attr;
-        attrVal = Actor.attr(pnj, attr);
+        const m2 = EdMod && typeof EdMod.limbAttr === "function" ? EdMod.limbAttr(pnj, attr) : null;
+        attrVal = m2 ? m2.value : Actor.attr(pnj, attr);
+        attrLabel = m2 ? m2.label : attr;
         rr = specSkill.specRR || 0;
         matchedSkill = `${specSkill.skill.name} · ${specSkill.spec}`;
       } else if (found) {
@@ -497,7 +510,7 @@ export const WeaponRoll = {
     // compétence + attribut + spécialité + smartlink + effets d'objet − blessure.
     const contributions = [
       { label: matchedSkill || canonical, value: skillVal },
-      { label: attr, value: attrVal },
+      { label: attrLabel, value: attrVal },
     ];
     if (specBonus) contributions.push({ label: "spécialité", value: specBonus });
     if (smartBonus) contributions.push({ label: "smartlink", value: smartBonus });

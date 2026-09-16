@@ -710,6 +710,34 @@
 .stat-pill.shape-pill.is-metahumaine {
   border-style: dashed;
 }
+/* Membre qui agit : une pastille qui contient un <select> (plusieurs
+   membres possibles) ; en retrait tant que c'est le corps qui joue. */
+.stat-pill.limb-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-right: 4px;
+  border: 1px solid var(--border);
+  opacity: 0.75;
+  max-width: 100%;
+  min-width: 0;
+}
+.stat-pill.limb-pill.is-limb {
+  opacity: 1;
+  border-color: var(--accent2);
+}
+.stat-pill.limb-pill select {
+  font: inherit;
+  font-size: var(--fs-xs);
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 0 2px;
+  max-width: min(14em, 100%);
+  min-width: 0;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
 .stat-pill.move-pill.is-capped {
   border-color: color-mix(in srgb, var(--warning) 40%, transparent);
 }
