@@ -5851,7 +5851,8 @@ export const EditionSR6 = {
       // Le groupe SR5 est « Membres apparents » pour tous : le nom seul distingue le crâne.
       if (/cr[aâ]ne|torse/i.test(`${hit.ref.groupe || ""} ${hit.ref.nom || ""}`)) return;
       const m = it && typeof it === "object" && it.membre ? it.membre : {};
-      out.push({ idx, nom, FOR: Number(m.FOR) || this.LIMB_BASE, AGI: Number(m.AGI) || this.LIMB_BASE, armure: Number(m.armure) || 0 });
+      const partiel = /avant bras|mollet|main|pied/.test(Implants.normName(hit.ref.groupe || hit.ref.nom));
+      out.push({ idx, nom, partiel, FOR: Number(m.FOR) || this.LIMB_BASE, AGI: Number(m.AGI) || this.LIMB_BASE, armure: Number(m.armure) || 0 });
     });
     return out;
   },

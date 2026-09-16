@@ -1695,19 +1695,27 @@ export const CardRenderer = {
 
   _attrCell(label, value, extraClass = "", opts = {}) {
     const n = Number(value);
-    const rollable = opts.roll && Number.isFinite(n) && n >= 1;
+    // Ce qui agit : si le meneur a désigné un cybermembre sur la carte, sa
+    // Force ou son Agilité est celle qu'on lance — la cellule garde la valeur
+    // du corps (c'est l'attribut du personnage) et montre celle du membre.
+    // Le module décide ; sans `opts.pnj`, ou pour toute autre cellule, rien.
+    const mod = opts.pnj ? App.getEditionModule(opts.edition || opts.pnj.edition) : null;
+    const limb = mod && typeof mod.limbAttr === "function" ? mod.limbAttr(opts.pnj, label) : null;
+    const rollN = limb ? Number(limb.value) : n;
+    const rollLabel = limb ? limb.label : label;
+    const rollable = opts.roll && Number.isFinite(rollN) && rollN >= 1;
     const edAttr = opts.edition ? ` data-roll-edition="${opts.edition}"` : "";
     // RR d'atout d'équipement (Anarchy 2 : « RR N aux tests de <attribut> »).
     // data-roll-rr est déjà consommé par le moteur de dés (figé à 0 avant) ;
     // opts.rr par défaut 0 → aucun effet sur SR5/SR6.
     const rr = opts.rr || 0;
     const rollAttrs = rollable
-      ? ` data-roll="${n}" data-roll-label="${this._esc(label)}"${edAttr} data-roll-rr="${rr}" title="Lancer ${n} dés — ${this._esc(label)}${rr > 0 ? ` (RR ${rr})` : ""}"`
+      ? ` data-roll="${rollN}" data-roll-label="${this._esc(rollLabel)}"${edAttr} data-roll-rr="${rr}" title="Lancer ${rollN} dés — ${this._esc(rollLabel)}${rr > 0 ? ` (RR ${rr})` : ""}"`
       : "";
-    const cls = `attr-cell ${extraClass} ${rollable ? "rollable" : ""}`.trim();
+    const cls = `attr-cell ${extraClass} ${rollable ? "rollable" : ""}${limb ? " has-limb" : ""}`.trim();
     return `<div class="${cls}"${rollAttrs}>
       <span class="attr-label">${label}</span>
-      <span class="attr-value">${value ?? "—"}${rr > 0 ? `<span class="lim">RR${rr}</span>` : ""}</span>
+      <span class="attr-value">${value ?? "—"}${rr > 0 ? `<span class="lim">RR${rr}</span>` : ""}${limb ? `<span class="lim limb-value" title="${this._esc(rollLabel)}">🦾${limb.value}</span>` : ""}</span>
     </div>`;
   },
 

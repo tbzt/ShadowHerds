@@ -4873,11 +4873,15 @@ export const EditionSR5 = {
           { label: Utils.attrFullName("LOG"), value: A("LOG") },
           { label: Utils.attrFullName("VOL"), value: A("VOL") },
         ];
-      case "liftCarry":
+      case "liftCarry": {
+        const forAgit = this.limbAttr(pnj, "FOR");
         return [
-          { label: Utils.attrFullName("FOR"), value: A("FOR") },
+          forAgit
+            ? { label: forAgit.label.replace(/^FOR/, Utils.attrFullName("FOR")), value: forAgit.value }
+            : { label: Utils.attrFullName("FOR"), value: A("FOR") },
           { label: Utils.attrFullName("CON"), value: A("CON") },
         ];
+      }
       case "surprise":
         return [
           { label: Utils.attrFullName("REA"), value: A("REA") },
@@ -5147,7 +5151,11 @@ export const EditionSR5 = {
       // Le groupe SR5 est « Membres apparents » pour tous : le nom seul distingue le crâne.
       if (/cr[aâ]ne|torse/i.test(`${hit.ref.groupe || ""} ${hit.ref.nom || ""}`)) return;
       const m = it && typeof it === "object" && it.membre ? it.membre : {};
-      out.push({ idx, nom, FOR: Number(m.FOR) || this.LIMB_BASE, AGI: Number(m.AGI) || this.LIMB_BASE, armure: Number(m.armure) || 0 });
+      // « Les attributs des membres partiels (mains et pieds compris) ne sont
+      // utilisés que pour les tests qui utilisent uniquement ce membre » :
+      // choisissables seuls, hors de la moyenne et du plus faible.
+      const partiel = /avant bras|mollet|main|pied/.test(Implants.normName(hit.ref.nom));
+      out.push({ idx, nom, partiel, FOR: Number(m.FOR) || this.LIMB_BASE, AGI: Number(m.AGI) || this.LIMB_BASE, armure: Number(m.armure) || 0 });
     });
     return out;
   },
@@ -5171,14 +5179,16 @@ export const EditionSR5 = {
     const membres = this.cyberlimbsOf(pnj);
     if (!membres.length) return null;
     const naturel = Actor.attr(pnj, key);
+    const entiers = membres.filter((m) => !m.partiel);
     if (mode === "moyenne") {
-      // « La moyenne des attributs des membres utilisés » — les membres et le
-      // corps ensemble, arrondie au supérieur (règle générale SR5).
-      const vals = [naturel, ...membres.map((m) => m[key])];
+      // « La moyenne des attributs des membres utilisés » — les membres
+      // entiers et le corps ensemble, arrondie au supérieur (règle générale
+      // SR5) ; un membre partiel ne compte que pour un test qui n'use que de lui.
+      const vals = [naturel, ...entiers.map((m) => m[key])];
       return { value: Math.ceil(vals.reduce((a, b) => a + b, 0) / vals.length), label: `${key} (moyenne des membres)` };
     }
     if (mode === "faible") {
-      return { value: Math.min(naturel, ...membres.map((m) => m[key])), label: `${key} (le plus faible)` };
+      return { value: Math.min(naturel, ...entiers.map((m) => m[key])), label: `${key} (le plus faible)` };
     }
     const m = membres.find((x) => String(x.idx) === String(mode));
     return m ? { value: m[key], label: `${key} (${m.nom})` } : null;
@@ -5264,7 +5274,10 @@ export const EditionSR5 = {
     pnj.composure = A("VOL") + A("CHA");
     pnj.judgeIntentions = A("INT") + A("CHA");
     pnj.memory = A("LOG") + A("VOL");
-    pnj.liftCarry = A("FOR") + A("CON");
+    // Soulever / porter : la Force de ce qui agit — un cybermembre désigné
+    // par le meneur (`membreActif`, p.458) prête la sienne, le corps sinon.
+    const forAgit = this.limbAttr(pnj, "FOR");
+    pnj.liftCarry = (forAgit ? forAgit.value : A("FOR")) + A("CON");
     pnj.surprise = A("REA") + A("INT");
     return pnj;
   },

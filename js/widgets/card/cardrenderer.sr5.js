@@ -192,10 +192,10 @@ Object.assign(CardRenderer, {
         ...(attrs.CHC != null ? ["CHC"] : []),
       ];
       detailsBody += `<div class="ref-block"><div class="ref-lbl">Attributs</div>`;
-      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: "sr5" })).join("")}</div>`;
+      detailsBody += `<div class="attr-grid">${attrKeys.map((k) => this._attrCell(k, Actor.attr(pnj, k), "", { roll: true, edition: "sr5", pnj })).join("")}</div>`;
       if (extras.length)
         // ESS n'est pas un pool de dés (ressource, pas un test) — non lançable.
-        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => (k === "ESS" ? this._essenceCell(pnj) : this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: true, edition: "sr5" }))).join("")}</div>`;
+        detailsBody += `<div class="attr-grid attr-special-row">${extras.map((k) => (k === "ESS" ? this._essenceCell(pnj) : this._attrCell(k, Actor.attr(pnj, k), "attr-special", { roll: true, edition: "sr5", pnj }))).join("")}</div>`;
       detailsBody += `<div class="limites-grid" style="margin-top:6px;">
         ${this._attrCell("Lim.Phys", limPhys)}
         ${this._attrCell("Lim.Ment", limMent)}

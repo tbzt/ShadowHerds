@@ -658,6 +658,18 @@
   display: block;
   line-height: 1.2;
 }
+/* La valeur du cybermembre qui agit, à côté de celle du corps : c'est elle
+   qu'on lance (le title de la cellule le dit). */
+.attr-value .limb-value {
+  display: block;
+  font-size: var(--fs-2xs);
+  line-height: 1.1;
+  color: var(--accent2);
+  white-space: nowrap;
+}
+.attr-cell.has-limb {
+  box-shadow: inset 0 -2px 0 var(--accent2);
+}
 
 /* Stats pills */
 .stats-row {

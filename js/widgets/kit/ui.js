@@ -250,7 +250,11 @@ export const UI = {
     if (!copies.length) return;
     const mod = App.getEditionModule(copies[0].edition);
     if (!mod || typeof mod.setActiveLimb !== "function") return;
-    for (const pnj of copies) mod.setActiveLimb(pnj, value);
+    for (const pnj of copies) {
+      mod.setActiveLimb(pnj, value);
+      // Les dérivées qui lisent la Force de ce qui agit (Port, SR5) suivent.
+      if (typeof mod.recalc === "function") mod.recalc(pnj);
+    }
     this.persistEntity(pnjId);
     CardRenderer.refresh(copies[0]);
     if (typeof Encounter !== "undefined") Encounter.notifyPnjChanged(copies[0]);
