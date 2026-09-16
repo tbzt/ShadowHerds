@@ -30,6 +30,9 @@ export const Implants = {
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
       .replace(/[’']/g, " ")
+      // « Quadmod (indice 1-3) » : la plage que le catalogue de l'app écrit
+      // dans le libellé n'est pas le nom
+      .replace(/\(\s*(?:indice\s+)?\d+\s*[-–−]\s*\d+\s*\)/g, " ")
       .replace(/\b(implantes?|cybernetiques?|cyber)\b/g, " ")
       .replace(/[^a-z0-9]+/g, " ")
       .trim();

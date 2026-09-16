@@ -5827,9 +5827,13 @@ export const EditionSR6 = {
     for (const it of ItemResolver.augItems(pnj, this.AUGS_KEYS)) {
       const nom = ItemResolver.itemStr(it).split(" [")[0].split(" · ")[0].trim();
       const hit = Implants.lookup(this._implantIdx, nom);
-      if (!hit || !hit.ref || !/membres cybern/i.test(hit.ref.categorie || "")) continue;
-      const k = Implants.normName(hit.ref.groupe || hit.ref.nom);
-      if (/^(bras|jambe)$/.test(k)) n += 1;
+      if (!hit || !hit.ref || !/membres? cybern/i.test(hit.ref.categorie || "") || /accessoires/i.test(hit.ref.categorie || "")) continue;
+      if (hit.ref.capaciteNote !== "offerte") continue;
+      // Un bras ou une jambe COMPLETS — pas un avant-bras, un bas de jambe, une
+      // main, un crâne (Livre de base : groupe « Bras » ; Corps à la carte :
+      // « Bras cybernétique supplémentaire — Apparent », « Jambe digitigrade »).
+      const k = Implants.normName(`${hit.ref.groupe || ""} ${hit.ref.nom}`);
+      if (/\b(bras|jambe)\b/.test(k) && !/avant bras|bas de la jambe|mollet|main|pied|crane|torse/.test(k)) n += 1;
     }
     return n;
   },
@@ -5850,9 +5854,11 @@ export const EditionSR6 = {
       if (!s) return;
       const nom = s.split(" [")[0].split(" · ")[0].trim();
       const hit = Implants.lookup(this._implantIdx, nom);
-      // La table des membres, pas celle de leurs accessoires (qui porte aussi
-      // « membres cybernétiques » : une Augmentation d'attribut n'agit pas).
-      if (!hit || !hit.ref || !/^coût et capacité des membres/i.test(hit.ref.categorie || "")) return;
+      // Une table de membres (Livre de base, Corps à la carte), pas celle de
+      // leurs accessoires (qui porte aussi « membres cybernétiques ») ; et une
+      // ligne qui OFFRE de la capacité — un Bras simien « [3] » la consomme.
+      if (!hit || !hit.ref || !/membres? cybern/i.test(hit.ref.categorie || "") || /accessoires/i.test(hit.ref.categorie || "")) return;
+      if (hit.ref.capaciteNote !== "offerte") return;
       // Le groupe SR5 est « Membres apparents » pour tous : le nom seul distingue le crâne.
       if (/cr[aâ]ne|torse/i.test(`${hit.ref.groupe || ""} ${hit.ref.nom || ""}`)) return;
       const m = it && typeof it === "object" && it.membre ? it.membre : {};

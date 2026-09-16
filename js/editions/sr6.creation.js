@@ -856,9 +856,14 @@ Object.assign(EditionSR6, {
       const d = this.isImplant(gear) ? this.implantDefaults(gear.name, gear.rating) : null;
       // ⚠ « Accessoires pour membres cybernétiques » contient aussi le mot :
       // une Augmentation d'attribut passait pour un membre (ligne « Membre
-      // FOR 2 AGI 2 » sous l'accessoire, et un choix de plus dans 🦾).
-      if (!d || !d.ref || !/^coût et capacité des membres/i.test(d.ref.categorie || "")) return false;
-      return !/cr[aâ]ne|torse/i.test(d.ref.groupe || d.ref.nom);
+      // FOR 2 AGI 2 » sous l'accessoire, et un choix de plus dans 🦾). Un
+      // membre, c'est une ligne d'une table de membres qui OFFRE de la
+      // capacité — Livre de base ou Corps à la carte (« Bras cybernétique
+      // supplémentaire », « Jambe digitigrade ») ; un Bras simien « [3] » la
+      // consomme : c'est un accessoire.
+      if (!d || !d.ref || !/membres? cybern/i.test(d.ref.categorie || "") || /accessoires/i.test(d.ref.categorie || "")) return false;
+      if (d.ref.capaciteNote !== "offerte") return false;
+      return !/cr[aâ]ne|torse/i.test(`${d.ref.groupe || ""} ${d.ref.nom || ""}`);
     },
 
     /** Force, Agilité et Armure d'un membre : base, personnalisation
