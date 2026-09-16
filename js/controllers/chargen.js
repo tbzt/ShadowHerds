@@ -1714,12 +1714,13 @@ export const CharGen = {
        pas une partie du code. Rendre le libellé comme valeur faisait écrire un
        attribut fantôme que rien ne relisait. Ne pas resimplifier en une seule
        chaîne. */
-    const choixSelect = (slotIdx, kind, optIdx, parmi, valeur) =>
-      `<select class="cg-lm-choice" data-cg-action="lm-choice" data-idx="${slotIdx}" data-kind="${kind}" data-opt="${optIdx}">
+    const choixSelect = (slotIdx, kind, optIdx, parmi, valeur, sub) =>
+      `<select class="cg-lm-choice" data-cg-action="lm-choice" data-idx="${slotIdx}" data-kind="${kind}" data-opt="${optIdx}"${sub != null ? ` data-sub="${sub}"` : ""}>
         ${parmi
           .map((o) => `<option value="${this._esc(o.value)}" ${valeur === o.value ? "selected" : ""}>${this._esc(o.label)}</option>`)
           .join("")}
       </select>`;
+    const NOMBRES = { 2: "deux", 3: "trois", 4: "quatre" };
 
     const slots = [];
     for (let i = 0; i < LM.adultSlots; i++) {
@@ -1736,9 +1737,18 @@ export const CharGen = {
           lignes.push(`<li>+${a.n} à ${choixSelect(i, "attrs", k, parmi, slot.attrs && slot.attrs[k])}</li>`);
         });
         (m.skills || []).forEach((sk, k) => {
-          const n = sk.pour === 2 ? "deux compétences" : "une compétence";
           const parmi = c.expandParmi(sk.parmi, "skills", b);
-          lignes.push(`<li>+${sk.n} rang à ${n} : ${choixSelect(i, "skills", k, parmi, slot.skills && slot.skills[k])}</li>`);
+          const pour = sk.pour || 1;
+          if (pour === 1) {
+            lignes.push(`<li>+${sk.n} rang à une compétence : ${choixSelect(i, "skills", k, parmi, slot.skills && slot.skills[k])}</li>`);
+            return;
+          }
+          /* « Augmentez de 1 rang QUATRE compétences de votre choix » : une puce,
+             `pour` cibles — un sélecteur par cible (une seule liste en offrait
+             UN, et trois points partaient sans un mot). */
+          const choix = c.moduleSkillChoices(slot, k);
+          const sels = Array.from({ length: pour }, (_, j) => choixSelect(i, "skills", k, [{ value: "", label: "— à choisir —" }, ...parmi], choix[j] || "", j)).join(" ");
+          lignes.push(`<li>+${sk.n} rang à ${NOMBRES[pour] || pour} compétences différentes : ${sels}</li>`);
         });
         if (m.know) {
           const opts = m.know.parmi
@@ -2191,7 +2201,13 @@ export const CharGen = {
         if (!slot) break;
         const k = el.dataset.kind;
         if (k === "know") slot.know = el.value;
-        else {
+        else if (el.dataset.sub != null) {
+          // une puce à plusieurs cibles : une liste de choix sous l'index de la puce
+          slot[k] = slot[k] || [];
+          const o = Number(el.dataset.opt);
+          if (!Array.isArray(slot[k][o])) slot[k][o] = slot[k][o] ? [slot[k][o]] : [];
+          slot[k][o][Number(el.dataset.sub)] = el.value;
+        } else {
           slot[k] = slot[k] || [];
           slot[k][Number(el.dataset.opt)] = el.value;
         }

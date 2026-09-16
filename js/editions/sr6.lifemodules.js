@@ -1132,7 +1132,7 @@ EditionSR6.creation.lifeModules.adult = [
   },
   { id: "vous_auriez_pu_empecher_quelque_chose_mais_c", nom: "Vous auriez pu empêcher quelque chose mais c'est arrivé ; quel dommage que vous n'ayez pas eu les bonnes compétences ou connaissances à ce moment-là", type: "evenement", page: 46,
     skills: [
-      { n: 1, parmi: ["quatre compétences de votre choix"] },
+      { n: 1, pour: 4, parmi: ["quatre compétences de votre choix"] },
     ],
     know: { n: 2, parmi: ["nouvelles Connaissances ou Langues", "au choix"], ouLangue: true },
     special: "« Vous pouvez acquérir un trait négatif reflétant le traumatisme engendré par cet événement. »",
@@ -1142,7 +1142,7 @@ EditionSR6.creation.lifeModules.adult = [
       { n: 1, parmi: ["un attribut physique, mental ou spécial de votre choix"] },
     ],
     skills: [
-      { n: 1, parmi: ["trois compétences de votre choix"] },
+      { n: 1, pour: 3, parmi: ["trois compétences de votre choix"] },
     ],
     know: { n: 2, parmi: ["Arcanes", "Métaplans", "Histoire [région/période]"], ouLangue: true },
   },

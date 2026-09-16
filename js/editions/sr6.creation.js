@@ -1536,6 +1536,15 @@ Object.assign(EditionSR6, {
       return (this.lifeModules.adult || []).find((m) => m.id === id) || null;
     },
 
+    /** Les compétences choisies pour la puce `k` d'un module : une par cible
+        (`pour`, 1 par défaut). Le brouillon range une chaîne pour une cible,
+        une liste pour plusieurs — les deux formes sont lues, les vides
+        écartés. */
+    moduleSkillChoices(slot, k) {
+      const v = (slot && slot.skills || [])[k];
+      return (Array.isArray(v) ? v : [v]).filter(Boolean);
+    },
+
     /** Le parcours complet, résolu : les trois modules imposés puis les huit
         adultes, avec les choix tranchés. C'est CE calcul qui fait le
         personnage — en méthode à modules, on ne dépense aucun point.
@@ -1584,8 +1593,10 @@ Object.assign(EditionSR6, {
         if (m.type === "evenement") out.evenements++;
         (m.attrs || []).forEach((a, k) => addAttr(this.moduleAttr(build, (slot.attrs || [])[k]), a.n));
         (m.skills || []).forEach((sk, k) => {
-          const choisi = (slot.skills || [])[k];
-          if (choisi) addSkill(choisi, sk.n);
+          // « Augmentez de 1 rang DEUX compétences parmi… » : `pour` cibles,
+          // chacune +n ; la même compétence deux fois ne compte qu'une (le
+          // doublon est nommé par stepErrors, pas cumulé en silence)
+          for (const choisi of new Set(this.moduleSkillChoices(slot, k))) addSkill(choisi, sk.n);
         });
         if (m.know && slot.know) out.know.push(slot.know);
         out.nuyen += m.nuyen || 0;
@@ -2513,7 +2524,12 @@ Object.assign(EditionSR6, {
             }
           });
           (m.skills || []).forEach((sk, k) => {
-            if (!(sl.skills || [])[k]) manque.push(`compétence ${k + 1}`);
+            const pour = sk.pour || 1;
+            const choix = this.moduleSkillChoices(sl, k);
+            if (choix.length < pour) manque.push(pour > 1 ? `compétence ${k + 1} (${choix.length} sur ${pour} choisies)` : `compétence ${k + 1}`);
+            if (pour > 1 && new Set(choix).size < choix.length) {
+              out.modules.push(`${m.nom} : les ${pour} compétences doivent être différentes (${choix.join(", ")}).`);
+            }
           });
           if (m.know && !sl.know) manque.push("connaissance");
           if (manque.length) {
