@@ -5187,6 +5187,14 @@ export const EditionSR5 = {
     pnj.membreActif = value == null || value === "" ? null : String(value);
     return pnj;
   },
+  /** L'amélioration d'Armure d'un cybermembre : « un bonus d'Armure égal à
+      leur indice, cumulatif avec les autres armures et ne causant pas
+      d'encombrement » (p.460). Lu par BonusEngine item par item, qui l'ajoute
+      à `pnj.armure` comme l'Armure dermique — et le retire avec le membre. */
+  cyberlimbArmorBonus(item) {
+    const a = item && typeof item === "object" && item.membre ? Number(item.membre.armure) : 0;
+    return a > 0 ? { armor: a } : null;
+  },
 
   recalc(pnj) {
     const { proRating } = pnj;

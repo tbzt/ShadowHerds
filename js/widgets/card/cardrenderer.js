@@ -2380,6 +2380,17 @@ export const CardRenderer = {
       Foundry (Cisco, 29 armes + 8 armures + 25 objets dans une seule liste
       plate, SR5 n'a pas de pnj.weapons séparé) devient lisible sans nouveau
       composant. */
+  /** La chaîne d'un objet, l'indice CHOISI à la place de la plage du
+      catalogue : « Orthoderme [Indice 1-4, …] » réglé à 3 se lit « Orthoderme
+      [Indice 3, …] ». L'objet garde sa forme (`str` + `rating`, la langue du
+      stepper d'EditModal) ; seule la lecture change. */
+  _ratedStr(item) {
+    const s = ItemResolver.itemStr(item);
+    const r = item && typeof item === "object" ? item.rating : null;
+    if (r == null || !ItemResolver.ratingRange(s)) return s;
+    return s.replace(/\bindice\s+\d+\s*[-–]\s*\d+/i, `Indice ${r}`);
+  },
+
   _equipSection(pnj, items, edition, deps, augs, decorate) {
     // `decorate(itemStr)` (optionnel) : HTML additionnel accolé à un tag
     // d'item, fourni par l'édition appelante — garde `_equipSection` neutre
@@ -2398,7 +2409,9 @@ export const CardRenderer = {
       }
       const isWeapon = /\[/.test(s) && /(VD|PRE)/.test(s);
       if (!isWeapon) {
-        otherTags.push(this._contentTag(s) + deco(s));
+        // Lecture seule : la chaîne d'arme reste brute plus bas, la scène
+        // retrouve son chargeur par elle (Encounter.ammoFor).
+        otherTags.push(this._contentTag(this._ratedStr(i)) + deco(s));
         continue;
       }
       const r = deps.WeaponRoll ? deps.WeaponRoll.resolvePool(pnj, s, edition) : null;
@@ -2415,7 +2428,7 @@ export const CardRenderer = {
     const weaponsHtml = weaponTags.join("");
     const othersHtml = otherTags.join("");
     const augsHtml = (augs || []).length
-      ? augs.map((a) => { const s = ItemResolver.itemStr(a); return this._contentTag(s) + deco(s); }).join("")
+      ? augs.map((a) => { const s = this._ratedStr(a); return this._contentTag(s) + deco(s); }).join("")
       : "";
     if (!weaponsHtml && !othersHtml && !augsHtml) return "";
 

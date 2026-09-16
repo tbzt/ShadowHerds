@@ -2789,12 +2789,16 @@ Object.assign(EditionSR6, {
              BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
              d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
           if (this.isImplant(g)) {
+            /* ⚠ L'indice choisi restait dans le brouillon : « Orthoderme 3 »
+               sortait « Orthoderme [Indice 1-4, …] », que BonusEngine lit comme
+               une plage non résolue → bonus 0. L'objet porte `rating`, la langue
+               du stepper (ItemResolver.itemRating). */
             const st = this.implantState(g, build);
             const gamme = g.grade && g.grade !== "standard" ? ` · ${st.grade.toLowerCase()}` : "";
             const loge = st.hote ? ` · dans ${st.hote.name}` : "";
             // Un cybermembre porte ses attributs propres sur sa ligne.
             const membre = st.membre ? ` · FOR ${st.membre.FOR}, AGI ${st.membre.AGI}${st.membre.armure ? `, Armure +${st.membre.armure}` : ""}` : "";
-            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${membre}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(st.hote ? { hote: st.hote.name } : {}), ...(st.membre ? { membre: { FOR: st.membre.FOR, AGI: st.membre.AGI, armure: st.membre.armure } } : {}) };
+            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${membre}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(Number(g.rating) > 0 ? { rating: Number(g.rating) } : {}), ...(st.hote ? { hote: st.hote.name } : {}), ...(st.membre ? { membre: { FOR: st.membre.FOR, AGI: st.membre.AGI, armure: st.membre.armure } } : {}) };
           }
           return nom;
         }),

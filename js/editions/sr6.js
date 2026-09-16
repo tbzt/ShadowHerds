@@ -5889,6 +5889,14 @@ export const EditionSR6 = {
     pnj.membreActif = value == null || value === "" ? null : String(value);
     return pnj;
   },
+  /** L'Augmentation d'armure d'un membre : « Le bonus d'Armure augmente en
+      permanence votre Score Défensif » (p.291) — contrairement à la Force et
+      à l'Agilité, qui ne comptent que si le membre agit. Lu par BonusEngine,
+      qui l'ajoute à `pnj.sdBase` comme l'Armure dermique. */
+  cyberlimbArmorBonus(item) {
+    const a = item && typeof item === "object" && item.membre ? Number(item.membre.armure) : 0;
+    return a > 0 ? { sd: a } : null;
+  },
 
   recalc(pnj) {
     // Atout : init douce pour les PNJ sauvegardés avant l'ajout du champ

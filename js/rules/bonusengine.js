@@ -150,9 +150,19 @@ export const BonusEngine = {
     // attrMods : contributions ÉTIQUETÉES (source = libellé du cyberware
     // reconnu) plutôt qu'une somme — la provenance remonte jusqu'au Trait.
     const totals = { initDice: 0, initScore: 0, armor: 0, sd: 0, limits: {}, attrMods: [] };
+    const EdMod = App.getEditionModule(edition);
     for (const item of items) {
       const s = ItemResolver.itemStr(item); // item chaîne OU objet
       if (!s) continue;
+      /* L'Armure d'un cybermembre n'est pas un libellé de la table : elle vit
+         dans l'objet (`membre.armure`, posé par le générateur). Le module dit
+         dans quel seau elle tombe — Armure en SR5, Score Défensif en SR6 —
+         et ce moteur ne sait pas ce qu'est un membre. */
+      const membre = EdMod && typeof EdMod.cyberlimbArmorBonus === "function" ? EdMod.cyberlimbArmorBonus(item) : null;
+      if (membre) {
+        totals.armor += membre.armor || 0;
+        totals.sd += membre.sd || 0;
+      }
       for (const [prefix, bonus] of table) {
         if (!s.startsWith(prefix)) continue;
         if (bonus.initDice) totals.initDice += bonus.initDice;
