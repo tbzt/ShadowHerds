@@ -41,7 +41,14 @@ export const Implants = {
   index(table) {
     const idx = new Map();
     for (const ref of table || []) {
-      for (const n of [ref.nom, ...(ref.alias || [])]) idx.set(this.normName(n), ref);
+      // À clé égale, la PREMIÈRE entrée gagne : la table met le Livre de Règles
+      // avant les suppléments, et un alias posé sur une entrée du Livre
+      // (« Main/pied cybernétique ») ne doit pas être volé par une ligne
+      // homonyme d'un supplément (« Main / Pied » d'une prothèse primitive).
+      for (const n of [ref.nom, ...(ref.alias || [])]) {
+        const k = this.normName(n);
+        if (!idx.has(k)) idx.set(k, ref);
+      }
     }
     return idx;
   },
