@@ -845,10 +845,19 @@ Object.assign(EditionSR6, {
        moyenne ; en coordination fine, le plus faible — ce partage-là reste
        au meneur, la fiche porte les valeurs. */
     CYBERLIMB: { base: 2, personnalisation: null },
+    /* « Un attribut modifié ne peut jamais être supérieur à son maximum
+       augmenté, soit son rang d'attribut actuel +4 » (p.42) ; pour les
+       membres : « L'augmentation maximale de 4 points doit être respectée,
+       aussi n'achetez pas une augmentation d'attribut qui vous ferait
+       franchir cette limite » (p.291) — Force, Agilité et Armure. */
+    AUGMENT_MAX: 4,
 
     isCyberlimb(gear) {
       const d = this.isImplant(gear) ? this.implantDefaults(gear.name, gear.rating) : null;
-      if (!d || !d.ref || !/membres cybern/i.test(d.ref.categorie || "")) return false;
+      // ⚠ « Accessoires pour membres cybernétiques » contient aussi le mot :
+      // une Augmentation d'attribut passait pour un membre (ligne « Membre
+      // FOR 2 AGI 2 » sous l'accessoire, et un choix de plus dans 🦾).
+      if (!d || !d.ref || !/^coût et capacité des membres/i.test(d.ref.categorie || "")) return false;
       return !/cr[aâ]ne|torse/i.test(d.ref.groupe || d.ref.nom);
     },
 
@@ -2604,9 +2613,19 @@ Object.assign(EditionSR6, {
             const max = this.attrRangeFor(build, k)[1];
             if (Number.isFinite(v) && v > max) out.gear.push(`${g.name} : ${k} du membre personnalisé à ${v}, au plus ${max} (maximum naturel).`);
             if (Number.isFinite(v) && v < this.CYBERLIMB.base) out.gear.push(`${g.name} : ${k} du membre en dessous de la base ${this.CYBERLIMB.base}.`);
+            // Le membre ne dépasse pas le maximum augmenté de l'attribut :
+            // son rang actuel + 4.
+            const naturel = (build.attrs || {})[k] ?? 1;
+            if (m[k] > naturel + this.AUGMENT_MAX) out.gear.push(`${g.name} : ${k} du membre à ${m[k]}, au plus ${naturel + this.AUGMENT_MAX} (${naturel} + ${this.AUGMENT_MAX}, maximum augmenté).`);
           }
         }
       }
+      // L'Armure des membres est une augmentation comme les autres : +4 au plus,
+      // tous membres confondus — elle monte le Score Défensif en permanence.
+      const armureMembres = (build.gear || [])
+        .filter((g) => this.isCyberlimb(g))
+        .reduce((sum, g) => sum + (this.cyberlimbAttrs(build, g).armure || 0), 0);
+      if (armureMembres > this.AUGMENT_MAX) out.gear.push(`Armure de membre : +${armureMembres} en tout, au plus +${this.AUGMENT_MAX} (augmentation maximale).`);
 
 
       const cUsed = this.contactPointsUsed(build);
