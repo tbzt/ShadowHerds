@@ -3021,7 +3021,10 @@ Object.assign(EditionSR5, {
         /* ⚠ Les accessoires choisis restaient dans le brouillon : la fiche ne
            recevait que le nom de l'objet. Ils voyagent maintenant avec lui,
            en clair — « Ares Predator V (Lunette de visée, Silencieux) ». */
-        equip: (build.gear || []).map((g) => {
+        /* Tout le monde a ses poings : la ligne « Mains nues » que le
+           générateur de PNJ pose sur chaque fiche — c'est elle qui porte la
+           VD d'un cybermembre (SR5 p.458), résolue par la carte. */
+        equip: [...(build.gear || []).map((g) => {
           const mods = ModRefs.normalize(g.mods).map((ref) => {
             const a = this.accessoryById(ModRefs.id(ref));
             const n = ModRefs.indice(ref);
@@ -3053,7 +3056,7 @@ Object.assign(EditionSR5, {
             return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${membre}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(Number(g.rating) > 0 ? { rating: Number(g.rating) } : {}), ...(st.hote ? { hote: st.hote.name } : {}), ...(st.membre ? { membre: { FOR: st.membre.FOR, AGI: st.membre.AGI, armure: st.membre.armure } } : {}) };
           }
           return nom;
-        }),
+        }), "Mains nues [Allonge —, VD (FOR)E, PA —]"],
         awakened: build.awakened || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
         tradition: build.tradition || null,

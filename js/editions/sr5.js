@@ -5223,6 +5223,33 @@ export const EditionSR5 = {
     const attrs = new Set(membres.map((m) => SkillCatalog.sr5[m]).filter(Boolean));
     return attrs.size === 1 ? [...attrs][0] : null;
   },
+  /** La VD d'une arme écrite en Force, résolue avec la Force de ce qui agit :
+      « (FOR+2)P » → 8P. Mains nues avec un cybermembre désigné : « leur
+      Valeur de Dommages à mains nues est (FOR)P » (p.458) — physique, la
+      Force du membre ; la moyenne ou le plus faible ne frappent pas d'un
+      membre précis et gardent l'Étourdissant. Rend null si la VD n'est pas
+      en Force (« 8P ») — la ligne reste telle quelle. */
+  damageFor(pnj, weaponStr) {
+    const s = String(weaponStr || "");
+    const m = s.match(/VD\s*\(\s*FOR\s*([+-]\s*\d+)?\s*\)\s*([EPS])/i);
+    if (!m) return null;
+    const membre = this.limbAttr(pnj, "FOR");
+    const FOR = membre ? membre.value : Actor.attr(pnj, "FOR");
+    const mod = m[1] ? parseInt(m[1].replace(/\s/g, ""), 10) : 0;
+    let type = m[2].toUpperCase();
+    const unarmed = WeaponRoll.isUnarmed(WeaponRoll.parse(s).name);
+    const frappeDuMembre = !!membre && pnj.membreActif !== "moyenne" && pnj.membreActif !== "faible";
+    if (unarmed && frappeDuMembre) type = "P";
+    return {
+      value: FOR + mod,
+      type,
+      formula: m[0].replace(/^VD\s*/i, ""),
+      // « Bras entier cybernétique », « moyenne des membres » — sans le FOR
+      // que la formule dit déjà.
+      label: membre ? membre.label.replace(/^FOR\s*\((.*)\)$/, "$1") : null,
+      cyber: unarmed && frappeDuMembre,
+    };
+  },
   /** L'amélioration d'Armure d'un cybermembre : « un bonus d'Armure égal à
       leur indice, cumulatif avec les autres armures et ne causant pas
       d'encombrement » (p.460). Lu par BonusEngine item par item, qui l'ajoute

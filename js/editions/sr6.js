@@ -188,7 +188,10 @@ export const EditionSR6 = {
     offense(pnj, weapon) {
       const parsed = WeaponRoll.parse(weapon);
       const name = parsed.name || String(weapon || "");
-      const FOR = Actor.attr(pnj, "FOR");
+      // « Ce bonus s'applique aux dommages pour une attaque de mêlée avec ce
+      // bras » (p.291) : la Force de ce qui agit, désigné sur la carte.
+      const membre = EditionSR6.limbAttr(pnj, "FOR");
+      const FOR = membre ? membre.value : Actor.attr(pnj, "FOR");
       const fam = WeaponRoll.combatFamily(name, "sr6");
       // Vraies mains nues (FOR + RÉA) — surtout PAS « coup de poing américain »
       // (arme à SO 6+FOR, résolue par la branche mêlée ci-dessous).

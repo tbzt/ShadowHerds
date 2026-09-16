@@ -242,6 +242,13 @@ export const WeaponRoll = {
     if (resolved && resolved.accuracySmart && resolved.accuracyBase != null) {
       inner = inner.replace(/PRE\s*\d+\s*\(\d+\)/i, `PRE ${resolved.accuracyBase}`);
     }
+    // « VD (FOR+2)P » → « VD 8P » : la formule est résolue par le module
+    // (Force de ce qui agit, mains nues d'un cybermembre en P) ; la formule
+    // d'origine reste dans le title de la ligne.
+    const dv = resolved && resolved.dvResolved;
+    if (dv && Number.isFinite(dv.value)) {
+      inner = inner.replace(/VD\s*\([^)]*\)\s*[EPS]/i, `VD ${dv.value}${dv.type}`);
+    }
     // ⚠ Le chargeur : « 42(c) » est la capacité NOMINALE de la chaîne, elle ne
     // bouge jamais. En scène, la fiche affichait donc 42 pendant que le panneau
     // affichait 30 pour la même arme au même instant. On substitue le compte
@@ -545,6 +552,9 @@ export const WeaponRoll = {
       edition,
       contributions, // pool décomposé (explication du jet)
       dvContributions: fx.dv, // VD : bonus d'objet étiquetés
+      // VD écrite en Force, résolue par le module avec la Force de ce qui
+      // agit ({value, type, formula, label}) — null quand elle est un nombre.
+      dvResolved: EdMod && typeof EdMod.damageFor === "function" ? EdMod.damageFor(pnj, weapon) : null,
       // Écartée quand `accuracySmart` l'a annulée (non-cumul laser/smartlink,
       // p.435) : sinon la carte afficherait un bonus qui ne joue pas.
       accuracyContributions: accuracyFx, // précision/limite RÉELLEMENT appliquée

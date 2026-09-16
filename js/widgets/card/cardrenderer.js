@@ -1625,6 +1625,11 @@ export const CardRenderer = {
           if (sum)
             facetChips.push(`<span class="lim" title="${this._esc(list.map((c) => `${flbl} ${sign(c.value)} ${c.source}`).join(" · "))}">${flbl}${sign(sum)}</span>`);
         }
+        // VD en Force résolue : « VD (FOR)P → 6P (Bras entier cybernétique) ».
+        const dv = r.dvResolved;
+        if (dv && Number.isFinite(dv.value)) {
+          facetTxts.push(`${fl.dv || "VD"} ${dv.formula} → ${dv.value}${dv.type}${dv.label ? ` (${dv.label})` : ""}`);
+        }
         const facetTxt = facetTxts.join(" · ");
         // Une arme brickée en scène (Encounter.deviceState) perd sa
         // pastille d'attaque — l'enforcement réel que R1d renvoyait ici.
