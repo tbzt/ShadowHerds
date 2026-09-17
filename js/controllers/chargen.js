@@ -931,9 +931,10 @@ export const CharGen = {
         const nom = ref ? ref.nom : t.nom || t.id;
         const eff = ref ? ref.effet : t.effet || "";
         const type = ref ? ref.type : t.type || "avantage";
+        const tag = type === "changelin" ? `changelin ${ref.niveau > 0 ? "+" : ""}${ref.niveau}${ref.monstre ? " · Monstre" : ""}` : type === "defaut" ? "défaut" : "avantage";
         return `<div class="cluster cg-list-row">
           <span class="cg-pick-name">${this._esc(nom)}</span>
-          <span class="tag">${type === "defaut" ? "défaut" : "avantage"}</span>
+          <span class="tag">${this._esc(tag)}</span>
           <span class="cg-section-note">${this._esc(eff)}</span>
           <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>
         </div>`;
@@ -946,6 +947,7 @@ export const CharGen = {
       <div class="cg-section-label">Retenus
         <span class="cg-section-note">${this._kitMeter(st.avantages, st.maxAvantages, "avantages")} · ${this._kitMeter(st.defauts, st.maxDefauts, "défauts")}</span>
       </div>
+      ${st.changelin && st.changelin.count ? `<p class="cg-hint">Changelin : ${st.changelin.count} trait${st.changelin.count > 1 ? "s" : ""} sur ${st.changelin.maxTraits} (${st.changelin.positifs} positif${st.changelin.positifs > 1 ? "s" : ""}, ${st.changelin.negatifs} négatif${st.changelin.negatifs > 1 ? "s" : ""}) → Atout Changelin niveau ${Math.max(0, st.changelin.niveau)}, classe ${st.changelin.classe}${st.changelin.monstre ? " · Monstre : un dé de complication aux tests sociaux (sauf Intimidation)" : ""}.</p>` : ""}
       ${rows || '<p class="cg-hint">Aucun trait.</p>'}
       ${this._catalogPicker({
         id: "traits-a1",

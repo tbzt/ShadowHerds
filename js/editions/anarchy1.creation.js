@@ -32,6 +32,8 @@
    ============================================================ */
 import { EditionAnarchy1 } from "./anarchy1.js";
 import { TraitsAnarchy1 } from "./anarchy1.traits.js";
+import { InfectesAnarchy1 } from "./anarchy1.infectes.js";
+import { ChangelinTraitsAnarchy1, CHANGELIN } from "./anarchy1.changelin.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Utils } from "../core/utils.js";
 
@@ -124,15 +126,83 @@ Object.assign(EditionAnarchy1, {
       Minotaure: { FOR: 11, AGI: 5, VOL: 6, LOG: 5, CHA: 4, CHC: 6 },
     },
 
-    /** Fusionne souches et métavariantes : c'est la liste du sélecteur. */
+    /* ============================================================
+       INFECTÉS — « Anarchistes » p.93-101 : « sélectionnez un type d'Infecté
+       au lieu d'un métatype ». Chaque type porte les bonus plats d'un
+       métatype, un Atout obligatoire (dont le niveau peut dépasser la limite
+       habituelle, et vaut −1 pour le Gobelin), des options qui le montent,
+       ses propres maximums d'attributs (p.100) ; certains sont
+       obligatoirement Éveillés (coût de l'Éveil non compris) ; aucun ne peut
+       être Émergé. La Goule prend les bonus de sa souche.
+       ============================================================ */
+    infectes() {
+      const out = {};
+      for (const i of InfectesAnarchy1) {
+        const souche = this.metatypes[i.souche] || {};
+        const base = i.bonusSouche ? souche : i;
+        out[i.nom] = {
+          ...i,
+          attrs: { ...(base.attrs || {}) },
+          skillPoints: base.skillPoints || 0,
+          armor: base.armor || 0,
+          infecte: true,
+        };
+      }
+      return out;
+    },
+
+    /** L'entrée d'Infecté d'un brouillon, ou null. */
+    infecteOf(meta) {
+      return this.infectes()[meta] || null;
+    },
+
+    /** Fusionne souches, métavariantes et Infectés : c'est la liste du sélecteur. */
     allMetatypes() {
       const out = { ...this.metatypes };
       for (const [nom, d] of Object.entries(this.metavariants)) out[nom] = d;
+      for (const [nom, d] of Object.entries(this.infectes())) out[nom] = d;
       return out;
     },
 
     metaEntry(meta) {
-      return this.metavariants[meta] || this.metatypes[meta] || null;
+      return this.metavariants[meta] || this.metatypes[meta] || this.infecteOf(meta) || null;
+    },
+
+    /** Le niveau de l'Atout obligatoire d'un Infecté, options comprises :
+        `build.infecteOptions` = { nom d'option: niveau choisi }. */
+    infecteEdgeLevel(build) {
+      const inf = this.infecteOf(build.meta);
+      if (!inf) return 0;
+      let n = inf.edge.niveau || 0;
+      for (const o of inf.options || []) n += Number((build.infecteOptions || {})[o.nom]) || 0;
+      return n;
+    },
+
+    /* ============================================================
+       CHANGELINS — « Anarchistes » p.90-92 : un Atout unique, de niveau
+       « Traits positifs + Traits négatifs » (jamais négatif), dix traits au
+       plus ; la Classe suit le nombre de traits. Les traits se choisissent à
+       l'étape Traits, à côté des Avantages et Défauts (qui restent un compte
+       à part).
+       ============================================================ */
+    changelinTraitById(id) {
+      return ChangelinTraitsAnarchy1.find((t) => t.id === id) || null;
+    },
+
+    changelinState(build) {
+      const traits = (build.traits || []).map((t) => this.changelinTraitById(t.id)).filter(Boolean);
+      const niveau = traits.reduce((n, t) => n + t.niveau, 0);
+      const classe = traits.length ? (CHANGELIN.classes.find((c) => traits.length <= c.max) || CHANGELIN.classes[CHANGELIN.classes.length - 1]).classe : 0;
+      return {
+        traits,
+        count: traits.length,
+        maxTraits: CHANGELIN.maxTraits,
+        niveau,
+        classe,
+        monstre: traits.some((t) => t.monstre),
+        positifs: traits.filter((t) => t.type === "positif").length,
+        negatifs: traits.filter((t) => t.type === "négatif").length,
+      };
     },
 
     /* ============================================================
@@ -197,6 +267,7 @@ Object.assign(EditionAnarchy1, {
         gender: "NB",
         name: "",
         awakened: null,
+        infecteOptions: {}, // options de l'Atout d'un Infecté : { nom: niveau }
         armor: "moyenne",
         attrs: { FOR: 1, AGI: 1, VOL: 1, LOG: 1, CHA: 1 },
         luck: 0, // Chance achetée en points d'Atouts
@@ -261,6 +332,10 @@ Object.assign(EditionAnarchy1, {
       // est de niveau 1 ou plus (« Anarchistes ») — au niveau 0 il est offert.
       const mv = this.metavariants[build.meta];
       if (mv && mv.edge) n += mv.edge.niveau || 0;
+      // L'Atout obligatoire d'un Infecté (« Anarchistes » p.93), options
+      // comprises ; celui d'un Changelin (p.90), au niveau de ses traits.
+      n += this.infecteEdgeLevel(build);
+      n += Math.max(0, this.changelinState(build).niveau);
       if (build.awakened) n += sp.awakened;
       n += (build.luck || 0) * sp.luckPer.cost;
       n += Math.ceil((build.extraContacts || 0) / sp.contactsPer.gain) * sp.contactsPer.cost;
@@ -317,9 +392,12 @@ Object.assign(EditionAnarchy1, {
             if (d.skillPoints) bits.push(`${d.skillPoints > 0 ? "+" : ""}${d.skillPoints} pt de compétence`);
             if (d.armor) bits.push(`Armure +${d.armor}`);
             if (d.edge) bits.push(`Atout ${d.edge.nom} niv. ${d.edge.niveau}`);
-            return { value: m, label: `${m}${d.souche ? ` (${d.souche})` : ""} — ${bits.join(", ")}` };
+            if (d.infecte) bits.push(d.virus);
+            const qui = d.infecte ? ` (${d.souche.toLowerCase()} infecté)` : d.souche ? ` (${d.souche})` : "";
+            return { value: m, label: `${m}${qui} — ${bits.join(", ")}` };
           }),
         },
+        ...this._infecteFields(build),
         {
           path: "gender",
           label: "Genre",
@@ -354,6 +432,27 @@ Object.assign(EditionAnarchy1, {
           type: "note",
         },
       ];
+    },
+
+    /** Les champs propres à un Infecté : ses options d'Atout (niveau à
+        choisir) et l'Éveil que le livre impose. Rien pour un métatype. */
+    _infecteFields(build) {
+      const inf = this.infecteOf(build.meta);
+      if (!inf) return [];
+      const fields = [];
+      const eveil = inf.eveil === "adepte" ? "obligatoirement Éveillé (adepte)" : inf.eveil ? "obligatoirement Éveillé" : null;
+      fields.push({
+        path: "_infecteNote",
+        label: `${inf.nom} : Atout ${inf.edge.nom} obligatoire au niveau ${inf.edge.niveau}${inf.options.length ? ", plus les options ci-dessous" : ""}${eveil ? ` ; personnage ${eveil} (l'Éveil se paie en plus)` : ""}. Un Infecté ne peut pas être Émergé.`,
+        type: "note",
+      });
+      for (const o of inf.options) {
+        const [min, max] = Array.isArray(o.niveau) ? o.niveau : [o.niveau, o.niveau];
+        const options = [{ value: "", label: "— non —" }];
+        for (let n = min; n <= max; n++) options.push({ value: String(n), label: `niveau +${n}` });
+        fields.push({ path: `infecteOptions.${o.nom}`, label: `${o.nom} (option de l'Atout)`, type: "select", options });
+      }
+      return fields;
     },
 
     /** Qui l'on construit, en trois mots — pour l'en-tête et la reprise. */
@@ -403,7 +502,8 @@ Object.assign(EditionAnarchy1, {
         pas d'un 6 uniforme — un cyclope monte à 11 en Force, une dryade
         plafonne à 5. Sans elle, les deux auraient la même limite. */
     attrRangeFor(build, key) {
-      const max = (this.attrMax[build.meta] || this.attrMax.Humain)[key] || 6;
+      const inf = this.infecteOf(build.meta);
+      const max = ((inf && inf.attrMax) || this.attrMax[build.meta] || this.attrMax.Humain)[key] || 6;
       return key === "CHC" ? [0, max] : [1, max];
     },
 
@@ -430,25 +530,38 @@ Object.assign(EditionAnarchy1, {
       for (const t of TraitsAnarchy1) {
         par[t.type].push({ id: t.id, label: t.nom, detail: t.effet });
       }
+      const chg = (type) => ChangelinTraitsAnarchy1.filter((t) => t.type === type).map((t) => ({
+        id: t.id,
+        label: `${t.nom} (${t.niveau > 0 ? "+" : ""}${t.niveau}${t.monstre ? ", Monstre" : ""})`,
+        detail: t.effet,
+      }));
       return [
         { category: `Avantages (${this.TRAITS_POSITIVE} à choisir)`, items: par.avantage },
         { category: `Défauts (${this.TRAITS_NEGATIVE} à choisir)`, items: par.defaut },
+        // Changelin (« Anarchistes » p.90-92) : un Atout unique au niveau de la somme
+        { category: `Changelin — traits positifs (l'Atout monte)`, items: chg("positif") },
+        { category: `Changelin — traits négatifs (l'Atout baisse, jamais sous 0)`, items: chg("négatif") },
       ];
     },
 
     traitById(id) {
+      const chg = this.changelinTraitById(id);
+      if (chg) return { id: chg.id, nom: chg.nom, type: "changelin", effet: chg.effet, niveau: chg.niveau, monstre: chg.monstre };
       return TraitsAnarchy1.find((t) => t.id === id) || null;
     },
 
-    /** Le compte, par type — c'est la seule contrainte du livre. */
+    /** Le compte, par type — c'est la seule contrainte du livre. Les traits
+        de changelin ne comptent ni comme Avantage ni comme Défaut : ils font
+        un Atout (`changelin`). */
     traitState(build) {
       let av = 0, de = 0;
       for (const t of build.traits || []) {
         const ref = this.traitById(t.id);
         const type = ref ? ref.type : t.type;
+        if (type === "changelin") continue;
         if (type === "defaut") de++; else av++;
       }
-      return { avantages: av, defauts: de, maxAvantages: this.TRAITS_POSITIVE, maxDefauts: this.TRAITS_NEGATIVE };
+      return { avantages: av, defauts: de, maxAvantages: this.TRAITS_POSITIVE, maxDefauts: this.TRAITS_NEGATIVE, changelin: this.changelinState(build) };
     },
 
     contactFields() {
@@ -518,6 +631,25 @@ Object.assign(EditionAnarchy1, {
       const totalSpecs = (build.skills || []).reduce((n, s) => n + (s.specs || []).length, 0);
       if (totalSpecs > 1) out.skills.push("Une seule spécialisation pour tout le personnage.");
 
+      // Infecté (« Anarchistes » p.93) : l'Éveil imposé se choisit, l'Émergence est fermée.
+      const inf = this.infecteOf(build.meta);
+      if (inf) {
+        if (build.awakened === "technomancien") out.concept.push(`${inf.nom} : un Infecté ne peut pas être Émergé.`);
+        if (inf.eveil === "adepte" && build.awakened !== "adepte") out.concept.push(`${inf.nom} : personnage obligatoirement Éveillé — adepte.`);
+        else if (inf.eveil && !build.awakened) out.concept.push(`${inf.nom} : personnage obligatoirement Éveillé (l'Éveil se paie en plus de l'Atout).`);
+        for (const o of inf.options || []) {
+          const v = (build.infecteOptions || {})[o.nom];
+          if (v === "" || v == null) continue;
+          const [min, max] = Array.isArray(o.niveau) ? o.niveau : [o.niveau, o.niveau];
+          if (!Number.isFinite(Number(v)) || Number(v) < min || Number(v) > max) out.concept.push(`${inf.nom} : ${o.nom} vaut niveau +${min}${max > min ? ` à +${max}` : ""}.`);
+        }
+      }
+      // Changelin (p.90) : dix traits au plus, un coût positif ou nul.
+      const chg = this.changelinState(build);
+      if (chg.count > chg.maxTraits) out.traits.push(`Changelin : ${chg.maxTraits} traits au plus (${chg.count} choisis).`);
+      if (chg.count && chg.niveau < 0) out.traits.push(`Changelin : le coût final de l'Atout doit être positif ou nul (${chg.niveau}) — trop de traits négatifs.`);
+      if (chg.traits.some((t) => t.id === "corruption_astrale") && build.awakened) out.traits.push("Corruption astrale : ce trait empêche d'être soi-même Éveillé.");
+
       const eU = this.edgePointsUsed(build);
       if (eU > lvl.edgePoints) out.edges.push(`Trop de points d'Atouts (${eU}/${lvl.edgePoints}).`);
       if ((build.edges || []).length > this.MAX_EDGES) {
@@ -548,10 +680,28 @@ Object.assign(EditionAnarchy1, {
     /* ============================================================
        CONSTRUCTION DU PERSONNAGE
        ============================================================ */
+    /** Les Atouts que le livre impose et que le joueur n'a pas saisis : celui
+        de la métavariante, de l'Infecté (options comprises), du Changelin. */
+    _mandatoryEdges(build) {
+      const out = [];
+      const mv = this.metavariants[build.meta];
+      if (mv && mv.edge) out.push(`Atout ${mv.edge.nom} (niveau ${mv.edge.niveau})`);
+      const inf = this.infecteOf(build.meta);
+      if (inf) {
+        const opts = (inf.options || []).filter((o) => Number((build.infecteOptions || {})[o.nom]) > 0).map((o) => `${o.nom} +${Number(build.infecteOptions[o.nom])}`);
+        out.push(`Atout ${inf.edge.nom} (niveau ${this.infecteEdgeLevel(build)}${opts.length ? ` : ${opts.join(", ")}` : ""})`);
+      }
+      const chg = this.changelinState(build);
+      if (chg.count) out.push(`Atout Changelin (niveau ${Math.max(0, chg.niveau)}, classe ${chg.classe}) : ${chg.traits.map((t) => t.nom).join(", ")}`);
+      return out;
+    },
+
     buildCharacter(build) {
       const attrs = {};
       for (const k of this.ATTRS) attrs[k] = this.attrValue(build, k);
       attrs.CHC = this.luckValue(build);
+      const inf = this.infecteOf(build.meta);
+      const chg = this.changelinState(build);
 
       const skills = (build.skills || []).map((s) => {
         const attr = s.attr || SkillCatalog.anarchy1[s.name] || "LOG";
@@ -585,11 +735,13 @@ Object.assign(EditionAnarchy1, {
         armor: this.armorTotal(build),
         skills,
         knowledges: [...(build.knowledges || [])],
-        edges: (build.edges || []).map((e) => e.text),
+        edges: [...this._mandatoryEdges(build), ...(build.edges || []).map((e) => e.text)],
         chosenEdges: (build.edges || []).map((e) => e.text),
         weapons: (build.weapons || []).map((w) => ({ name: w.name })),
         equip: [...(build.gear || [])],
         awakened: build.awakened || null,
+        ...(inf ? { metaFamily: inf.souche, infecte: { nom: inf.nom, virus: inf.virus, dons: inf.dons, pouvoirs: inf.pouvoirs, faiblesses: inf.faiblesses, options: { ...(build.infecteOptions || {}) } } } : {}),
+        ...(chg.count ? { changelin: { classe: chg.classe, niveau: chg.niveau, monstre: chg.monstre, traits: chg.traits.map((t) => `${t.nom} (${t.niveau > 0 ? "+" : ""}${t.niveau})`) } } : {}),
         threatLevel: "forte",
         physMon,
         stunMon,
