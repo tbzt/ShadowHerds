@@ -216,6 +216,8 @@ export const CharGen = {
   /** Jauge « utilisé / offert par le kit » : ambre quand on paie au-delà
       (payer est légal en Anarchy), le rouge restant réservé aux vraies erreurs. */
   _kitMeter(used, free, label) {
+    // `free` null : un compte sans plafond (le trait d'Infecté, hors des 25).
+    if (free == null) return `<span class="cg-kit-meter">${label} : ${used}</span>`;
     const over = used > free;
     const paid = over ? ` <span class="cg-kit-paid">+${used - free} payant</span>` : "";
     return `<span class="cg-kit-meter${over ? " over" : ""}">${label} : ${used}/${free}${paid}</span>`;
@@ -320,39 +322,41 @@ export const CharGen = {
       dessinés ici. Le contrôleur ne connaît plus « niveau de jeu », « table de
       points » ni la liste des éveils — tout ça était du savoir Anarchy 2
       logé dans le contrôleur. */
+  /** Un champ déclaré par le module ({path, label, type, options…}), rendu
+      sur la grille du Concept — et réutilisé par l'étape Traits pour les
+      champs d'un Infecté (`infecteFields`). */
+  _fieldHtml(f, b) {
+    const val = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), b);
+    const cur = val(f.path);
+    if (f.type === "checkbox") {
+      return `<div class="stack cg-field cg-field--wide"><label><input type="checkbox" data-cg="${f.path}" ${cur ? "checked" : ""}> ${this._esc(f.label)}</label></div>`;
+    }
+    if (f.type === "number") {
+      return `<div class="stack cg-field"><label>${this._esc(f.label)}</label>
+        <input type="number" min="${f.min ?? 0}" data-cg="${f.path}" value="${cur ?? 0}"></div>`;
+    }
+    if (f.type === "note") {
+      return `<p class="cg-hint cg-note cg-field--wide">${this._esc(f.label)}</p>`;
+    }
+    if (f.type === "text") {
+      return `<div class="stack cg-field cg-field--wide"><label>${this._esc(f.label)}</label>
+        <input type="text" data-cg="${f.path}" data-cg-rerender="false" value="${this._esc(cur || "")}" placeholder="${this._esc(f.placeholder || "")}"></div>`;
+    }
+    const opts = (f.options || [])
+      .map((o) => `<option value="${this._esc(o.value)}" ${String(cur ?? "") === String(o.value) ? "selected" : ""}>${this._esc(o.label)}</option>`)
+      .join("");
+    return `<div class="stack cg-field"><label>${this._esc(f.label)}</label><select data-cg="${f.path}">${opts}</select></div>`;
+  },
+
   _render_concept() {
     const c = this._creation();
     const b = this._build;
-    const val = (path) => path.split(".").reduce((o, k) => (o == null ? o : o[k]), b);
 
     /* Les champs se posent sur une grille à deux colonnes : les textes libres
        (nom, concept) et les notes prennent toute la largeur, les choix se
        rangent deux par ligne. Une colonne unique de champs pleine largeur
        faisait un formulaire administratif. */
-    const field = (f) => {
-      const cur = val(f.path);
-      if (f.type === "checkbox") {
-        return `<div class="stack cg-field cg-field--wide"><label><input type="checkbox" data-cg="${f.path}" ${cur ? "checked" : ""}> ${this._esc(f.label)}</label></div>`;
-      }
-      if (f.type === "number") {
-        return `<div class="stack cg-field"><label>${this._esc(f.label)}</label>
-          <input type="number" min="${f.min ?? 0}" data-cg="${f.path}" value="${cur ?? 0}"></div>`;
-      }
-      if (f.type === "note") {
-        return `<p class="cg-hint cg-note cg-field--wide">${this._esc(f.label)}</p>`;
-      }
-      if (f.type === "text") {
-        return `<div class="stack cg-field cg-field--wide"><label>${this._esc(f.label)}</label>
-          <input type="text" data-cg="${f.path}" data-cg-rerender="false" value="${this._esc(cur || "")}" placeholder="${this._esc(f.placeholder || "")}"></div>`;
-      }
-      const opts = (f.options || [])
-        .map(
-          (o) =>
-            `<option value="${this._esc(o.value)}" ${String(cur ?? "") === String(o.value) ? "selected" : ""}>${this._esc(o.label)}</option>`,
-        )
-        .join("");
-      return `<div class="stack cg-field"><label>${this._esc(f.label)}</label><select data-cg="${f.path}">${opts}</select></div>`;
-    };
+    const field = (f) => this._fieldHtml(f, b);
 
     const presetBtns = (c.presets || [])
       .map(
@@ -887,11 +891,14 @@ export const CharGen = {
         // SR5 porte un TABLEAU (coûts variables au livre), SR6 un nombre.
         const k = Array.isArray(ref.karma) ? ref.karma : [ref.karma];
         const borne = k.length > 1 ? `${k[0]} ${ref.variable === "ou" ? "ou" : "à"} ${k[1]}` : `${k[0]}`;
+        const inf = c.infecteById ? c.infecteById(t.id) : null;
         return `<div class="cluster cg-list-row">
           <span class="cg-pick-name">${this._esc(ref.nom)}</span>
-          <span class="tag">${ref.type === "avantage" ? "avantage" : "défaut"}</span>
-          <input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? k[0]}" style="width:4.5em" title="Karma retenu">
-          <span class="cg-section-note">karma (livre : ${this._esc(borne)})${ref.parNiveau ? " par niveau" : ""}</span>
+          <span class="tag">${inf ? `Infecté · ${this._esc(inf.virus || "VVHMH")}` : ref.type === "avantage" ? "avantage" : "défaut"}</span>
+          ${inf
+            ? `<span class="cg-section-note">${c.infecteKarma(b, inf)} karma${c.infecteKarma(b, inf) !== inf.karma ? ` (livre : ${inf.karma})` : ""} — hors du plafond des avantages</span>`
+            : `<input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? k[0]}" style="width:4.5em" title="Karma retenu">
+          <span class="cg-section-note">karma (livre : ${this._esc(borne)})${ref.parNiveau ? " par niveau" : ""}</span>`}
           <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>
         </div>`;
       })
@@ -904,6 +911,7 @@ export const CharGen = {
         <span class="cg-section-note">${c.traitSummary(b).map((m) => this._kitMeter(m.used, m.total, m.label)).join(" · ")} · net ${tr.net >= 0 ? "+" : ""}${tr.net} karma</span>
       </div>
       ${rows || '<p class="cg-hint">Aucun trait.</p>'}
+      ${c.infecteFields && c.infecteFields(b).length ? `<div class="cg-form-grid">${c.infecteFields(b).map((f) => this._fieldHtml(f, b)).join("")}</div>` : ""}
       ${this._catalogPicker({
         id: "traits",
         groups: c.traitCatalog(),

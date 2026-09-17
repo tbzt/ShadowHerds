@@ -37,6 +37,7 @@ import { Magic } from "../rules/magic.js";
 import { EditionSR5 } from "./sr5.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { TraitsSR5 } from "./sr5.traits.js";
+import { InfectesSR5 } from "./sr5.infectes.js";
 import { Metavariants } from "../rules/metavariants.js";
 import { BonusEngine } from "../rules/bonusengine.js";
 import { Implants } from "../rules/implants.js";
@@ -423,6 +424,108 @@ Object.assign(EditionSR5, {
     /** Indices de départ du métatype — LUS SUR `EditionSR5.attrRange`, la
         table du livre p.68 déjà présente dans l'app (vérifiée cellule par
         cellule le 2026-09-09). Une seule source, jamais deux. */
+    /** Les bornes d'un attribut POUR CE BROUILLON : celles du métatype, ou
+        celles de l'Infecté (Run Faster p.105 — « les nouveaux minimums et
+        maximums du personnage ») pour les huit attributs ; la Chance reste
+        celle de l'hôte. */
+    _rangeFor(build, key) {
+      const inf = this.infecteOf(build);
+      if (inf && key !== "CHC") {
+        const plages = inf.attrs[this._infecteHote(build)] || inf.attrs["*"];
+        if (plages && plages[key]) return plages[key];
+      }
+      return this._range(build.meta, key);
+    },
+
+    /* ============================================================
+       INFECTÉS — Run Faster p.103-111. Le trait se prend à l'étape Traits
+       (« Goule », « Vampire »…, sr5.traits.js) ; c'est lui qui fait l'Infecté.
+       Ce qu'il change : le coût (variantes Éveillé / non-humain, hors plafond
+       des 25 karma d'avantages, p.103), l'hôte autorisé, les bornes
+       d'attributs (p.105), +2 aux attributs physiques et +2 aux mentaux de la
+       liste du type (p.104), le choix gratuit d'un pouvoir, l'Essence et la
+       Magie selon la souche (p.110-111). Les pouvoirs optionnels s'achètent
+       EN JEU, jamais à la création (p.105).
+       ============================================================ */
+    infecteById(id) {
+      return InfectesSR5.find((i) => i.traitId === id || i.id === id) || null;
+    },
+
+    /** Le type d'Infecté du brouillon (le premier trait d'Infecté), ou null. */
+    infecteOf(build) {
+      for (const t of build.traits || []) {
+        const inf = this.infecteById(t && t.id);
+        if (inf) return inf;
+      }
+      return null;
+    },
+
+    /** Le métatype hôte, tel que la table p.105 le nomme (souche d'une
+        métavariante ; « Sasquatch » pour le Bandersnatch). */
+    _infecteHote(build) {
+      const m = build.meta;
+      if (this.METACONSCIENCES.includes(m)) return m;
+      return Metavariants.use("sr5").baseMetatype(m) || m;
+    },
+
+    /** Le karma du trait d'Infecté pour CE brouillon : la variante « déjà
+        Éveillé » (Mutaqua, Nosferatu, Wendigo) ou « non-humain » (Vampire). */
+    infecteKarma(build, inf) {
+      inf = inf || this.infecteOf(build);
+      if (!inf) return 0;
+      if (inf.karmaEveille != null && this.magicProfile(build)) return inf.karmaEveille;
+      if (inf.karmaNonHumain != null && this._infecteHote(build) !== "Humain") return inf.karmaNonHumain;
+      return inf.karma;
+    },
+
+    /** Les +2 physiques / +2 mentaux (p.104) posés par le joueur, un point
+        par champ : `build.infecte = { phys1, phys2, ment1, ment2, gratuit }`
+        (« +1 à deux Attributs ou +2 à un » = le même attribut deux fois).
+        Rend { K: n }. */
+    INFECTE_SLOTS: ["phys1", "phys2", "ment1", "ment2"],
+    infecteBonus(build) {
+      const out = {};
+      const b = build.infecte || {};
+      for (const slot of this.INFECTE_SLOTS) if (b[slot]) out[b[slot]] = (out[b[slot]] || 0) + 1;
+      return out;
+    },
+
+    /** Les champs de l'étape Traits propres à un Infecté : où poser les +2/+2
+        (sur la liste du type seulement), le pouvoir offert, et la note. */
+    infecteFields(build) {
+      const inf = this.infecteOf(build);
+      if (!inf) return [];
+      const fields = [];
+      const hote = this._infecteHote(build);
+      const souches = inf.souches ? inf.souches.join(", ") : "tous les métatypes";
+      fields.push({
+        path: "_infecteNote",
+        type: "note",
+        label: `${inf.nom} (${inf.virus || "VVHMH"}) : ${this.infecteKarma(build, inf)} karma, hors du plafond des avantages. Hôtes : ${souches}. Les bornes d'attributs deviennent celles du type ; +2 à répartir sur ${inf.physiques.join(", ")} et +2 sur ${inf.mentaux.join(", ")}.`,
+      });
+      const pts = (grp, liste) => {
+        for (let i = 1; i <= 2; i++) {
+          fields.push({
+            path: `infecte.${grp}${i}`,
+            label: `${grp === "phys" ? "Attribut physique" : "Attribut mental"} +1 (${i}/2)`,
+            type: "select",
+            options: [{ value: "", label: "— à poser —" }, ...liste.map((k) => ({ value: k, label: `${Utils.attrFullName ? Utils.attrFullName(k) : k} (${k})` }))],
+          });
+        }
+      };
+      pts("phys", inf.physiques);
+      pts("ment", inf.mentaux);
+      if (inf.gratuitChoix && inf.gratuitChoix.length) {
+        fields.push({
+          path: "infecte.gratuit",
+          label: "Pouvoir offert (un seul)",
+          type: "select",
+          options: [{ value: "", label: "— à choisir —" }, ...inf.gratuitChoix.map((p) => ({ value: p, label: p }))],
+        });
+      }
+      return fields;
+    },
+
     _range(meta, key) {
       const base = EditionSR5.attrRange[meta];
       if (base) return base[key] || [1, 6];
@@ -490,7 +593,7 @@ Object.assign(EditionSR5, {
       const forme = this.ZOO_FORMES[build.zooForm] ? build.zooForm : "Humain";
       const out = {};
       for (const k of this.ATTRS) {
-        const [aMin] = this._range(build.meta, k);
+        const [aMin] = this._rangeFor(build, k);
         const [fMin, fMax] = this._range(forme, k);
         const points = Math.max(0, ((build.attrs || {})[k] ?? aMin) - aMin);
         out[k] = Math.min(fMax, fMin + points);
@@ -551,7 +654,7 @@ Object.assign(EditionSR5, {
     attrPointsUsed(build) {
       const achete = this.karmaBought(build).attrs;
       return this.ATTRS.reduce((sum, k) => {
-        const [min] = this._range(build.meta, k);
+        const [min] = this._rangeFor(build, k);
         const val = (build.attrs || {})[k];
         const brut = Math.max(0, (val == null ? min : val) - min);
         return sum + Math.max(0, brut - (achete[k] || 0));
@@ -560,7 +663,7 @@ Object.assign(EditionSR5, {
 
     /** Chance part de la valeur du métatype ; Magie et Résonance de 0 (p.67). */
     specialPointsUsed(build) {
-      const [chcMin] = this._range(build.meta, "CHC");
+      const [chcMin] = this._rangeFor(build, "CHC");
       const sp = build.special || {};
       const chc = Math.max(0, (sp.CHC == null ? chcMin : sp.CHC) - chcMin);
       // Une métaconscience a une Magie naturelle de 1 (RF p.74) : ce point ne
@@ -585,7 +688,7 @@ Object.assign(EditionSR5, {
     /** Points de connaissances et langues offerts : (INT + LOG) × 2 (p.93). */
     knowledgePointsTotal(build) {
       const val = (k) => {
-        const [min] = this._range(build.meta, k);
+        const [min] = this._rangeFor(build, k);
         return (build.attrs || {})[k] ?? min;
       };
       return (val("INT") + val("LOG")) * 2;
@@ -1469,13 +1572,13 @@ Object.assign(EditionSR5, {
       sum += this.metaKarma(build);
       // Attributs : cumul de (nouvel indice × 5) depuis le minimum du métatype.
       for (const k of this.ATTRS) {
-        const [min] = this._range(build.meta, k);
+        const [min] = this._rangeFor(build, k);
         const val = (build.attrs || {})[k] ?? min;
         const depart = min + (offert.attrs[k] || 0);
         for (let i = depart + 1; i <= val; i++) sum += i * kc.attrMult;
       }
       for (const k of this.SPECIAL_ATTRS) {
-        const base = k === "CHC" ? this._range(build.meta, "CHC")[0] : 0;
+        const base = k === "CHC" ? this._rangeFor(build, "CHC")[0] : 0;
         const val = (build.special || {})[k] ?? base;
         for (let i = base + 1; i <= val; i++) sum += i * kc.attrMult;
       }
@@ -1511,11 +1614,16 @@ Object.assign(EditionSR5, {
 
     attrsStep(build) {
       const method = this.methods[build.method];
+      const infBonus = this.infecteBonus(build);
+      const infNom = this.infecteOf(build)?.nom;
       const specs = this.ATTRS.map((key) => {
-        const [min, max] = this._range(build.meta, key);
-        return { key, min, max };
+        const [min, max] = this._rangeFor(build, key);
+        // Infecté : les bornes sont celles du type (RF p.105) et le +1/+2 posé
+        // à l'étape Traits s'ajoute au-dessus des points répartis ici.
+        const note = infBonus[key] ? `${infNom} +${infBonus[key]} → ${((build.attrs || {})[key] ?? min) + infBonus[key]}` : undefined;
+        return { key, min, max, ...(note ? { note } : {}) };
       });
-      const [chcMin, chcMax] = this._range(build.meta, "CHC");
+      const [chcMin, chcMax] = this._rangeFor(build, "CHC");
       // `path` : les attributs spéciaux vivent dans `build.special`, pas dans
       // `build.attrs` — le contrôleur suit le chemin déclaré ici.
       const specialSpecs = [
@@ -1524,8 +1632,8 @@ Object.assign(EditionSR5, {
         { key: "RES", path: "special.RES", min: 0, max: 6, note: "Résonance" },
       ];
       const atMax = this.ATTRS.filter((k) => {
-        const [, max] = this._range(build.meta, k);
-        return ((build.attrs || {})[k] ?? this._range(build.meta, k)[0]) >= max;
+        const [, max] = this._rangeFor(build, k);
+        return ((build.attrs || {})[k] ?? this._rangeFor(build, k)[0]) >= max;
       }).length;
 
       const isPriority = method?.family === "priority";
@@ -1600,7 +1708,7 @@ Object.assign(EditionSR5, {
     },
     /** Karma de contacts offert : Charisme × 3, ou × 6 au niveau élite (p.66). */
     contactKarmaTotal(build) {
-      const [chaMin] = this._range(build.meta, "CHA");
+      const [chaMin] = this._rangeFor(build, "CHA");
       const cha = (build.attrs || {}).CHA ?? chaMin;
       return cha * (this.gameLevels[build.gameLevel]?.contactMult || 3);
     },
@@ -1659,6 +1767,9 @@ Object.assign(EditionSR5, {
     traitCatalog() {
       const par = { avantage: [], defaut: [] };
       for (const t of TraitsSR5) {
+        // Les 14 traits d'Infectés ont leur propre relevé (sr5.infectes.js, avec
+        // coûts variants, hôtes, bornes) : listés dans leur catégorie, pas ici.
+        if (this.infecteById(t.id)) continue;
         const k = t.karma.length > 1
           ? `${t.karma[0]} ${t.variable === "ou" ? "ou" : "à"} ${t.karma[1]}`
           : `${t.karma[0]}`;
@@ -1672,10 +1783,28 @@ Object.assign(EditionSR5, {
       return [
         { category: "Avantages (coûtent du karma)", items: par.avantage },
         { category: "Défauts (en rendent)", items: par.defaut },
+        /* Run Faster p.103-111 : le trait d'Infecté se prend ici, « au moment de
+           la sélection des traits » ; son coût varie (déjà Éveillé,
+           non-humain) et échappe au plafond des 25. */
+        {
+          category: "Infectés (Run Faster) — hors du plafond des avantages",
+          items: InfectesSR5.map((i) => ({
+            id: i.traitId,
+            label: i.nom,
+            detail: `${i.karma} karma${i.karmaEveille != null ? ` (${i.karmaEveille} si déjà Éveillé)` : ""}${i.karmaNonHumain != null ? ` (${i.karmaNonHumain} pour un non-humain)` : ""} · ${i.virus || "VVHMH"} · ${i.souches ? i.souches.join(", ") : "tous les métatypes"} — ${i.pouvoirs.slice(0, 3).join(", ")}…`,
+          })),
+        },
       ];
     },
 
+    /** Un trait du relevé général, ou l'un des 14 traits d'Infectés (huit
+        d'entre eux manquent à sr5.traits.js — Bandersnatch, Banshee,
+        Dzoo-noo-qua, Fomóraig, Gobelin, Rongeur, Vampire, Wendigo — le relevé
+        géométrique n'a pas reconnu leur ligne de coût ; sr5.infectes.js fait
+        foi pour les 14). */
     traitById(id) {
+      const inf = this.infecteById(id);
+      if (inf) return { id: inf.traitId, nom: inf.nom, type: "avantage", karma: [inf.karma], source: inf.source, desc: inf.pouvoirs.join(", "), infecte: true };
       return TraitsSR5.find((t) => t.id === id) || null;
     },
 
@@ -1697,15 +1826,25 @@ Object.assign(EditionSR5, {
       return [
         { label: "avantages", used: t.coutAvantages, total: t.cap },
         { label: "défauts", used: t.bonusDefauts, total: t.cap },
+        ...(t.coutInfecte ? [{ label: "Infecté (hors plafond)", used: t.coutInfecte, total: null }] : []),
       ];
     },
 
     traitState(build) {
       let coutAvantages = 0;
       let bonusDefauts = 0;
+      let coutInfecte = 0;
+      const inf = this.infecteOf(build);
       for (const t of build.traits || []) {
         const ref = this.traitById(t.id);
         if (!ref) continue;
+        // Le trait d'Infecté : son coût vient du type et du brouillon (déjà
+        // Éveillé, non-humain), et « le maximum habituel de 25 points de
+        // Karma d'avantages ne s'applique pas » (RF p.103) — compté à part.
+        if (inf && this.infecteById(t.id) === inf) {
+          coutInfecte += this.infecteKarma(build, inf);
+          continue;
+        }
         const k = Number(t.karma) || ref.karma[0] || 0;
         if (ref.type === "avantage") coutAvantages += k;
         else bonusDefauts += k;
@@ -1713,7 +1852,8 @@ Object.assign(EditionSR5, {
       return {
         coutAvantages,
         bonusDefauts,
-        net: coutAvantages - bonusDefauts,
+        coutInfecte,
+        net: coutAvantages + coutInfecte - bonusDefauts,
         cap: this.QUALITY_CAP,
       };
     },
@@ -2376,11 +2516,11 @@ Object.assign(EditionSR5, {
     /** Les attributs spéciaux vivent dans `build.special`, pas `build.attrs`. */
     attrRangeFor(build, key) {
       if (this.SPECIAL_ATTRS.includes(key)) {
-        if (key === "CHC") return this._range(build.meta, "CHC");
+        if (key === "CHC") return this._rangeFor(build, "CHC");
         if (key === "MAG" && (this.METACONSCIENCES.includes(build.meta) || this.isZoo(build.meta))) return [1, 6];
         return [0, 6];
       }
-      return this._range(build.meta, key);
+      return this._rangeFor(build, key);
     },
 
     /** Catalogue de compétences actives : source unique `SkillCatalog.sr5`. */
@@ -2818,7 +2958,7 @@ Object.assign(EditionSR5, {
 
       // Règles communes aux deux familles (checklist p.102).
       for (const k of this.ATTRS) {
-        const [min, max] = this._range(build.meta, k);
+        const [min, max] = this._rangeFor(build, k);
         const val = (build.attrs || {})[k];
         // Un brouillon corrompu (`NaN`) traversait la validation : `NaN < min`
         // est faux. Cf. sr6.creation.js.
@@ -2829,7 +2969,7 @@ Object.assign(EditionSR5, {
         }
       }
       const auMax = this.ATTRS.filter((k) => {
-        const [min, max] = this._range(build.meta, k);
+        const [min, max] = this._rangeFor(build, k);
         return ((build.attrs || {})[k] ?? min) >= max;
       });
       if (auMax.length > 1) {
@@ -2931,6 +3071,31 @@ Object.assign(EditionSR5, {
       if (tr.coutAvantages > tr.cap) {
         out.traits.push(`Au plus ${tr.cap} karma d'Avantages à la création (${tr.coutAvantages}).`);
       }
+      // Infecté (Run Faster p.103-105) : un seul type, l'hôte autorisé, les
+      // +2/+2 posés sur la liste du type, le pouvoir offert choisi.
+      const infs = (build.traits || []).map((t) => this.infecteById(t && t.id)).filter(Boolean);
+      if (infs.length > 1) out.traits.push(`Un seul type d'Infecté (${infs.map((i) => i.nom).join(", ")}).`);
+      const inf = this.infecteOf(build);
+      if (inf) {
+        const hote = this._infecteHote(build);
+        if (inf.souches && !inf.souches.includes(hote) && inf.karmaNonHumain == null) {
+          out.traits.push(`${inf.nom} : réservé aux ${inf.souches.join(" / ").toLowerCase()}s — ${build.meta} est ${hote.toLowerCase()}.`);
+        }
+        const b = build.infecte || {};
+        for (const slot of ["phys1", "phys2"]) if (b[slot] && !inf.physiques.includes(b[slot])) out.traits.push(`${inf.nom} : ${b[slot]} n'est pas un attribut physique amélioré par ce type (${inf.physiques.join(", ")}).`);
+        for (const slot of ["ment1", "ment2"]) if (b[slot] && !inf.mentaux.includes(b[slot])) out.traits.push(`${inf.nom} : ${b[slot]} n'est pas un attribut mental amélioré par ce type (${inf.mentaux.join(", ")}).`);
+        const posesP = ["phys1", "phys2"].filter((k) => b[k]).length;
+        const posesM = ["ment1", "ment2"].filter((k) => b[k]).length;
+        if (posesP < 2 || posesM < 2) out.traits.push(`${inf.nom} : pose les +2 physiques (${posesP}/2) et les +2 mentaux (${posesM}/2).`);
+        if (inf.gratuitChoix && inf.gratuitChoix.length && !b.gratuit) out.traits.push(`${inf.nom} : choisis le pouvoir offert.`);
+        // Les bonus ne dépassent pas les nouveaux maximums (p.105).
+        const bonus = this.infecteBonus(build);
+        for (const [k, n] of Object.entries(bonus)) {
+          const [, max] = this._rangeFor(build, k);
+          const v = ((build.attrs || {})[k] ?? this._rangeFor(build, k)[0]) + n;
+          if (v > max) out.traits.push(`${inf.nom} : ${k} ${v} dépasse le maximum ${max} du type — baisse l'attribut ou pose le point ailleurs.`);
+        }
+      }
       if (tr.bonusDefauts > tr.cap) {
         out.traits.push(`Au plus ${tr.cap} karma de Défauts à la création (${tr.bonusDefauts}).`);
       }
@@ -2985,16 +3150,49 @@ Object.assign(EditionSR5, {
     buildCharacter(build) {
       const attrs = {};
       for (const k of this.ATTRS) {
-        const [min] = this._range(build.meta, k);
+        const [min] = this._rangeFor(build, k);
         attrs[k] = (build.attrs || {})[k] ?? min;
       }
       const sp = build.special || {};
-      attrs.CHC = sp.CHC ?? this._range(build.meta, "CHC")[0];
+      attrs.CHC = sp.CHC ?? this._rangeFor(build, "CHC")[0];
       if (sp.MAG) attrs.MAG = sp.MAG;
       if (sp.RES) attrs.RES = sp.RES;
       // L'Essence perdue aux implants (à leur gamme) ; `recalc` en tire la
       // pénalité de Magie/Résonance. Elle valait 6 quel que soit le chrome.
       attrs.ESS = Math.max(0, Math.round((this.ESSENCE_MAX - this.essenceUsed(build).total) * 100) / 100);
+      /* Infecté (Run Faster p.104, p.110-111) : les +2/+2 posés ; souches II
+         et III « commencent avec une Essence diminuée de 1 […] et une Magie de
+         1, à moins qu'ils n'aient été magiquement actifs » (alors Magie −1) ;
+         souche I : la Magie plafonne à l'Essence. Nosferatu et Wendigo
+         « s'Éveillent en tant que magiciens s'ils n'étaient pas déjà Éveillés ». */
+      const inf = this.infecteOf(build);
+      const infBonus = this.infecteBonus(build);
+      for (const [k, n] of Object.entries(infBonus)) attrs[k] = (attrs[k] ?? 0) + n;
+      let infNotes = [];
+      if (inf) {
+        const eveille = !!this.magicProfile(build);
+        /* `recalc` retire à la Magie l'Essence perdue (⌈6 − ESS⌉, p.280) : pour
+           un Éveillé de souche II/III c'est exactement « Magie −1, l'Essence
+           perdue ayant l'effet normal » ; pour un non-Éveillé le livre POSE
+           « une Magie de 1 » — on donne la base qui laisse 1 après la pénalité. */
+        const penalite = () => Math.ceil(Math.max(0, this.ESSENCE_MAX - attrs.ESS));
+        if (/VVHMH II\b|VVHMH III/.test(inf.virus || "")) {
+          attrs.ESS = Math.max(0, Math.round((attrs.ESS - 1) * 100) / 100);
+          if (eveille) {
+            infNotes.push("Essence −1 à l'infection, et la Magie avec (souche II/III)");
+          } else {
+            attrs.MAG = 1 + penalite();
+            infNotes.push("Essence −1 à l'infection ; Magie 1 (souche II/III), sans être Éveillé");
+          }
+        } else if (attrs.MAG && attrs.MAG - penalite() > Math.floor(attrs.ESS)) {
+          attrs.MAG = Math.floor(attrs.ESS) + penalite();
+          infNotes.push(`Magie plafonnée à l'Essence (${Math.floor(attrs.ESS)}) — souche I`);
+        }
+        if (inf.eveilImpose && !eveille) {
+          attrs.MAG = attrs.MAG || 1 + penalite();
+          infNotes.push(`s'Éveille en ${inf.eveilImpose} à l'infection (Magie ${attrs.MAG - penalite()}) — tradition, sorts et Drain à compléter`);
+        }
+      }
 
       const skills = (build.skills || []).map((s) => {
         const specs = s.specs || [];
@@ -3020,7 +3218,7 @@ Object.assign(EditionSR5, {
          `recalc` (Technodrain), le persona vivant et l'en-tête de carte. */
       const profil = this.magicProfile(build);
       const SPECIAL = { technomancien: "Technomancien", adepte: "Adepte", magicien: "Magicien", specialise: "Magicien spécialisé", mystique: "Adepte mystique" };
-      const special = profil ? SPECIAL[profil.key] || null : null;
+      const special = profil ? SPECIAL[profil.key] || null : inf && inf.eveilImpose ? "Magicien" : null;
       const armure = this.armorWorn(build);
       /* La fiche parle la langue du générateur : `meta` est la SOUCHE,
          `metavariant` la variante, `metaTraits` ses traits raciaux — la
@@ -3094,8 +3292,21 @@ Object.assign(EditionSR5, {
         powers: build.adeptPowers || [],
         traits: (build.traits || []).map((t) => {
           const ref = this.traitById(t.id);
+          // le trait d'Infecté à son coût réel (variante Éveillé / non-humain)
+          if (inf && this.infecteById(t.id) === inf) return `${ref.nom} (${this.infecteKarma(build, inf)})`;
           return ref ? `${ref.nom} (${t.karma ?? ref.karma[0]})` : t.id;
         }),
+        /* Infecté (RF p.106-111), dans la langue du générateur de PNJ
+           (`infected`, `infectedPowers`, `infectedWeaknesses` — la carte les
+           lit déjà) : les pouvoirs acquis + le pouvoir offert, les faiblesses ;
+           l'Essence/Magie de la souche et les notes du livre vont dans `notes`.
+           Les pouvoirs OPTIONNELS s'achètent en jeu (p.105) : listés pour
+           mémoire dans les notes, pas comme pouvoirs. */
+        ...(inf ? {
+          infected: `${inf.nom} · ${inf.virus || "VVHMH"}`,
+          infectedPowers: [...inf.pouvoirs, ...((build.infecte || {}).gratuit ? [`${build.infecte.gratuit} (offert)`] : [])],
+          infectedWeaknesses: inf.faiblesses,
+        } : {}),
         /* ⚠ Les accessoires choisis restaient dans le brouillon : la fiche ne
            recevait que le nom de l'objet. Ils voyagent maintenant avec lui,
            en clair — « Ares Predator V (Lunette de visée, Silencieux) ». */
@@ -3157,7 +3368,14 @@ Object.assign(EditionSR5, {
         // Dés d'initiative de la forme animale d'un zoocanthrope (p.77) ; 1 sinon.
         initDice: mv && mv.init ? parseInt(mv.init, 10) || 1 : 1,
         contacts: build.contacts || [],
-        notes: build.notes || "",
+        notes: [
+          build.notes || "",
+          ...(inf ? [
+            infNotes.length ? `${inf.nom} : ${infNotes.join(" ; ")}.` : "",
+            inf.optionnels.length ? `Pouvoirs optionnels (à acheter en jeu, RF p.105-106) : ${inf.optionnels.join(", ")}.` : "",
+            inf.notes || "",
+          ] : []),
+        ].filter(Boolean).join("\n"),
       };
       /* ⚠ La fiche d'un PJ n'avait NI initiative, NI limites, NI défense :
          `generate()` les calcule pour un PNJ, et rien ne les posait ici.
