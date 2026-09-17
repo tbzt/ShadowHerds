@@ -966,6 +966,28 @@ Object.assign(EditionSR6, {
       return PrixCatalogue.defaults(ref);
     },
 
+    /** Ce que les tables du livre disent d'un objet nommé AVANT qu'on le
+        choisisse — même contrat que sr5.creation.js : une source pour le
+        catalogue affiché et pour l'objet posé (`gearFromCatalog`). */
+    _catalogDefaults(name, kind) {
+      const out = {};
+      if (this.isImplant({ kind })) {
+        const d = this.implantDefaults(name);
+        if (!d) return out;
+        if (d.essenceBase != null) out.essence = d.essenceBase;
+        if (d.cost != null) out.cost = d.cost;
+        if (d.availability != null) out.availability = d.availability;
+        return out;
+      }
+      const d = this.gearDefaults(name);
+      if (!d) return out;
+      if (d.cost != null) out.cost = d.cost;
+      else if (d.costNote) out.costNote = d.costNote;
+      if (d.availability != null) out.availability = d.availability;
+      if (d.dispoText) out.dispoText = d.dispoText;
+      return out;
+    },
+
     implantDefaults(name, rating) {
       if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR6);
       return Implants.defaults(this._implantIdx, name, rating);
@@ -1782,7 +1804,46 @@ Object.assign(EditionSR6, {
          l'objet, sans famille, se voyait offrir les mods des trois familles.
          Même motif que `gearCatalog` en septembre : l'accesseur était là,
          l'écran l'ignorait. */
-      return [...objets, ...this._tableImplantGroup(objets), ...this._vehicleGroups()];
+      return this._shelveCatalog([...objets, ...this._tableImplantGroup(objets), ...this._vehicleGroups()]);
+    },
+
+    /** Le rayon d'un groupe du catalogue, par clé de pool (cf. sr5.creation.js).
+        Une clé absente va en « Divers ». */
+    GEAR_SHELVES: {
+      tasers: "Armes", pistoletsPoche: "Armes", pistoletsLegers: "Armes", pistoletsAutomatiques: "Armes",
+      pistoletsLourds: "Armes", mitraillettes: "Armes", shotguns: "Armes", fusils: "Armes", snipersLourds: "Armes",
+      armesSpeciales: "Armes", armesSupplement: "Armes", meleeWeapons: "Armes", armesTrait: "Armes", armesJet: "Armes",
+      grenades: "Armes", roquettes: "Armes", explosifs: "Armes",
+      armures: "Armures",
+      cyberware: "Augmentations", bioware: "Augmentations",
+      commlinks: "Électronique", cyberdecks: "Électronique", matrice: "Électronique",
+      vehicules: "Véhicules & drones", drones: "Véhicules & drones",
+    },
+
+    /** Range, chiffre et dédoublonne le catalogue (cf. sr5.creation.js).
+        ⚠ Une entrée = libellé ET ligne de stats : les armes de Feu nourri
+        reprennent des noms du livre de base avec d'autres lignes — deux
+        entrées, pas un doublon. */
+    _shelveCatalog(groupes) {
+      const vus = new Set();
+      const ordre = ["Armes", "Armures", "Augmentations", "Électronique", "Véhicules & drones", "Divers"];
+      return groupes
+        .map((g) => {
+          const kind = g.items[0] && g.items[0].kind;
+          const items = g.items
+            .filter((it) => {
+              const k = `${it.label}|${it.detail || ""}`.toLowerCase();
+              if (vus.has(k)) return false;
+              vus.add(k);
+              return true;
+            })
+            .map((it) => ({ ...it, ...this._catalogDefaults(it.label, it.kind) }));
+          return { ...g, shelf: this.GEAR_SHELVES[kind] || "Divers", items };
+        })
+        .filter((g) => g.items.length)
+        // Les rayons dans l'ordre de l'usage (les armes d'abord), les groupes
+        // d'un même rayon dans l'ordre du livre.
+        .sort((a, b) => ordre.indexOf(a.shelf) - ordre.indexOf(b.shelf));
     },
 
     /** Les augmentations que la table du livre connaît et que les rayons de
@@ -1877,28 +1938,14 @@ Object.assign(EditionSR6, {
       // besoin pour une augmentation (Essence, bonus).
       // `uid` : un implant logé désigne son hôte par lui (les index bougent).
       const item = { uid: Utils.uid(), name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
-      /* Un implant connu de la table du livre entre avec ses valeurs
-         standard — Essence, prix, Disponibilité — que la gamme modifie
-         ensuite. Ce que la table ne donne pas (formule sans indice, objet
-         d'un supplément) reste à saisir. */
-      if (this.isImplant(item)) {
-        const d = this.implantDefaults(name);
-        if (d) {
-          if (d.essenceBase != null) item.essenceBase = d.essenceBase;
-          if (d.cost != null) item.cost = d.cost;
-          if (d.availability != null) item.availability = d.availability;
-        }
-      } else {
-        /* Une arme ou une armure connue des tables du livre entre avec son
-           prix et sa Disponibilité ; un prix en formule reste à saisir, et
-           l'objet le dit (`costNote`). */
-        const d = this.gearDefaults(name);
-        if (d) {
-          if (d.cost != null) item.cost = d.cost;
-          else if (d.costNote) item.costNote = d.costNote;
-          if (d.availability != null) item.availability = d.availability;
-        }
-      }
+      /* Les valeurs standard du livre — Essence, prix, Disponibilité — que
+         la gamme d'un implant modifie ensuite ; un prix en formule est dit
+         (`costNote`). Même lecture que le catalogue affiché. */
+      const d = this._catalogDefaults(name, kind);
+      if (d.essence != null) item.essenceBase = d.essence;
+      if (d.cost != null) item.cost = d.cost;
+      if (d.costNote) item.costNote = d.costNote;
+      if (d.availability != null) item.availability = d.availability;
       const fam = this.gearFamily(item);
       if (fam === "armure") {
         const base = this.armorReserveFor({ name, detail });
@@ -1932,6 +1979,15 @@ Object.assign(EditionSR6, {
         availability: this.ILLEGAL_AVAILABILITY_CAP - 1,
         hint: `Pas de matériel illégal de Disponibilité ${this.ILLEGAL_AVAILABILITY_CAP} ou plus ; au plus ${this.CASH_MAX.toLocaleString("fr-FR")} ¥ de liquide à la fin.`,
       };
+    },
+
+    /** Cette Disponibilité passe-t-elle à la création ? Un seul prédicat pour
+        le catalogue (entrée barrée) et `stepErrors` (objet refusé), cf.
+        sr5.creation.js. La règle en place ne distingue pas encore le légal
+        de l'illégal : au-delà du plafond, tout est refusé. `null` = permise. */
+    availabilityAllowed(dispo) {
+      if (dispo == null) return true;
+      return Number(dispo) < this.ILLEGAL_AVAILABILITY_CAP;
     },
 
     /** Traduit un contact saisi dans l'assistant vers les champs qu'attend
@@ -2788,7 +2844,7 @@ Object.assign(EditionSR6, {
       for (const g of build.gear || []) {
         // Un implant porte la Disponibilité de sa gamme (standard + modificateur).
         const dispo = this.isImplant(g) ? this.implantState(g).availability : g.availability != null && g.availability !== "" ? Number(g.availability) : null;
-        if (dispo != null && dispo >= this.ILLEGAL_AVAILABILITY_CAP) {
+        if (!this.availabilityAllowed(dispo, build)) {
           out.gear.push(
             `${g.name} : Disponibilité ${dispo} — l'illégal de ${this.ILLEGAL_AVAILABILITY_CAP} ou plus est interdit à la création.`,
           );

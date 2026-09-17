@@ -1012,10 +1012,33 @@
   min-width: 0;
   min-height: 36px;
 }
-.cg-pick-cat-filter {
-  flex: 0 1 14em;
-  min-width: 0;
-  min-height: 36px;
+/* Les rayons : des puces qu'on voit toutes, à la place du <select> natif
+   de catégorie (CONTRIBUTING § Direction artistique). Une seule allumée. */
+.cg-pick-shelves {
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.cg-pick-shelf {
+  min-height: 30px;
+  padding: 3px 10px;
+  font-size: var(--fs-xs);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-base),
+    color var(--dur-base);
+}
+.cg-pick-shelf:hover {
+  border-color: var(--accent);
+}
+.cg-pick-shelf.is-on {
+  border-color: var(--accent);
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .cg-pick-list {
   max-height: 42vh;
@@ -1024,9 +1047,15 @@
   border-radius: var(--radius-sm);
   margin-top: 6px;
 }
+/* Une entrée : nom et catégorie sur la première ligne, la ligne de stats
+   du livre et ce qu'il en coûte (Essence · prix · Disp.) sur la seconde —
+   le prix se lit AVANT le choix, pas après, dans un champ à saisir. */
 .cg-pick-item {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name cat"
+    "detail meta";
   gap: 2px 10px;
   width: 100%;
   min-height: 44px;
@@ -1046,20 +1075,46 @@
   opacity: 0.6;
 }
 .cg-pick-name {
+  grid-area: name;
   font-weight: 600;
 }
 .cg-pick-cat {
-  grid-row: 1;
-  grid-column: 2;
+  grid-area: cat;
   font-size: var(--fs-2xs);
   color: var(--accent2);
   white-space: nowrap;
 }
 .cg-pick-detail {
-  grid-column: 1 / -1;
+  grid-area: detail;
   font-size: var(--fs-xs);
   color: var(--text-dim, inherit);
   opacity: 0.8;
+}
+.cg-pick-meta {
+  grid-area: meta;
+  align-self: end;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text);
+}
+/* Hors Disponibilité de création : visible, barrée, inerte — l'absence doit
+   se lire (cf. la grille de priorités), pas disparaître. */
+.cg-pick-item.is-out {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.cg-pick-item.is-out .cg-pick-name {
+  text-decoration: line-through;
+}
+/* Au-delà des nuyens restants : on peut, mais on le voit venir. */
+.cg-pick-item.is-dear .cg-pick-meta {
+  color: var(--warning);
+}
+/* Cellule de budget sous 10 % : le reste passe à l'ambre, pas au rouge. */
+.cg-budget-cell.is-low em {
+  color: var(--warning);
 }
 .cg-pick-chosen {
   display: flex;

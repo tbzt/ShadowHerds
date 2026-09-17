@@ -343,12 +343,16 @@ export const CharGen = {
       const courante = (this._stepAt(this._step) || {}).id;
       const liees = cells.some((c) => c.step === courante);
       html += `<div class="cluster cg-budget-row cg-budget-cats${liees ? " has-current" : ""}">${cells
-        .map(
-          (c) =>
-            // `total: null` = compteur sans plafond (« 3 modules »), pas un
-            // budget : afficher « 3/null » serait pire que rien.
-            `<span class="cg-budget-cell${c.total != null && c.used > c.total ? " over" : ""}${c.step === courante ? " is-current" : ""}">${this._esc(c.label)} <strong>${c.used}</strong>${c.total != null ? `/${c.total}` : ""}${c.step === courante && c.total != null && c.total - c.used > 0 ? ` <em>reste ${c.total - c.used}</em>` : ""}</span>`,
-        )
+        .map((c) => {
+          // `total: null` = compteur sans plafond (« 3 modules »), pas un
+          // budget : afficher « 3/null » serait pire que rien.
+          const over = c.total != null && c.used > c.total;
+          const reste = c.total != null ? c.total - c.used : null;
+          // Le reste se lit toujours, et passe à l'ambre sous 10 % : on voit
+          // venir la fin du budget, on ne la découvre pas en rouge.
+          const bas = reste != null && reste >= 0 && c.total > 0 && reste < c.total * 0.1;
+          return `<span class="cg-budget-cell${over ? " over" : ""}${c.step === courante ? " is-current" : ""}${bas ? " is-low" : ""}">${this._esc(c.label)} <strong>${c.used}</strong>${c.total != null ? `/${c.total}` : ""}${reste != null && reste > 0 ? ` <em>reste ${reste}</em>` : ""}</span>`;
+        })
         .join("")}</div>`;
     }
     el.innerHTML = html;
@@ -363,7 +367,9 @@ export const CharGen = {
     // l'orientation que le rail par groupes ne donne plus à lui seul.
     const groupe = this._groups().find((g) => g.steps.some((s) => s.idx === this._step));
     const pos = groupe ? groupe.steps.findIndex((s) => s.idx === this._step) + 1 : 0;
-    const compte = groupe && groupe.steps.length > 1 ? `${groupe.label} · ${pos}/${groupe.steps.length}` : groupe ? groupe.label : "";
+    // Un temps d'une seule étape qui porte son nom (Équipement) ne se
+    // répète pas au-dessus de lui-même.
+    const compte = groupe && groupe.steps.length > 1 ? `${groupe.label} · ${pos}/${groupe.steps.length}` : groupe && groupe.label !== step.label ? groupe.label : "";
     const titre = `<h3 class="cg-step-title" tabindex="-1"><span class="cg-step-count">${this._esc(compte)}</span>${this._esc(step.label)}</h3>`;
     el.innerHTML = this._resumeBanner() + titre + this[`_render_${step.kind}`].call(this);
     if (step.kind === "review") this._mountReview();
@@ -1175,33 +1181,63 @@ export const CharGen = {
 
       `action` reçoit `data-name` (et `data-cat`) ; à l'appelant de décider ce
       qu'il en fait — ajouter à une liste, cocher, remplacer. */
-  _catalogPicker({ id, groups, action, selected, vide }) {
+  /* Le sélecteur de catalogue. `limits` (optionnel, étape Équipement) :
+       `allowed(it)` — l'entrée passe-t-elle la Disponibilité de création ?
+                       Sinon elle se lit barrée et ne se choisit pas.
+       `nuyenLeft`   — ce qui reste à dépenser ; au-delà, l'entrée passe à
+                       l'ambre mais reste choisissable : c'est la Révision
+                       qui refuse un budget dépassé, pas le catalogue.
+     Les rayons (`shelf`, posés par le module) remplacent le <select> natif
+     de catégorie : six puces qu'on voit, pas vingt-trois options qu'on
+     déroule. Un catalogue sans rayon (traits, sorts) prend ses catégories
+     pour puces, s'il en a peu. */
+  _catalogPicker({ id, groups, action, selected, vide, limits }) {
     const sel = new Set(selected || []);
-    const cats = (groups || []).map((g) => g.category);
+    const fmt = (v) => Number(v).toLocaleString("fr-FR");
     let n = 0;
     const items = (groups || [])
       .flatMap((g) =>
         (g.items || []).map((it) => {
           n++;
           const dejaPris = sel.has(it.label);
-          return `<button class="cg-pick-item${dejaPris ? " pris" : ""}" data-cg-action="${this._esc(action)}"
-            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}
+          const rayon = g.shelf || g.category;
+          const hors = !!(limits && limits.allowed && !limits.allowed(it));
+          const cher = !hors && !!(limits && limits.nuyenLeft != null && it.cost != null && it.cost > limits.nuyenLeft);
+          /* Ce que le livre dit avant le choix : Essence, prix (ou sa
+             formule), Disponibilité (texte du livre, « 12R », sinon nombre). */
+          const dispo = it.dispoText || (it.availability != null ? String(it.availability) : "");
+          const meta = [
+            it.essence != null ? `Ess. ${fmt(it.essence)}` : "",
+            it.cost != null ? `${fmt(it.cost)} ¥` : it.costNote || "",
+            dispo ? `Disp. ${dispo}` : "",
+          ].filter(Boolean).join(" · ");
+          const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? "Au-delà des nuyens restants" : "";
+          return `<button class="cg-pick-item${dejaPris ? " pris" : ""}${hors ? " is-out" : ""}${cher ? " is-dear" : ""}" data-cg-action="${this._esc(action)}"
+            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}" data-shelf="${this._esc(rayon)}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}
+            ${hors ? 'aria-disabled="true"' : ""}${titre ? ` title="${this._esc(titre)}"` : ""}
             data-hay="${this._esc(`${it.label} ${it.detail || ""} ${g.category}`.toLowerCase())}">
             <span class="cg-pick-name">${dejaPris ? "✓ " : ""}${this._esc(it.label)}</span>
-            ${it.detail ? `<span class="cg-pick-detail">${this._esc(it.detail)}</span>` : ""}
             <span class="cg-pick-cat">${this._esc(g.category)}</span>
+            ${it.detail ? `<span class="cg-pick-detail">${this._esc(it.detail)}</span>` : ""}
+            ${meta ? `<span class="cg-pick-meta">${this._esc(meta)}</span>` : ""}
           </button>`;
         }),
       )
       .join("");
+    // Les puces de rayon : dans l'ordre du catalogue, seulement s'il y a un
+    // choix à faire et qu'il se lit d'un coup (au-delà, c'est la recherche).
+    const rayons = [...new Set((groups || []).map((g) => g.shelf || g.category))];
+    const puces = rayons.length >= 2 && rayons.length <= 8
+      ? `<div class="cluster cg-pick-shelves">
+          <button type="button" class="cg-pick-shelf is-on" data-pick-shelf="${this._esc(id)}" data-shelf="" aria-pressed="true">Tout</button>
+          ${rayons.map((r) => `<button type="button" class="cg-pick-shelf" data-pick-shelf="${this._esc(id)}" data-shelf="${this._esc(r)}" aria-pressed="false">${this._esc(r)}</button>`).join("")}
+        </div>`
+      : "";
 
     return `<div class="cg-pick" data-pick="${this._esc(id)}">
+      ${puces}
       <div class="cluster cg-pick-bar">
         <input type="search" class="cg-pick-search" data-pick-search="${this._esc(id)}" placeholder="Chercher parmi ${n}…" autocomplete="off">
-        <select class="cg-pick-cat-filter" data-pick-cat="${this._esc(id)}">
-          <option value="">Toutes les catégories</option>
-          ${cats.map((cat) => `<option value="${this._esc(cat)}">${this._esc(cat)}</option>`).join("")}
-        </select>
       </div>
       <div class="cg-pick-list">${items || `<p class="cg-hint">${this._esc(vide || "Catalogue vide.")}</p>`}</div>
       <p class="cg-hint cg-pick-empty" hidden>Aucun résultat.</p>
@@ -1308,6 +1344,12 @@ export const CharGen = {
         groups: c.gearCatalog() || [],
         action: "pick-gear",
         selected: (b.gear || []).map((g) => g.name),
+        limits: {
+          // La Disponibilité est jugée par le module (même prédicat que la
+          // validation) ; le reste en nuyens est celui de la cellule.
+          allowed: c.availabilityAllowed ? (it) => c.availabilityAllowed(it.availability, b) : null,
+          nuyenLeft: nuyenCell && nuyenCell.total != null ? nuyenCell.total - nuyenCell.used : null,
+        },
       })}
       <div class="cluster cg-add-row">
         <input type="text" id="cg-sr-gear-free" placeholder="Équipement libre…">
@@ -2633,6 +2675,9 @@ export const CharGen = {
     document.addEventListener("click", (e) => {
       const el = e.target.closest("[data-cg-action]");
       if (!el || !overlay()?.contains(el)) return;
+      // Une entrée barrée (hors Disponibilité de création) se lit, ne se
+      // choisit pas : l'absence doit se voir, pas se contourner d'un clic.
+      if (el.getAttribute("aria-disabled") === "true") return;
       this._handleAction(el);
     });
     // Entrée dans un champ « ＋ Ajouter » déclenche l'ajout correspondant.
@@ -2649,11 +2694,11 @@ export const CharGen = {
       const root = overlay()?.querySelector(`[data-pick="${id}"]`);
       if (!root) return;
       const q = (root.querySelector("[data-pick-search]")?.value || "").trim().toLowerCase();
-      const cat = root.querySelector("[data-pick-cat]")?.value || "";
+      const rayon = root.querySelector(".cg-pick-shelf.is-on")?.dataset.shelf || "";
       let vus = 0;
       for (const el of root.querySelectorAll(".cg-pick-item")) {
         const ok =
-          (!q || (el.dataset.hay || "").includes(q)) && (!cat || el.dataset.cat === cat);
+          (!q || (el.dataset.hay || "").includes(q)) && (!rayon || el.dataset.shelf === rayon);
         el.hidden = !ok;
         if (ok) vus++;
       }
@@ -2664,9 +2709,17 @@ export const CharGen = {
       const id = e.target?.dataset?.pickSearch;
       if (id && overlay()?.contains(e.target)) filtrer(id);
     });
-    document.addEventListener("change", (e) => {
-      const id = e.target?.dataset?.pickCat;
-      if (id && overlay()?.contains(e.target)) filtrer(id);
+    // Les puces de rayon : une seule allumée, « Tout » par défaut.
+    document.addEventListener("click", (e) => {
+      const puce = e.target.closest("[data-pick-shelf]");
+      if (!puce || !overlay()?.contains(puce)) return;
+      const id = puce.dataset.pickShelf;
+      for (const p of puce.parentElement.querySelectorAll("[data-pick-shelf]")) {
+        const on = p === puce;
+        p.classList.toggle("is-on", on);
+        p.setAttribute("aria-pressed", String(on));
+      }
+      filtrer(id);
     });
 
     document.addEventListener("keydown", (e) => {

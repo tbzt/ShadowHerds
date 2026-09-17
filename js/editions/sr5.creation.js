@@ -849,6 +849,31 @@ Object.assign(EditionSR5, {
       return PrixCatalogue.defaults(ref);
     },
 
+    /** Ce que les tables du livre disent d'un objet nommé AVANT qu'on le
+        choisisse : `{cost, costNote, availability, dispoText, essence}`, champs
+        absents quand la table ne dit rien. UNE source pour le catalogue (qui
+        l'affiche) et pour `gearFromCatalog` (qui le pose sur l'objet) : les
+        deux lisaient chacun les tables, et un prix montré différent du prix
+        compté aurait été un mensonge d'écran. */
+    _catalogDefaults(name, kind) {
+      const out = {};
+      if (this.isImplant({ kind })) {
+        const d = this.implantDefaults(name);
+        if (!d) return out;
+        if (d.essenceBase != null) out.essence = d.essenceBase;
+        if (d.cost != null) out.cost = d.cost;
+        if (d.availability != null) out.availability = d.availability;
+        return out;
+      }
+      const d = this.gearDefaults(name);
+      if (!d) return out;
+      if (d.cost != null) out.cost = d.cost;
+      else if (d.costNote) out.costNote = d.costNote;
+      if (d.availability != null) out.availability = d.availability;
+      if (d.dispoText) out.dispoText = d.dispoText;
+      return out;
+    },
+
     implantDefaults(name, rating) {
       if (!this._implantIdx) this._implantIdx = Implants.index(ImplantsSR5);
       return Implants.defaults(this._implantIdx, name, rating);
@@ -1156,7 +1181,50 @@ Object.assign(EditionSR5, {
          et l'étape Équipement ne le proposait pas — un véhicule saisi en
          texte libre n'avait pas de famille, et « ＋ Accessoire » lui offrait
          tout. Cf. le commentaire jumeau de sr6.creation.js. */
-      return [...objets, ...this._tableImplantGroup(objets), ...this._vehicleGroups()];
+      return this._shelveCatalog([...objets, ...this._tableImplantGroup(objets), ...this._vehicleGroups()]);
+    },
+
+    /** Le rayon d'un groupe du catalogue, par clé de pool : six rayons que
+        l'écran montre en puces, là où vingt-trois catégories ne se lisaient
+        pas. Une clé absente va en « Divers ». */
+    GEAR_SHELVES: {
+      electroarmes: "Armes", pistoletsPoche: "Armes", pistoletsLegers: "Armes", pistoletsLourds: "Armes",
+      mitraillettes: "Armes", fusilsAssaut: "Armes", shotguns: "Armes", mitrailleuses: "Armes", snipers: "Armes",
+      armesSpeciales: "Armes", armesExotiques: "Armes", meleeWeapons: "Armes", grenades: "Armes", explosifs: "Armes",
+      armures: "Armures",
+      cyberware: "Augmentations", bioware: "Augmentations", nanotechnologie: "Augmentations",
+      commlinks: "Électronique", cyberdecks: "Électronique",
+      vehicules: "Véhicules & drones", drones: "Véhicules & drones",
+    },
+
+    /** Range, chiffre et dédoublonne le catalogue : chaque groupe reçoit son
+        rayon (`shelf`), chaque entrée ses prix, Disponibilité et Essence du
+        livre (`_catalogDefaults`), et une entrée déjà vue ne revient pas —
+        les commlinks rangés par niveau de vie donnaient « Erika Elite »
+        deux fois. ⚠ Une entrée = libellé ET ligne de stats : la même arme
+        relevée dans deux livres (base et supplément) avec deux lignes
+        différentes est deux entrées, pas un doublon. Premier rayon gagnant. */
+    _shelveCatalog(groupes) {
+      const vus = new Set();
+      const ordre = ["Armes", "Armures", "Augmentations", "Électronique", "Véhicules & drones", "Divers"];
+      return groupes
+        .map((g) => {
+          const kind = g.items[0] && g.items[0].kind;
+          const items = g.items
+            .filter((it) => {
+              const k = `${it.label}|${it.detail || ""}`.toLowerCase();
+              if (vus.has(k)) return false;
+              vus.add(k);
+              return true;
+            })
+            .map((it) => ({ ...it, ...this._catalogDefaults(it.label, it.kind) }));
+          return { ...g, shelf: this.GEAR_SHELVES[kind] || "Divers", items };
+        })
+        .filter((g) => g.items.length)
+        // Les rayons dans l'ordre de l'usage (les armes d'abord), les groupes
+        // d'un même rayon dans l'ordre du livre — le catalogue ouvrait sur
+        // les commlinks, premier rayon du générateur de PNJ.
+        .sort((a, b) => ordre.indexOf(a.shelf) - ordre.indexOf(b.shelf));
     },
 
     /** Les augmentations que la table du livre connaît et que les rayons de
@@ -1238,28 +1306,16 @@ Object.assign(EditionSR5, {
       // besoin pour une augmentation (Essence, bonus).
       // `uid` : un implant logé désigne son hôte par lui (les index bougent).
       const item = { uid: Utils.uid(), name, cost: 0, ...(kind ? { kind } : {}), ...(detail ? { detail } : {}) };
-      /* Un implant connu de la table du livre entre avec ses valeurs
-         standard — Essence, prix, Disponibilité — que la gamme modifie
-         ensuite. Ce que la table ne donne pas (formule sans indice, objet
-         d'un supplément) reste à saisir. */
-      if (this.isImplant(item)) {
-        const d = this.implantDefaults(name);
-        if (d) {
-          if (d.essenceBase != null) item.essenceBase = d.essenceBase;
-          if (d.cost != null) item.cost = d.cost;
-          if (d.availability != null) item.availability = d.availability;
-        }
-      } else {
-        /* Une arme ou une armure connue des tables du livre entre avec son
-           prix et sa Disponibilité ; un prix en formule reste à saisir, et
-           l'objet le dit (`costNote`). */
-        const d = this.gearDefaults(name);
-        if (d) {
-          if (d.cost != null) item.cost = d.cost;
-          else if (d.costNote) item.costNote = d.costNote;
-          if (d.availability != null) item.availability = d.availability;
-        }
-      }
+      /* Les valeurs standard du livre — Essence, prix, Disponibilité — que
+         la gamme d'un implant modifie ensuite. Ce que la table ne donne pas
+         (formule sans indice, objet d'un supplément) reste à saisir, et un
+         prix en formule est dit (`costNote`). Même lecture que le catalogue
+         affiché : `_catalogDefaults`. */
+      const d = this._catalogDefaults(name, kind);
+      if (d.essence != null) item.essenceBase = d.essence;
+      if (d.cost != null) item.cost = d.cost;
+      if (d.costNote) item.costNote = d.costNote;
+      if (d.availability != null) item.availability = d.availability;
       const fam = this.gearFamily(item);
       if (fam === "armure") {
         const base = this.armorReserveFor({ name, detail });
@@ -1710,6 +1766,16 @@ Object.assign(EditionSR5, {
         deviceRating: level.deviceRating,
         hint: `Indice maximum ${level.deviceRating}, Disponibilité maximum ${level.availability}.`,
       };
+    },
+
+    /** Cette Disponibilité passe-t-elle à la création ? Lue par le catalogue
+        (une entrée hors limite se montre barrée) et par `stepErrors` (un
+        objet hors limite est une erreur) — un seul prédicat, sinon l'écran
+        barre ce que la validation accepte, ou l'inverse. `null` = inconnue,
+        donc permise : on ne refuse pas ce qu'on ne sait pas. */
+    availabilityAllowed(dispo, build) {
+      if (dispo == null) return true;
+      return Number(dispo) <= this.gameLevels[build.gameLevel].availability;
     },
 
     /** Contacts SR5 : Connexion et Loyauté chiffrées (p.100). */
@@ -3035,7 +3101,7 @@ Object.assign(EditionSR5, {
       for (const g of build.gear || []) {
         // Un implant porte la Disponibilité de sa gamme (standard + modificateur).
         const dispo = this.isImplant(g) ? this.implantState(g).availability : g.availability != null && g.availability !== "" ? Number(g.availability) : null;
-        if (dispo != null && dispo > level.availability) {
+        if (!this.availabilityAllowed(dispo, build)) {
           out.gear.push(`${g.name} : Disponibilité ${dispo} > ${level.availability} autorisée à la création.`);
         }
       }
