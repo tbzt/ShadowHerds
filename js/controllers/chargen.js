@@ -896,7 +896,7 @@ export const CharGen = {
           <span class="cg-pick-name">${this._esc(ref.nom)}</span>
           <span class="tag">${inf ? `Infecté · ${this._esc(inf.virus || "VVHMH")}` : ref.type === "avantage" ? "avantage" : "défaut"}</span>
           ${inf
-            ? `<span class="cg-section-note">${c.infecteKarma(b, inf)} karma${c.infecteKarma(b, inf) !== inf.karma ? ` (livre : ${inf.karma})` : ""} — hors du plafond des avantages</span>`
+            ? `<span class="cg-section-note">${c.infecteKarma(b, inf)} karma${c.infecteKarma(b, inf) !== inf.karma ? ` (livre : ${inf.karma})` : ""}${c.infecteKarmaNote ? ` — ${this._esc(c.infecteKarmaNote(b, inf))}` : ""}</span>`
             : `<input type="number" min="0" data-cg="traits.${i}.karma" value="${t.karma ?? k[0]}" style="width:4.5em" title="Karma retenu">
           <span class="cg-section-note">karma (livre : ${this._esc(borne)})${ref.parNiveau ? " par niveau" : ""}</span>`}
           <button class="btn-icon-tiny danger" data-cg-action="remove-trait" data-idx="${i}" title="Retirer">✕</button>

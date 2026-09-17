@@ -478,6 +478,12 @@ Object.assign(EditionSR5, {
       return inf.karma;
     },
 
+    /** Ce que l'écran dit du coût : en SR5 il échappe au plafond des 25 karma
+        d'avantages (p.103) — c'est le module qui le dit, pas l'écran. */
+    infecteKarmaNote(build, inf) {
+      return inf || this.infecteOf(build) ? "hors du plafond des avantages" : "";
+    },
+
     /** Les +2 physiques / +2 mentaux (p.104) posés par le joueur, un point
         par champ : `build.infecte = { phys1, phys2, ment1, ment2, gratuit }`
         (« +1 à deux Attributs ou +2 à un » = le même attribut deux fois).
