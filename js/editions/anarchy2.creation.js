@@ -40,15 +40,17 @@ Object.assign(EditionAnarchy2, {
         elles partagent réellement la forme de l'écran — jamais par défaut :
         les compétences Anarchy (un pool, plafond d'indice) et SR5 (deux pools
         individuel/groupe) sont deux formes, donc deux kinds. */
+    /* `group` : le temps de la création, lu par le rail (cf. sr5.creation.js).
+       Pas de « Méthode » ici : Anarchy n'en a qu'une. */
     steps: [
-      { id: "concept", kind: "concept", label: "Concept" },
-      { id: "attrs", kind: "attrs", label: "Attributs" },
-      { id: "skills", kind: "skills_pool", label: "Compétences" },
-      { id: "edges", kind: "edges_anarchy", label: "Atouts/Magie" },
-      { id: "gear", kind: "gear_kit", label: "Équipement" },
-      { id: "narrative", kind: "narrative", label: "Narratif" },
-      { id: "contacts", kind: "contacts", label: "Contacts" },
-      { id: "review", kind: "review", label: "Révision" },
+      { id: "concept", kind: "concept", label: "Concept", group: "Concept" },
+      { id: "attrs", kind: "attrs", label: "Attributs", group: "Personnage" },
+      { id: "skills", kind: "skills_pool", label: "Compétences", group: "Personnage" },
+      { id: "edges", kind: "edges_anarchy", label: "Atouts/Magie", group: "Personnage" },
+      { id: "gear", kind: "gear_kit", label: "Équipement", group: "Équipement" },
+      { id: "narrative", kind: "narrative", label: "Narratif", group: "Finition" },
+      { id: "contacts", kind: "contacts", label: "Contacts", group: "Finition" },
+      { id: "review", kind: "review", label: "Révision", group: "Finition" },
     ],
 
     /** Brouillon vierge. Vivait dans `CharGen._newBuild` — donc la forme du

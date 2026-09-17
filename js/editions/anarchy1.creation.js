@@ -248,16 +248,18 @@ Object.assign(EditionAnarchy1, {
     /* ============================================================
        CONTRAT LU PAR CHARGEN
        ============================================================ */
+    /* `group` : le temps de la création, lu par le rail (cf. sr5.creation.js).
+       Pas de « Méthode » ici : Anarchy n'en a qu'une. */
     steps: [
-      { id: "concept", kind: "concept", label: "Concept" },
-      { id: "attrs", kind: "attrs", label: "Attributs" },
-      { id: "skills", kind: "skills_a1", label: "Compétences" },
-      { id: "edges", kind: "edges_a1", label: "Atouts" },
-      { id: "gear", kind: "gear_a1", label: "Équipement" },
-      { id: "traits", kind: "traits_a1", label: "Traits" },
-      { id: "narrative", kind: "narrative", label: "Narratif" },
-      { id: "contacts", kind: "contacts", label: "Contacts" },
-      { id: "review", kind: "review", label: "Révision" },
+      { id: "concept", kind: "concept", label: "Concept", group: "Concept" },
+      { id: "attrs", kind: "attrs", label: "Attributs", group: "Personnage" },
+      { id: "skills", kind: "skills_a1", label: "Compétences", group: "Personnage" },
+      { id: "edges", kind: "edges_a1", label: "Atouts", group: "Personnage" },
+      { id: "gear", kind: "gear_a1", label: "Équipement", group: "Équipement" },
+      { id: "traits", kind: "traits_a1", label: "Traits", group: "Finition" },
+      { id: "narrative", kind: "narrative", label: "Narratif", group: "Finition" },
+      { id: "contacts", kind: "contacts", label: "Contacts", group: "Finition" },
+      { id: "review", kind: "review", label: "Révision", group: "Finition" },
     ],
 
     newBuild() {

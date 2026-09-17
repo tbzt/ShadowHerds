@@ -347,28 +347,37 @@ Object.assign(EditionSR5, {
         (le contrôleur accepte les deux formes). */
     steps(build) {
       const fam = this.methods[build.method]?.family;
-      const out = [{ id: "concept", kind: "concept", label: "Concept" }];
-      if (fam === "priority") out.push({ id: "priorites", kind: "priorities", label: "Priorités" });
-      if (fam === "modules") out.push({ id: "modules", kind: "life_path_sr5", label: "Parcours" });
+      /* `group` : le temps de la création auquel l'étape appartient — le
+         rail de l'assistant montre les groupes, pas les neuf onglets. Cinq
+         noms partagés par les quatre éditions (Concept, Méthode, Personnage,
+         Équipement, Finition) ; chaque édition range SES étapes dedans. */
+      const out = [{ id: "concept", kind: "concept", label: "Concept", group: "Concept" }];
+      if (fam === "priority") out.push({ id: "priorites", kind: "priorities", label: "Priorités", group: "Méthode" });
+      if (fam === "modules") out.push({ id: "modules", kind: "life_path_sr5", label: "Parcours", group: "Méthode" });
       out.push(
-        { id: "attrs", kind: "attrs", label: "Attributs" },
-        { id: "skills", kind: "skills_sr", label: "Compétences" },
+        { id: "attrs", kind: "attrs", label: "Attributs", group: "Personnage" },
+        { id: "skills", kind: "skills_sr", label: "Compétences", group: "Personnage" },
       );
       // L'étape n'existe que si le personnage a quelque chose à y choisir :
       // un profane n'a pas d'écran vide à traverser.
-      if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
+      if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance", group: "Personnage" });
+      /* Les Traits AVANT l'Équipement : c'est l'ordre du livre (les qualités
+         sont l'étape 5 de la création, p.64, l'équipement la 7e), et c'est ce
+         qui garde le temps « Personnage » d'un seul tenant dans le rail.
+         Décision du 2026-09-17 ; l'ancien ordre glissait l'Équipement entre
+         Magie et Traits. */
       out.push(
-        { id: "gear", kind: "gear_nuyen", label: "Équipement" },
+        { id: "traits", kind: "traits_sr", label: "Traits", group: "Personnage" },
+        { id: "gear", kind: "gear_nuyen", label: "Équipement", group: "Équipement" },
       );
       /* « Karma restant » est une ÉTAPE du livre (p.102), pas une case : on
          y monte ce qu'on veut aux coûts d'amélioration, et on n'en garde pas
          plus de 7. Les méthodes au karma et à modules n'en ont pas besoin :
          leur monnaie EST le karma, `karmaUsed` s'en charge déjà. */
-      out.push({ id: "traits", kind: "traits_sr", label: "Traits" });
-      if (fam === "priority") out.push({ id: "finition", kind: "finish_karma", label: "Karma" });
+      if (fam === "priority") out.push({ id: "finition", kind: "finish_karma", label: "Karma", group: "Finition" });
       out.push(
-        { id: "contacts", kind: "contacts", label: "Contacts" },
-        { id: "review", kind: "review", label: "Révision" },
+        { id: "contacts", kind: "contacts", label: "Contacts", group: "Finition" },
+        { id: "review", kind: "review", label: "Révision", group: "Finition" },
       );
       return out;
     },

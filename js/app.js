@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.216.0",
+  VERSION: "1.217.0",
 
   edition: "none",
   editionModule: null,
@@ -948,9 +948,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target === e.currentTarget) Encounter.close();
   });
 
-  document.getElementById("chargen-overlay").addEventListener("click", (e) => {
-    if (e.target === e.currentTarget) CharGen.close();
-  });
+  /* Pas de fermeture de l'assistant de création au clic sur l'overlay : un
+     clic à côté du modal (mesuré pendant l'audit du 2026-09-17, en visant
+     un bouton du pied) fermait un brouillon d'Équipement sans un mot. C'est
+     un formulaire de l'avant, il se ferme par la croix ou Échap. */
 
   document.getElementById("shortcuts-overlay").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) App.toggleCheatsheet(false);

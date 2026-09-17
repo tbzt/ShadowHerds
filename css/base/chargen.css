@@ -8,20 +8,33 @@
    (foundation.css). Ce qui reste ci-dessous n'est que le vrai écart au
    défaut de la primitive — gap non standard, wrap forcé à nowrap, décor
    propre au site. */
-/* Le rail d'étapes : UNE ligne qui défile, à toute largeur. Sur téléphone,
-   les huit onglets se rangeaient sur trois lignes et mangeaient l'écran
-   avec le reste du chrome ; l'onglet courant est amené en vue par le
-   contrôleur. */
+/* Le rail : les GROUPES (cinq au plus), puis les étapes du groupe courant
+   sur un second rang. Il défilait horizontalement derrière une barre masquée
+   (`scrollbar-width: none`) — la grammaire d'interaction l'interdit sur des
+   choix : à 375 px, les étapes 5 à 9 n'existaient pas. Cinq puces passent à
+   la ligne s'il le faut ; rien n'est caché. */
 .cg-steps {
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--sp-1);
   margin-bottom: var(--sp-3);
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding-bottom: 2px;
 }
-.cg-steps::-webkit-scrollbar {
-  display: none;
+.cg-groups,
+.cg-substeps {
+  gap: var(--sp-1);
+  flex-wrap: wrap;
+}
+.cg-substeps {
+  padding-left: var(--sp-2);
+}
+.cg-substep {
+  min-height: 28px;
+  padding: 2px 8px;
+  border-style: dashed;
+  font-size: var(--fs-2xs);
+}
+.cg-substep.active {
+  border-style: solid;
 }
 .cg-step-tab {
   /* CIBLE TACTILE — 32 px de haut ; c'est la navigation principale de

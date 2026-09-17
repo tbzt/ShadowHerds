@@ -15,7 +15,10 @@
    contrat qui aplatit, un consommateur qui détient le savoir
    d'édition. C'est rendu au module depuis 2026-09-09, via :
 
-     creation.steps          — les étapes {id, kind, label}
+     creation.steps          — les étapes {id, kind, label, group}
+                               (`group` = le temps de la création que le
+                               rail affiche : cinq noms partagés, chaque
+                               édition y range ses étapes)
      creation.newBuild()     — le brouillon vierge
      creation.conceptFields()— les champs du concept, déclarés
      creation.budget()       — jauge + cellules, dans SON unité
@@ -71,6 +74,25 @@ export const CharGen = {
     return this._steps()[i] || null;
   },
 
+  /** Les groupes du rail, dans l'ordre de première apparition : chaque
+      entrée porte son libellé et les étapes (avec leur index) qui le
+      composent. Le contrôleur ne connaît aucun nom de groupe — Anarchy n'a
+      pas de « Méthode », SR5 range son Karma en « Finition » et SR6 en
+      « Personnage » ; c'est le module qui le dit. */
+  _groups() {
+    const out = [];
+    this._steps().forEach((step, idx) => {
+      const label = step.group || step.label;
+      let g = out.find((x) => x.label === label);
+      if (!g) {
+        g = { label, steps: [] };
+        out.push(g);
+      }
+      g.steps.push({ step, idx });
+    });
+    return out;
+  },
+
   _esc(s) {
     return CardRenderer._esc(s);
   },
@@ -90,7 +112,13 @@ export const CharGen = {
        le brouillon (donc dans `Storage`, avec lui) et en sort avant toute
        lecture par le module — cf. `_cleanBuild`. */
     this._build._ui = this._build._ui || { seen: [] };
-    this._step = 0;
+    /* On rouvre LÀ OÙ on était : l'étape quittée est notée dans le brouillon
+       (`_ui.stepId`, un id et pas un index — la liste des étapes dépend du
+       brouillon). Avant, une fermeture à l'Équipement renvoyait à l'étape 1
+       et faisait retraverser quatre onglets. */
+    const stepIdx = this._steps().findIndex((s) => s.id === this._build._ui.stepId);
+    this._step = draft && stepIdx >= 0 ? stepIdx : 0;
+    this._resumedStep = this._resumed ? this._step : null;
     const overlay = document.getElementById("chargen-overlay");
     overlay.classList.add("open");
     // D7 : piégé AVANT le déplacement de focus (même ordre que Dialog._open).
@@ -101,9 +129,9 @@ export const CharGen = {
 
   /** Bandeau de reprise de brouillon (masquable, propose de repartir à zéro). */
   _resumeBanner() {
-    // Sur la première étape seulement : c'est là qu'on décide de reprendre
+    // Sur l'étape REPRISE seulement : c'est là qu'on décide de continuer
     // ou de repartir ; ailleurs, le bandeau prenait une ligne pour rien.
-    if (!this._resumed || this._step !== 0) return "";
+    if (!this._resumed || this._step !== this._resumedStep) return "";
     const id = this._identityText();
     return `<div class="cluster cg-resume-banner">
       <span>↺ Brouillon repris${id ? ` — ${this._esc(id)}` : ""}.</span>
@@ -143,6 +171,8 @@ export const CharGen = {
     const courante = this._stepAt(this._step);
     if (courante) this._markSeen(courante.id);
     this._step = Math.max(0, Math.min(idx, this._steps().length - 1));
+    const cible = this._stepAt(this._step);
+    if (cible) this._build._ui.stepId = cible.id;
     this._saveDraft();
     this._renderAll();
     const modal = document.querySelector("#chargen-overlay .modal");
@@ -151,11 +181,22 @@ export const CharGen = {
     if (titre) titre.focus({ preventScroll: true });
   },
 
+  /** Fermer (croix, Échap). Si un brouillon reste sur disque, on le dit —
+      la fermeture accidentelle était muette, et rien n'annonçait qu'on
+      retrouverait son travail. Après « Créer » ou « Abandonner », le
+      brouillon a été effacé avant d'arriver ici : pas de toast. Une seule
+      source de vérité : le brouillon persisté, pas un drapeau à part. */
   close() {
-    document.getElementById("chargen-overlay").classList.remove("open");
+    const overlay = document.getElementById("chargen-overlay");
+    const etaitOuvert = overlay.classList.contains("open");
+    overlay.classList.remove("open");
     if (this._releaseTrap) {
       this._releaseTrap();
       this._releaseTrap = null;
+    }
+    if (etaitOuvert && this._loadDraft()) {
+      const step = this._stepAt(this._step);
+      toast(`Brouillon conservé${step ? ` — reprise à l'étape ${step.label}` : ""}.`);
     }
   },
 
@@ -233,22 +274,49 @@ export const CharGen = {
     this._renderFooter();
   },
 
+  /** Le rail : les GROUPES (cinq au plus), et sous eux les étapes du groupe
+      courant. Neuf onglets en SR5 débordaient d'un téléphone derrière une
+      barre masquée — un choix qu'on ne voit pas n'existe pas. Cinq temps se
+      lisent d'un coup, et chaque étape reste à un clic (deux depuis un autre
+      groupe) : revenir sur un choix est le geste normal de la création. */
   _renderSteps() {
     const el = document.getElementById("chargen-steps");
     if (!el) return;
     const stepErr = this._creation().stepErrors(this._cleanBuild(this._build));
-    el.innerHTML = this._steps().map((step, i) => {
+    // Quatre états : courante, faite (vue et propre), en erreur (vue et
+    // fautive), à faire (jamais quittée). Une étape jamais vue ne rougit pas.
+    const etatDe = (step, idx) => {
       const nErr = (stepErr[step.id] || []).length;
       const vue = this._seen(step.id);
-      // Quatre états : courante, faite (vue et propre), en erreur (vue et
-      // fautive), à faire (jamais quittée). Une étape jamais vue ne rougit pas.
-      const etat = i === this._step ? "active" : vue && nErr ? "has-error" : vue ? "is-done" : "is-todo";
-      const glyphe = etat === "is-done" ? "✓" : etat === "has-error" ? "●" : String(i + 1);
-      const titre = etat === "has-error" ? `${nErr} point(s) à corriger` : etat === "is-done" ? "Étape complète" : step.label;
-      return `<button class="cg-step-tab ${etat}" data-cg-action="goto" data-idx="${i}" aria-current="${i === this._step ? "step" : "false"}" title="${this._esc(titre)}"><span class="cg-tab-num">${glyphe}</span> ${this._esc(step.label)}</button>`;
+      return { nErr, etat: idx === this._step ? "active" : vue && nErr ? "has-error" : vue ? "is-done" : "is-todo" };
+    };
+    const groupes = this._groups();
+    const gCourant = groupes.find((g) => g.steps.some((s) => s.idx === this._step));
+    const rail = groupes.map((g, n) => {
+      const etats = g.steps.map((s) => etatDe(s.step, s.idx));
+      const nErr = etats.reduce((sum, e) => sum + e.nErr, 0);
+      const vues = g.steps.every((s) => this._seen(s.step.id));
+      const fautif = etats.some((e) => e.etat === "has-error");
+      // Un groupe est fait quand TOUTES ses étapes sont vues et propres ;
+      // en erreur dès qu'une l'est ; courant s'il contient l'étape courante.
+      const etat = g === gCourant ? "active" : fautif ? "has-error" : vues ? "is-done" : "is-todo";
+      const glyphe = etat === "is-done" ? "✓" : etat === "has-error" ? "●" : String(n + 1);
+      const titre = etat === "has-error" ? `${nErr} point(s) à corriger` : etat === "is-done" ? "Temps complet" : g.label;
+      // Cliquer un groupe mène à sa première étape en erreur, sinon à sa première.
+      const cible = (g.steps.find((s, k) => etats[k].etat === "has-error") || g.steps[0]).idx;
+      return `<button class="cg-step-tab ${etat}" data-cg-action="goto" data-idx="${cible}" aria-current="${etat === "active" ? "step" : "false"}" title="${this._esc(titre)}"><span class="cg-tab-num">${glyphe}</span> ${this._esc(g.label)}</button>`;
     }).join("");
-    const actif = el.querySelector(".cg-step-tab.active");
-    if (actif && actif.scrollIntoView) actif.scrollIntoView({ block: "nearest", inline: "center" });
+    // Les étapes du groupe courant, si elles sont plusieurs : un second rang
+    // de puces, plus discret, pour naviguer DANS le temps courant.
+    const sous = gCourant && gCourant.steps.length > 1
+      ? `<div class="cluster cg-substeps">${gCourant.steps.map((s) => {
+          const { nErr, etat } = etatDe(s.step, s.idx);
+          const glyphe = etat === "is-done" ? "✓" : etat === "has-error" ? "●" : "";
+          const titre = etat === "has-error" ? `${nErr} point(s) à corriger` : s.step.label;
+          return `<button class="cg-step-tab cg-substep ${etat}" data-cg-action="goto" data-idx="${s.idx}" aria-current="${etat === "active" ? "step" : "false"}" title="${this._esc(titre)}">${glyphe ? `<span class="cg-tab-num">${glyphe}</span> ` : ""}${this._esc(s.step.label)}</button>`;
+        }).join("")}</div>`
+      : "";
+    el.innerHTML = `<div class="cluster cg-groups">${rail}</div>${sous}`;
   },
 
   /** Rend le budget tel que le module le décrit : une jauge de tête + des
@@ -291,8 +359,12 @@ export const CharGen = {
     if (!step) return;
     const el = document.getElementById("chargen-body");
     if (!el) return;
-    const n = this._steps().length;
-    const titre = `<h3 class="cg-step-title" tabindex="-1"><span class="cg-step-count">Étape ${this._step + 1} sur ${n}</span>${this._esc(step.label)}</h3>`;
+    // « Personnage · 2/4 » : le temps courant et la place de l'étape dedans —
+    // l'orientation que le rail par groupes ne donne plus à lui seul.
+    const groupe = this._groups().find((g) => g.steps.some((s) => s.idx === this._step));
+    const pos = groupe ? groupe.steps.findIndex((s) => s.idx === this._step) + 1 : 0;
+    const compte = groupe && groupe.steps.length > 1 ? `${groupe.label} · ${pos}/${groupe.steps.length}` : groupe ? groupe.label : "";
+    const titre = `<h3 class="cg-step-title" tabindex="-1"><span class="cg-step-count">${this._esc(compte)}</span>${this._esc(step.label)}</h3>`;
     el.innerHTML = this._resumeBanner() + titre + this[`_render_${step.kind}`].call(this);
     if (step.kind === "review") this._mountReview();
   },
@@ -2066,8 +2138,10 @@ export const CharGen = {
         break;
       case "restart":
         this._build = c.newBuild();
+        this._build._ui = { seen: [] };
         this._clearDraft();
         this._resumed = false;
+        this._resumedStep = null;
         this._step = 0;
         this._renderAll();
         break;

@@ -396,32 +396,36 @@ Object.assign(EditionSR6, {
        ============================================================ */
     steps(build) {
       const fam = this.methods[build.method]?.family;
-      const out = [{ id: "concept", kind: "concept", label: "Concept" }];
-      if (fam === "priority") out.push({ id: "priorites", kind: "priorities", label: "Priorités" });
-      if (fam === "modules") out.push({ id: "modules", kind: "life_modules", label: "Parcours" });
+      /* `group` : le temps de la création (cf. sr5.creation.js, même
+         contrat) — le karma de personnalisation reste dans « Personnage »
+         puisqu'il précède l'Équipement, contrairement au « Karma restant »
+         de SR5 qui le suit. */
+      const out = [{ id: "concept", kind: "concept", label: "Concept", group: "Concept" }];
+      if (fam === "priority") out.push({ id: "priorites", kind: "priorities", label: "Priorités", group: "Méthode" });
+      if (fam === "modules") out.push({ id: "modules", kind: "life_modules", label: "Parcours", group: "Méthode" });
       // En méthode à modules, on ne DÉPENSE pas de points d'attributs ni de
       // compétences : ce sont les modules qui les accordent. Les deux étapes
       // correspondantes n'auraient rien à faire — les afficher vides serait
       // un écran qui ment sur ce qu'il y a à y faire.
       if (fam !== "modules") {
         out.push(
-          { id: "attrs", kind: "attrs", label: "Attributs" },
-          { id: "skills", kind: "skills_sr6", label: "Compétences" },
+          { id: "attrs", kind: "attrs", label: "Attributs", group: "Personnage" },
+          { id: "skills", kind: "skills_sr6", label: "Compétences", group: "Personnage" },
         );
       }
-      if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance" });
-      out.push({ id: "traits", kind: "traits_sr", label: "Traits" });
+      if (this.magicStep(build)) out.push({ id: "magie", kind: "magic_sr", label: "Magie / Résonance", group: "Personnage" });
+      out.push({ id: "traits", kind: "traits_sr", label: "Traits", group: "Personnage" });
       /* Quatrième étape du livre : les 50 karma de personnalisation
          s'ajoutent au solde des traits, montent attributs et compétences aux
          coûts de progression, ou deviennent des nuyens (2 000 ¥ le point,
          5 000 avec Endetté). « Quelle que soit la méthode » : l'étape vaut
          pour les trois familles, comme le coût du métatype. Elle précède
          l'Équipement, puisque c'est là que l'argent converti se dépense. */
-      out.push({ id: "finition", kind: "finish_karma", label: "Karma" });
+      out.push({ id: "finition", kind: "finish_karma", label: "Karma", group: "Personnage" });
       out.push(
-        { id: "gear", kind: "gear_nuyen", label: "Équipement" },
-        { id: "contacts", kind: "contacts", label: "Contacts" },
-        { id: "review", kind: "review", label: "Révision" },
+        { id: "gear", kind: "gear_nuyen", label: "Équipement", group: "Équipement" },
+        { id: "contacts", kind: "contacts", label: "Contacts", group: "Finition" },
+        { id: "review", kind: "review", label: "Révision", group: "Finition" },
       );
       return out;
     },
