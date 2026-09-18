@@ -43,6 +43,10 @@ import { GearList } from "../widgets/gear/gearlist.js";
 import { Characters } from "./characters.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Dialog } from "../widgets/kit/dialog.js";
+import { Dossiers } from "../widgets/journal/dossiers.js";
+import { DossierBar } from "../widgets/journal/dossierbar.js";
+import { FoundryExport } from "./foundryexport.js";
+import { CardPeek } from "../widgets/card/cardpeek.js";
 import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { Storage } from "../core/storage.js";
 import { Utils } from "../core/utils.js";
@@ -1794,6 +1798,39 @@ export const CharGen = {
     App.showPanel("characters");
     if (nbContacts) {
       toast(`Personnage créé, ${nbContacts} contact${nbContacts > 1 ? "s" : ""} ajouté${nbContacts > 1 ? "s" : ""} au carnet.`);
+    }
+    this._offerExits(pnj);
+  },
+
+  /** La sortie de création est un GESTE, pas un panneau : convoquer dans le
+      run ou la campagne en focus (`App.context`, `Dossiers.convoke` — par
+      référence, jamais par copie), exporter vers Foundry, ouvrir la fiche.
+      Sans dossier en focus, pas de convocation proposée ; sans capacité
+      Foundry (Anarchy 1), pas d'export. « Plus tard » ne fait rien : le PJ
+      est déjà dans le Monde. */
+  async _offerExits(pnj) {
+    const focus = (App.context && App.context.dossier) || null;
+    const node = focus ? Dossiers.get(focus) : null;
+    const canExport = !!(App.editionModule && App.editionModule.foundryExport);
+    const options = [];
+    if (node) options.push({ value: "convoke", label: `Convoquer dans « ${node.name} »`, primary: true });
+    options.push({ value: "open", label: "Ouvrir la fiche", primary: !node });
+    if (canExport) options.push({ value: "export", label: "Exporter vers Foundry" });
+    options.push({ value: "later", label: "Plus tard" });
+    const choix = await Dialog.choose({
+      title: "Personnage créé",
+      message: `${pnj.name} est dans la bibliothèque.${node ? `\nRun ou campagne en focus : ${node.name}.` : ""}`,
+      options,
+    });
+    if (choix === "convoke" && node) {
+      if (Dossiers.convoke(node.id, "entity", pnj.id)) {
+        DossierBar.refresh();
+        toast(`${pnj.name} convoqué dans « ${node.name} ».`);
+      }
+    } else if (choix === "export") {
+      FoundryExport.exportPnj(pnj.id);
+    } else if (choix === "open") {
+      CardPeek.open(pnj.id);
     }
   },
 

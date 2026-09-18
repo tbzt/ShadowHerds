@@ -271,6 +271,8 @@ const FoundrySR6Export = {
     const num = Number(v) || 0;
     return { base: num, total: 0, mods: [] };
   },
+  /** `natural.base` = la valeur NATURELLE (avant implants), la seule que
+      l'import relit ; le total est recalculé par Foundry (cf. en-tête). */
   _attr(v) {
     return { natural: { base: Number(v) || 0, total: 0, mods: [] }, augmented: { base: 0, total: 0, mods: [] } };
   },
@@ -464,11 +466,13 @@ const FoundrySR6Export = {
     const pc = !!pnj.isPC;
     const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
     const attributes = {};
-    for (const [code, key] of Object.entries(this.ATTR_MAP)) attributes[key] = this._attr(a[code]);
-    attributes.edge = this._attr(a.ATO);
+    // Bases naturelles, jamais les totaux : un implant rejoué au réimport
+    // compterait deux fois (cf. sr5.foundry.js).
+    for (const [code, key] of Object.entries(this.ATTR_MAP)) attributes[key] = this._attr(Actor.base(pnj, code));
+    attributes.edge = this._attr(Actor.base(pnj, "ATO"));
     attributes.essence = this._attr(a.ESS != null ? a.ESS : 6);
-    attributes.magic = this._attr(a.MAG || 0);
-    attributes.resonance = this._attr(a.RES || 0);
+    attributes.magic = this._attr(Actor.base(pnj, "MAG") || 0);
+    attributes.resonance = this._attr(Actor.base(pnj, "RES") || 0);
 
     const awakened = (a.MAG || 0) > 0;
     const technomancer = (a.RES || 0) > 0;

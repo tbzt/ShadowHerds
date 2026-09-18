@@ -350,8 +350,12 @@ const FoundrySR5Export = {
     const num = Number(v) || 0;
     return { value: num, base: num, modifiers: [] };
   },
-  _attr(v) {
-    return { natural: this._n(v), augmented: this._n(v) };
+  /** Un attribut Foundry : `natural` = la valeur NATURELLE (base, avant
+      implants), `augmented` = le total. Écrire le total dans natural
+      faisait compter deux fois les Réflexes câblés au réimport, l'import
+      lisant natural puis BonusEngine rejouant le bonus. */
+  _attr(base, total) {
+    return { natural: this._n(base), augmented: this._n(total ?? base) };
   },
 
   /* ---- Découpe « Nom (parenthèse) » ---- */
@@ -811,15 +815,15 @@ const FoundrySR5Export = {
     // Attributs principaux.
     const attributes = {};
     for (const [code, key] of Object.entries(this.ATTR_MAP))
-      attributes[key] = this._attr(a[code]);
+      attributes[key] = this._attr(Actor.base(pnj, code), a[code]);
 
     // Attributs spéciaux : Chance (edge), Magie / Résonance.
     const awakened = (a.MAG || 0) > 0 || (pnj.spells || []).length > 0 || (pnj.powers || []).length > 0;
     const techno = (a.RES || 0) > 0;
     const specialAttributes = {
-      edge: this._attr(a.CHC),
-      magic: this._attr(a.MAG),
-      resonance: this._attr(a.RES),
+      edge: this._attr(Actor.base(pnj, "CHC"), a.CHC),
+      magic: this._attr(Actor.base(pnj, "MAG"), a.MAG),
+      resonance: this._attr(Actor.base(pnj, "RES"), a.RES),
     };
     const activeSpecialAttribute = techno ? "resonance" : awakened ? "magic" : "";
 
