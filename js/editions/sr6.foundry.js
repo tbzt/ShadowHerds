@@ -289,22 +289,110 @@ const FoundrySR6Export = {
     const safe = String(pnj && pnj.name ? pnj.name : "pnj")
       .normalize("NFD").replace(/[̀-ͯ]/g, "")
       .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
-    return `shadowherds-foundry-${safe || "pnj"}.json`;
+    // Un PJ se reconnaît au nom du fichier : c'est lui qu'on donne au joueur.
+    return `shadowherds-foundry-${pnj && pnj.isPC ? "pj" : "pnj"}-${safe || "pnj"}.json`;
   },
 
   /** Construit les Items embarqués (armes/armure/équipement/augs/sorts/
       pouvoirs/traits). */
-  _buildItems(pnj) {
+  /** Une ligne d'équipement (chaîne ou objet) → Item, reconnue à sa forme. */
+  _pushEquipStr(items, raw) {
+    const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+    if (!e) return;
+    if (this._isCyberStr(e)) items.push(this._augItem(e));
+    else if (this._isArmorStr(e)) items.push(this.buildArmorItem(e));
+    else if (this._isWeaponStr(e)) items.push(this.buildWeaponItem(e));
+    else items.push(this._item(this._name(e) || e, "gear", { type: "utility", quantity: 1, description: e }));
+  },
+
+  /** L'équipement STRUCTURÉ d'un PJ (`gear`) → Items, famille par le module,
+      gamme et Essence effective sur l'implant, prix et Disponibilité en
+      description. Cf. sr5.foundry.js. */
+  _gearItems(pnj) {
+    const c = EditionSR6.creation;
+    if (!c || !c.gearLines) return null;
+    const lignes = c.gearLines(pnj);
     const items = [];
-    for (const raw of pnj.equip || []) {
-      const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
-      if (!e) continue;
-      if (this._isCyberStr(e)) items.push(this._augItem(e));
-      else if (this._isArmorStr(e)) items.push(this.buildArmorItem(e));
-      else if (this._isWeaponStr(e)) items.push(this.buildWeaponItem(e));
-      else items.push(this._item(this._name(e) || e, "gear", {
-        type: "utility", quantity: 1, description: e,
+    (pnj.gear || []).forEach((g, i) => {
+      const e = ItemResolver.itemStr(lignes[i]);
+      if (!e) return;
+      const prix = [g.cost ? `${Number(g.cost).toLocaleString("fr-FR")} ¥` : g.costNote || "", g.availability != null && g.availability !== "" ? `Disp. ${g.availability}` : ""].filter(Boolean).join(" · ");
+      const avec = (it) => { it.system.description = [it.system.description || e, prix].filter(Boolean).join(" · "); return it; };
+      if (c.isImplant(g)) {
+        const st = c.implantState(g, pnj);
+        const it = this._augItem(e);
+        it.system.grade = g.grade || "standard";
+        it.system.essenceCost = { base: st.essence ?? 0, total: st.essence ?? 0, mods: [], multiplier: "" };
+        items.push(avec(it));
+        return;
+      }
+      const fam = c.gearFamily(g);
+      if (fam === "arme") items.push(avec(this.buildWeaponItem(e)));
+      else if (fam === "armure") items.push(avec(this.buildArmorItem(e)));
+      else items.push(this._item(this._name(e) || e, "gear", { type: "utility", quantity: 1, description: [e, prix].filter(Boolean).join(" · ") }));
+    });
+    return items;
+  },
+
+  /** Registre de campagne → Items `karma` / `nuyen` (une ligne chacun) et
+      `reputation` (le solde de la piste), tels que l'import les relit. */
+  _ledgerItems(pnj) {
+    const out = [];
+    const ledger = (pnj.campaign && pnj.campaign.ledger) || [];
+    for (const e of ledger) {
+      if (e.res !== "karma" && e.res !== "nuyen") continue;
+      const delta = Number(e.delta) || 0;
+      out.push(this._item(e.reason || (e.res === "karma" ? "Karma" : "Nuyens"), e.res, {
+        amount: Math.abs(delta), type: delta < 0 ? "loss" : "gain", date: "", description: "",
       }));
+    }
+    const rep = Campaign.balance(pnj.campaign, "reputation");
+    if (rep) out.push(this._item("Réputation", "reputation", { rating: this._n(rep), description: "" }));
+    const pression = Campaign.balance(pnj.campaign, "pression");
+    if (pression) FoundryExport.note("registre de campagne (piste sans item Foundry)", `pression ${pression}`);
+    return out;
+  },
+
+  /** Identités et styles de vie → `sin` / `lifestyle`, dans la forme lue sur
+      une vraie fiche (licences en `accessories`, légalité et prix sous
+      `goods`, ville sous `address`, style de vie lié par LIBELLÉ). */
+  _identityItems(pnj) {
+    const out = [];
+    for (const id of pnj.identities || []) {
+      out.push(this._item(id.name, "sin", {
+        rating: this._n(id.rating), nationality: id.nationality || "",
+        goods: { legality: id.legality || "", price: this._n(id.price) },
+        accessories: (id.licenses || []).map((l) => ({ name: l.name, rating: this._n(l.rating) })),
+        description: "",
+      }));
+      for (const ls of id.lifestyles || []) {
+        out.push(this._item(ls.name, "lifestyle", { type: ls.type || "", address: { city: ls.city || "" }, linkedIdentity: id.name, description: "" }));
+      }
+    }
+    for (const ls of pnj.orphanLifestyles || []) {
+      if (ls && ls.name) out.push(this._item(ls.name, "lifestyle", { type: ls.type || "", address: { city: ls.city || "" }, linkedIdentity: "", description: "" }));
+    }
+    return out;
+  },
+
+  /** Contacts → `contact` (données plates du contrôleur neutre). */
+  _contactItems(contacts) {
+    return (contacts || []).filter((c) => c && c.name).map((c) =>
+      this._item(c.name, "contact", {
+        type: c.role || "", connection: this._n(c.connection), loyalty: this._n(c.loyalty),
+        biography: { metatype: c.metatype || "" }, description: "",
+      }),
+    );
+  },
+
+  _buildItems(pnj, extras = {}) {
+    const items = [];
+    const gearItems = Array.isArray(pnj.gear) ? this._gearItems(pnj) : null;
+    if (gearItems) {
+      items.push(...gearItems);
+      for (const raw of (pnj.equip || []).slice(pnj.gear.length)) this._pushEquipStr(items, raw);
+    } else {
+      for (const raw of pnj.equip || []) this._pushEquipStr(items, raw);
     }
     for (const raw of pnj.augs || []) {
       const a = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
@@ -327,6 +415,8 @@ const FoundrySR6Export = {
       const { name, desc } = this._named(tr);
       items.push(this._item(name, "quality", { type: "positive", description: desc }));
     }
+    // Un PJ emporte sa campagne : registre, réputation, identités, contacts.
+    if (pnj.isPC) items.push(...this._ledgerItems(pnj), ...this._identityItems(pnj), ...this._contactItems(extras.contacts));
     return items;
   },
 
@@ -367,8 +457,11 @@ const FoundrySR6Export = {
     return out;
   },
 
-  /** PNJ SR6 → document acteur Foundry `grunt`. */
-  buildActor(pnj) {
+  /** PNJ SR6 → acteur `grunt` ; PJ → `character`, bâti en miroir de ce que
+      l'import lit sur de vraies fiches (karma/nuyens/réputation/SIN/styles
+      de vie/contacts en Items). Rien de dérivé n'est écrit, cf. en-tête. */
+  buildActor(pnj, extras = {}) {
+    const pc = !!pnj.isPC;
     const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
     const attributes = {};
     for (const [code, key] of Object.entries(this.ATTR_MAP)) attributes[key] = this._attr(a[code]);
@@ -401,14 +494,25 @@ const FoundrySR6Export = {
         age: 30, description: pnj.archetype || "", background: pnj.notes || "",
       },
       magic: { type: magicType, drainAttribute },
-      karma: { gained: this._n(0), spent: this._n(0) },
-      nuyen: { gained: this._n(0), spent: this._n(0) },
-      grunt: { isLieutenant: pnj.special === "Lieutenant" },
+      // Les totaux gagné/dépensé du registre ; le détail est en Items.
+      karma: { gained: this._n(this._ledgerSum(pnj, "karma", 1)), spent: this._n(this._ledgerSum(pnj, "karma", -1)) },
+      nuyen: { gained: this._n(this._ledgerSum(pnj, "nuyen", 1)), spent: this._n(this._ledgerSum(pnj, "nuyen", -1)) },
+      ...(pc ? {} : { grunt: { isLieutenant: pnj.special === "Lieutenant" } }),
     };
 
-    const items = this._buildItems(pnj);
+    const items = this._buildItems(pnj, extras);
 
-    return { name: pnj.name || "PNJ", type: "grunt", img: "icons/svg/mystery-man.svg", system, items };
+    return { name: pnj.name || "PNJ", type: pc ? "character" : "grunt", img: "icons/svg/mystery-man.svg", system, items };
+  },
+
+  /** Somme des gains (signe +1) ou des dépenses (signe −1) d'une ressource. */
+  _ledgerSum(pnj, res, signe) {
+    let n = 0;
+    for (const e of (pnj.campaign && pnj.campaign.ledger) || []) {
+      const d = Number(e.delta) || 0;
+      if (e.res === res && Math.sign(d) === signe) n += Math.abs(d);
+    }
+    return n;
   },
 };
 

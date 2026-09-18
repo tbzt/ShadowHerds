@@ -23,6 +23,7 @@
    tel quel — pas de duplication de la logique VD mêlée (FOR+bonus).
    ============================================================ */
 import { Actor } from "../rules/actor.js";
+import { Campaign } from "../rules/campaign.js";
 import { EditionAnarchy2 } from "./anarchy2.js";
 import { ItemResolver } from "../rules/itemresolver.js";
 import { Vehicles } from "../catalogs/vehicles.js";
@@ -434,7 +435,8 @@ const FoundryAnarchy2Export = {
     const safe = String(pnj && pnj.name ? pnj.name : "pnj")
       .normalize("NFD").replace(/[̀-ͯ]/g, "")
       .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
-    return `shadowherds-foundry-${safe || "pnj"}.json`;
+    // Un PJ se reconnaît au nom du fichier : c'est lui qu'on donne au joueur.
+    return `shadowherds-foundry-${pnj && pnj.isPC ? "pj" : "pnj"}-${safe || "pnj"}.json`;
   },
 
   /** Construit les Items skill/specialization à partir de pnj.skills.
@@ -506,10 +508,17 @@ const FoundryAnarchy2Export = {
     const attributes = {};
     for (const [code, key] of Object.entries(this.ATTR_MAP)) attributes[key] = a[code] || 1;
 
+    /* Le solde de nuyens du registre de campagne va dans `resources.yens`.
+       Le karma n'a pas de champ connu côté sra2 : dit à l'export, jamais
+       inventé. */
+    const yens = Campaign.balance(pnj.campaign, "nuyen");
+    const karma = Campaign.balance(pnj.campaign, "karma");
+    if (karma) FoundryExport.note("registre de campagne (karma sans champ sra2)", `karma ${karma}`);
+
     const flavor = pnj.flavor || {};
     const system = {
       attributes,
-      resources: { yens: 0, anarchy: 0 },
+      resources: { yens: Number(yens) || 0, anarchy: 0 },
       maxEssence: 6,
       armorLevel: 0, // dérivé par Foundry depuis les feats armor actifs
       gender: pnj.gender === "M" ? "male" : pnj.gender === "F" ? "female" : "random",

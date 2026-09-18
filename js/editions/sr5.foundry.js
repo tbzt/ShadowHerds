@@ -519,7 +519,8 @@ const FoundrySR5Export = {
     const safe = String(pnj && pnj.name ? pnj.name : "pnj")
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
-    return `shadowherds-foundry-${safe || "pnj"}.json`;
+    // Un PJ se reconnaît au nom du fichier : c'est lui qu'on donne au joueur.
+    return `shadowherds-foundry-${pnj && pnj.isPC ? "pj" : "pnj"}-${safe || "pnj"}.json`;
   },
 
   /** Foundry valide `img` (FilePathField) : doit se terminer par une
@@ -633,18 +634,117 @@ const FoundrySR5Export = {
     });
   },
 
-  /** Construit tous les Items embarqués de l'acteur. */
-  _buildItems(pnj, knowledgeFromSkills) {
+  /** Une ligne d'équipement (chaîne ou objet) → l'Item qu'elle devient,
+      reconnue à sa FORME (crochets, mots-clés). Chemin des fiches en texte. */
+  _pushEquipStr(items, raw) {
+    const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
+    if (!e) return;
+    if (this._isGrenadeStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseGrenade(e)));
+    else if (this._isWeaponStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseWeapon(e)));
+    else if (this._isCyberStr(e)) items.push(this._augItem(e));
+    else if (this._isArmorStr(e)) items.push(this._item(this._name(e), "itemArmor", this.parseArmor(e)));
+    else items.push(this._item(this._name(e) || e, "itemGear", { description: e, quantity: 1 }));
+  },
+
+  /** L'équipement STRUCTURÉ d'un PJ (`gear`, 1.221.0) → Items. La famille
+      vient du module (arme, armure, implant), plus d'une heuristique de
+      chaîne ; un implant porte sa gamme et son Essence effective ; le prix
+      et la Disponibilité suivent en description. La ligne de stats reste
+      parsée : dans le catalogue aussi, c'est du texte du livre. */
+  _gearItems(pnj) {
+    const c = EditionSR5.creation;
+    if (!c || !c.gearLines) return null;
+    const lignes = c.gearLines(pnj);
     const items = [];
-    // Équipement : armes, armures, cyberware égaré dans equip, reste = matériel.
-    for (const raw of pnj.equip || []) {
-      const e = ItemResolver.itemStr(raw); // #63 : item chaîne OU objet
-      if (!e) continue;
-      if (this._isGrenadeStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseGrenade(e)));
-      else if (this._isWeaponStr(e)) items.push(this._item(this._name(e), "itemWeapon", this.parseWeapon(e)));
-      else if (this._isCyberStr(e)) items.push(this._augItem(e));
-      else if (this._isArmorStr(e)) items.push(this._item(this._name(e), "itemArmor", this.parseArmor(e)));
-      else items.push(this._item(this._name(e) || e, "itemGear", { description: e, quantity: 1 }));
+    (pnj.gear || []).forEach((g, i) => {
+      const e = ItemResolver.itemStr(lignes[i]);
+      if (!e) return;
+      const prix = [g.cost ? `${Number(g.cost).toLocaleString("fr-FR")} ¥` : g.costNote || "", g.availability != null && g.availability !== "" ? `Disp. ${g.availability}` : ""].filter(Boolean).join(" · ");
+      const avec = (sys) => ({ ...sys, description: [sys.description || e, prix].filter(Boolean).join(" · ") });
+      if (c.isImplant(g)) {
+        const st = c.implantState(g, pnj);
+        const it = this._augItem(e);
+        it.system.grade = g.grade || "standard";
+        it.system.essenceCost = { value: st.essence ?? 0, base: st.essence ?? 0, modifiers: [], multiplier: "" };
+        it.system.description = [e, prix].filter(Boolean).join(" · ");
+        items.push(it);
+        return;
+      }
+      const fam = c.gearFamily(g);
+      if (fam === "arme") {
+        if (this._isGrenadeStr(e)) items.push(this._item(this._name(e), "itemWeapon", avec(this.parseGrenade(e))));
+        else items.push(this._item(this._name(e), "itemWeapon", avec(this.parseWeapon(e))));
+      } else if (fam === "armure") {
+        items.push(this._item(this._name(e), "itemArmor", avec(this.parseArmor(e))));
+      } else {
+        items.push(this._item(this._name(e) || e, "itemGear", { description: [e, prix].filter(Boolean).join(" · "), quantity: 1 }));
+      }
+    });
+    return items;
+  },
+
+  /** Le registre de campagne → Items `itemKarma` / `itemNuyen`, une ligne
+      chacun, tels que l'import les relit (`amount` positif, `type` gain ou
+      loss, `date` nulle). Les autres pistes (réputation SR5) n'ont pas
+      d'item connu : dites à l'export. */
+  _ledgerItems(pnj) {
+    const out = [];
+    for (const e of (pnj.campaign && pnj.campaign.ledger) || []) {
+      if (e.res !== "karma" && e.res !== "nuyen") {
+        FoundryExport.note("registre de campagne (piste sans item Foundry)", `${e.res} ${e.delta}`);
+        continue;
+      }
+      const delta = Number(e.delta) || 0;
+      out.push(this._item(e.reason || (e.res === "karma" ? "Karma" : "Nuyens"), e.res === "karma" ? "itemKarma" : "itemNuyen", {
+        amount: Math.abs(delta), type: delta < 0 ? "loss" : "gain", date: 0, description: "",
+      }));
+    }
+    return out;
+  },
+
+  /** Identités et styles de vie → `itemSin` / `itemLifestyle`, dans la forme
+      que l'import lit sur une vraie fiche (licences en tableau, style de vie
+      lié à son SIN par LIBELLÉ). */
+  _identityItems(pnj) {
+    const out = [];
+    for (const id of pnj.identities || []) {
+      out.push(this._item(id.name, "itemSin", {
+        itemRating: this._n(id.rating), nationality: id.nationality || "", legality: id.legality || "",
+        price: this._n(id.price), license: (id.licenses || []).map((l) => ({ name: l.name, rating: this._n(l.rating) })),
+        description: "",
+      }));
+      for (const ls of id.lifestyles || []) {
+        out.push(this._item(ls.name, "itemLifestyle", { type: ls.type || "", city: ls.city || "", linkedIdentity: id.name, description: "" }));
+      }
+    }
+    for (const ls of pnj.orphanLifestyles || []) {
+      if (ls && ls.name) out.push(this._item(ls.name, "itemLifestyle", { type: ls.type || "", city: ls.city || "", linkedIdentity: "", description: "" }));
+    }
+    return out;
+  },
+
+  /** Contacts → `itemContact`, données plates fournies par le contrôleur
+      neutre (le carnet est hors de portée d'un module d'édition). */
+  _contactItems(contacts) {
+    return (contacts || []).filter((c) => c && c.name).map((c) =>
+      this._item(c.name, "itemContact", {
+        type: c.role || "", metatype: c.metatype || "", connection: this._n(c.connection), loyalty: this._n(c.loyalty), description: "",
+      }),
+    );
+  },
+
+  /** Construit tous les Items embarqués de l'acteur. */
+  _buildItems(pnj, knowledgeFromSkills, extras = {}) {
+    const items = [];
+    // Équipement : depuis `gear` quand la fiche en porte (PJ de l'assistant),
+    // sinon les lignes de `equip` reconnues à leur forme. Les lignes qui ne
+    // viennent pas de `gear` (mains nues, armes innées) restent exportées.
+    const gearItems = Array.isArray(pnj.gear) ? this._gearItems(pnj) : null;
+    if (gearItems) {
+      items.push(...gearItems);
+      for (const raw of (pnj.equip || []).slice(pnj.gear.length)) this._pushEquipStr(items, raw);
+    } else {
+      for (const raw of pnj.equip || []) this._pushEquipStr(items, raw);
     }
     // Augmentations (cyber/bioware) déjà bien rangées côté pnj.augs.
     for (const raw of pnj.augs || []) {
@@ -690,11 +790,22 @@ const FoundrySR5Export = {
       const { name, desc } = this._named(tr);
       items.push(this._item(name, "itemQuality", { description: desc, type: "", karmaCost: 0 }));
     }
+    // Un PJ emporte sa campagne : registre, identités, contacts.
+    if (pnj.isPC) items.push(...this._ledgerItems(pnj), ...this._identityItems(pnj), ...this._contactItems(extras.contacts));
     return items;
   },
 
-  /** PNJ SR5 → document acteur Foundry `actorGrunt`. */
-  buildActor(pnj) {
+  /** PNJ SR5 → document acteur Foundry `actorGrunt` ; PJ → `actorPc`.
+
+      ⚠ Le PJ est bâti en MIROIR de ce que l'import lit sur de vraies fiches
+      (compétences sous `skills.active`, karma/nuyens/SIN/styles de vie/
+      contacts en Items) — pas d'un template.json de PJ, que le dépôt n'a
+      pas. Rien de dérivé n'est précalculé pour un PJ (moniteurs, limites,
+      initiative : le système les tire des attributs), même parti que
+      l'export SR6 ; le figurant garde sa forme à l'octet. À confronter à
+      une fiche exportée de Foundry dès qu'on en a une. */
+  buildActor(pnj, extras = {}) {
+    const pc = !!pnj.isPC;
     const a = Actor.flatAttrs(pnj); // totals plats (attrs = Traits en V2)
 
     // Attributs principaux.
@@ -721,32 +832,41 @@ const FoundrySR5Export = {
     const tradition = this.TRADITION_MAP[pnj.tradition] || "";
 
     const { skills, knowledgeFromSkills } = this._buildSkills(pnj);
-    const items = this._buildItems(pnj, knowledgeFromSkills);
+    const items = this._buildItems(pnj, knowledgeFromSkills, extras);
 
     // Moniteur de condition unique (grunt) : taille = physMon.
     const monBase = Number(pnj.physMon) || 0;
+    // Ce qui est dérivé n'est écrit que pour le figurant : un PJ le tire de
+    // ses attributs côté Foundry.
+    const derives = pc
+      ? {}
+      : {
+          initiatives: {
+            physicalInit: {
+              value: 0, base: Number(pnj.init) || 0, modifiers: [],
+              dice: { value: 0, base: Number(pnj.initDice) || 1, modifiers: [] },
+              isActive: true,
+            },
+          },
+          limits: {
+            physicalLimit: this._n(pnj.limPhys),
+            mentalLimit: this._n(pnj.limMent),
+            socialLimit: this._n(pnj.limSoc),
+          },
+          conditionMonitors: {
+            condition: { value: monBase, base: monBase, modifiers: [], actual: { value: 0, base: 0, modifiers: [] }, boxes: [] },
+          },
+        };
 
     const system = {
       attributes,
       specialAttributes,
       activeSpecialAttribute,
       essence: { value: Number(a.ESS ?? 6), base: 6, modifiers: [] },
-      initiatives: {
-        physicalInit: {
-          value: 0, base: Number(pnj.init) || 0, modifiers: [],
-          dice: { value: 0, base: Number(pnj.initDice) || 1, modifiers: [] },
-          isActive: true,
-        },
-      },
-      limits: {
-        physicalLimit: this._n(pnj.limPhys),
-        mentalLimit: this._n(pnj.limMent),
-        socialLimit: this._n(pnj.limSoc),
-      },
-      conditionMonitors: {
-        condition: { value: monBase, base: monBase, modifiers: [], actual: { value: 0, base: 0, modifiers: [] }, boxes: [] },
-      },
-      skills,
+      ...derives,
+      // actorPc : compétences actives sous `skills.active` (lu tel quel à
+      // l'import) ; grunt : à plat.
+      skills: pc ? { active: skills } : skills,
       magic: { magicType, tradition, concentration: false },
       biography: {
         characterMetatype: pnj.meta || "",
@@ -767,7 +887,7 @@ const FoundrySR5Export = {
 
     return {
       name: pnj.name || "PNJ",
-      type: "actorGrunt",
+      type: pc ? "actorPc" : "actorGrunt",
       img: this._hasImgExt(pnj.portraitUrl) ? pnj.portraitUrl : "icons/svg/mystery-man.svg",
       system,
       items,

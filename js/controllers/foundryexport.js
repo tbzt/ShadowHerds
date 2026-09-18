@@ -13,7 +13,9 @@
    fichier), sérialiser et télécharger — même idiome Blob que
    Backup.export().
    ============================================================ */
+import { ContactsBook } from "./contactsbook.js";
 import { Debug } from "../core/debug.js";
+import { RelationsStore } from "../core/relationsstore.js";
 import { Dialog } from "../widgets/kit/dialog.js";
 import { PnjLookup } from "./pnjlookup.js";
 
@@ -64,7 +66,7 @@ export const FoundryExport = {
     let actor, extras;
     this._session = [];
     try {
-      actor = cap.buildActor(pnj);
+      actor = cap.buildActor(pnj, { contacts: pnj.isPC ? this._contactsOf(pnj) : [] });
       extras = cap.buildVehicleActors ? cap.buildVehicleActors(pnj) || [] : [];
     } catch (e) {
       this._session = null;
@@ -80,6 +82,27 @@ export const FoundryExport = {
       this._download(extraActor, base.replace(/\.json$/, `-vehicule-${i + 1}.json`));
     });
     return { ok: true, files: 1 + extras.length, extras: extras.length, unresolved: unresolved.length };
+  },
+
+  /** Les contacts d'un PJ, en données plates pour le module d'édition : le
+      lien vit dans RelationsStore, la fiche du contact dans le carnet —
+      deux stores de couche 5 qu'un module d'édition ne lit pas. Connexion
+      = l'influence du contact, Loyauté = celle du lien s'il en porte une,
+      sinon celle du contact. */
+  _contactsOf(pnj) {
+    const out = [];
+    for (const lien of RelationsStore.contactLinksOf(pnj.id)) {
+      const c = ContactsBook.data.all.find((x) => x.id === lien.contactId);
+      if (!c) continue;
+      out.push({
+        name: c.name,
+        role: lien.relation || c.role || "",
+        metatype: c.metatype || "",
+        connection: c.influence ?? c.level ?? null,
+        loyalty: lien.loyalty ?? c.loyaute ?? null,
+      });
+    }
+    return out;
   },
 
   /** Point d'entrée du bouton de carte (data-action="export-foundry"). */
