@@ -47,6 +47,8 @@ import { ImplantsSR6 } from "./sr6.implants.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Settings } from "../controllers/settings.js";
 import { Utils } from "../core/utils.js";
+import { Advancement } from "../rules/advancement.js";
+import { Actor } from "../rules/actor.js";
 
 Object.assign(EditionSR6, {
   creation: {
@@ -3064,6 +3066,24 @@ Object.assign(EditionSR6, {
     /* ============================================================
        CONSTRUCTION DU PERSONNAGE
        ============================================================ */
+    /* ---- Progression en campagne (Livre de base p.70-72) ----
+       Attributs : 5 × nouveau rang ; compétences : 5 × nouveau rang (rang
+       1 → 5 pour une nouvelle) ; spécialisation : 5 ; connaissance : 3 ;
+       initiation/submersion : 10 + niveau (Esoteric). Sorts, formes
+       complexes, traits et maîtrises : pas encore proposés ici. */
+    advancement(pnj) {
+      const speciaux = this.SPECIAL_ATTRS.filter((k) => k === "ATO" || Actor.base(pnj, k) > 0);
+      const rows = [
+        ...Advancement.attrRows(pnj, [...this.ATTRS, ...speciaux], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * 5 }),
+        ...Advancement.skillRows(pnj, { max: 9, cost: (n) => n * 5 }),
+        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("sr6").map((name) => ({ name, attr: SkillCatalog.attrFor("sr6", name) })), { cost: 5 }),
+        ...Advancement.specRows(pnj, { cost: 5, minRank: 1 }),
+        ...Advancement.knowledgeRows(pnj, { rated: false, costNew: 3 }),
+        ...Advancement.initiationRows(pnj, "sr6"),
+      ];
+      return { currency: "karma", label: "Karma", source: "Livre de base p.70-72", rows };
+    },
+
     buildCharacter(build) {
       const parModules = this.methods[build.method]?.family === "modules";
       const grants = parModules ? this.lifeModuleGrants(build) : null;

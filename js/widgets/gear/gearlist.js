@@ -23,6 +23,7 @@
      creation  — le module de création (`App.editionModule.creation`)
      host()    — l'objet qui porte `gear`
      onChange()— après toute mutation
+     onAdd(item)— après l'entrée d'un objet (achat en campagne)
      total()   — un total en ¥ pour l'en-tête (optionnel)
      limits()  — `{ allowed, nuyenLeft }` pour le catalogue (optionnel)
      isOpen(uid) / setOpen(uid, open) — l'état des plis (défaut : mémoire)
@@ -437,6 +438,7 @@ export const GearList = {
           host.gear.push(item);
           // L'objet qu'on vient d'ajouter s'ouvre : ses options sont là.
           this._setOpen(cfg, item.uid, true);
+          if (cfg.onAdd) cfg.onAdd(item);
         }
         break;
       }
@@ -447,6 +449,7 @@ export const GearList = {
         const item = { uid: Utils.uid(), name: txt, cost: 0, availability: null };
         host.gear.push(item);
         this._setOpen(cfg, item.uid, true);
+        if (cfg.onAdd) cfg.onAdd(item);
         break;
       }
       case "add-mod": {

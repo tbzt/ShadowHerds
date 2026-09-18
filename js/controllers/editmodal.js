@@ -900,6 +900,18 @@ export const EditModal = {
       host: () => pnj,
       freeAdd: true,
       onChange: () => this._onGearChange(pnj, c),
+      /* Acheter en campagne débite les nuyens du registre, au prix du
+         catalogue (tarif standard — la gamme d'un implant se choisit
+         ensuite, la ligne du registre se corrige sur la carte). Un objet
+         sans prix n'écrit rien. */
+      onAdd: (item) => {
+        if (!(item.cost > 0)) return;
+        UI.addLedgerEntry(pnj.id, "nuyen", -item.cost, `Achat : ${item.name}`);
+        /* La section Campagne du formulaire affiche le solde d'ouverture et
+           le relit à la fermeture : sans ce repeint, elle « corrigeait » le
+           débit d'un ajustement inverse (mesuré : −180 puis +180). */
+        this._rerenderCampaignSection(pnj);
+      },
     });
   },
 

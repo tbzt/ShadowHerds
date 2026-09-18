@@ -19,6 +19,7 @@ import { RovingGroup } from "../kit/rovinggroup.js";
 import { Sheets } from "../kit/sheets.js";
 import { UI } from "../kit/ui.js";
 import { Utils } from "../../core/utils.js";
+import { Evolution } from "../../controllers/evolution.js";
 
 export const CardDelegation = {
   _delegated: false,
@@ -272,6 +273,9 @@ export const CardDelegation = {
           break;
         case "export-foundry":
           FoundryExport.exportPnj(id);
+          break;
+        case "evolve":
+          Evolution.open(id);
           break;
         case "journal-add":
           CardRenderer._submitJournal(actionEl);

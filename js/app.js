@@ -20,7 +20,7 @@ export const App = {
       Storage (qui versionne les données) : celui-ci versionne la RELEASE.
       Lisible en console pour le support ; future base de la révision « Quoi
       de neuf » (chantier V9). Voir CONTRIBUTING.md § Versionner les schémas. */
-  VERSION: "1.225.0",
+  VERSION: "1.226.0",
 
   edition: "none",
   editionModule: null,
@@ -976,6 +976,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (ContentModal.isOpen()) return void ContentModal.hide();
       if (Dialog.isOpen()) return;
       if (document.getElementById("edit-modal")?.classList.contains("open")) return void EditModal.close();
+      if (document.getElementById("evolution-overlay")?.classList.contains("open")) return void Evolution.close();
       if (document.getElementById("chargen-overlay")?.classList.contains("open")) return void CharGen.close();
       if (document.getElementById("palette-overlay")?.classList.contains("open")) return void Palette.close();
       if (document.getElementById("shortcuts-overlay")?.classList.contains("open")) return void App.toggleCheatsheet(false);

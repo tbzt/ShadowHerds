@@ -39,6 +39,7 @@
   <link rel="stylesheet" href="css/base/cards-linked.css">
   <link rel="stylesheet" href="css/base/chargen.css">
   <link rel="stylesheet" href="css/base/gearlist.css">
+  <link rel="stylesheet" href="css/base/evolution.css">
   <link rel="stylesheet" href="css/base/matrix.css">
   <link rel="stylesheet" href="css/base/chase.css">
   <link rel="stylesheet" href="css/base/focus.css">
@@ -866,6 +867,19 @@
     </div>
   </div>
 
+  <!-- Faire évoluer un PJ (js/controllers/evolution.js) : les progressions
+       du module de création, au barème du livre, payées sur le registre. -->
+  <div class="modal-overlay" id="evolution-overlay" role="dialog" aria-modal="true" aria-labelledby="evolution-title">
+    <div class="modal evolution-modal">
+      <div class="cluster modal-header">
+        <span class="modal-title" id="evolution-title">Faire évoluer</span>
+        <span class="cg-subtitle" id="evolution-subtitle" aria-live="polite"></span>
+        <button class="modal-close" data-ev-action="close" aria-label="Fermer">✕</button>
+      </div>
+      <div class="modal-body" id="evolution-body"></div>
+    </div>
+  </div>
+
   <!-- OVERLAY AIDE RACCOURCIS CLAVIER -->
   <div class="modal-overlay" id="shortcuts-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title">
     <div class="modal">
@@ -1042,6 +1056,7 @@
   <script type="module" src="js/controllers/shadows.js"></script>
   <script type="module" src="js/controllers/characters.js"></script>
   <script type="module" src="js/controllers/chargen.js"></script>
+  <script type="module" src="js/controllers/evolution.js"></script>
   <script type="module" src="js/controllers/pnjlookup.js"></script>
   <script type="module" src="js/widgets/journal/palette.js"></script>
   <script type="module" src="js/widgets/journal/markdown.js"></script>

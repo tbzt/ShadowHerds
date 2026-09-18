@@ -1,0 +1,39 @@
+/* ============================================================
+   EVOLUTION — faire évoluer un PJ (js/controllers/evolution.js)
+   Une ligne par progression possible : le libellé, le coût en bouton.
+   Reprend les libellés de section de l'assistant (.cg-section-label).
+   ============================================================ */
+.evolution-modal {
+  width: min(720px, 96vw);
+}
+.ev-rows {
+  margin-bottom: var(--sp-3);
+}
+.ev-row {
+  flex-wrap: nowrap;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ev-row:last-child {
+  border-bottom: 0;
+}
+.ev-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-sm);
+}
+/* Au-delà du solde : lisible, inerte — on voit ce qu'on ne peut pas encore. */
+.ev-row.is-dear .ev-label {
+  color: var(--text-dim);
+}
+.ev-buy {
+  flex: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.ev-buy:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

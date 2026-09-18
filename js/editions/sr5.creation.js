@@ -46,6 +46,8 @@ import { ArmesSR5 } from "./sr5.armes.js";
 import { ImplantsSR5 } from "./sr5.implants.js";
 import { Vehicles } from "../catalogs/vehicles.js";
 import { Utils } from "../core/utils.js";
+import { Advancement } from "../rules/advancement.js";
+import { Actor } from "../rules/actor.js";
 
 Object.assign(EditionSR5, {
   creation: {
@@ -3311,6 +3313,25 @@ Object.assign(EditionSR5, {
        CONSTRUCTION DU PERSONNAGE
        Même forme que EditionSR5.generate() + la couche PJ.
        ============================================================ */
+    /* ---- Progression en campagne (Livre de Règles p.103-107) ----
+       Attributs : nouvel indice × 5 ; compétences actives : nouvel indice
+       × 2 (indice 1 → 2 karma pour une nouvelle) ; spécialisation : 7 ;
+       connaissances : nouvel indice × 1 ; initiation : 10 + grade × 3
+       (Esoteric). Sorts, formes complexes et traits ne sont pas encore
+       proposés ici — ils demandent un choix au catalogue, pas un chiffre. */
+    advancement(pnj) {
+      const speciaux = this.SPECIAL_ATTRS.filter((k) => k === "CHC" || Actor.base(pnj, k) > 0);
+      const rows = [
+        ...Advancement.attrRows(pnj, [...this.ATTRS, ...speciaux], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * 5 }),
+        ...Advancement.skillRows(pnj, { max: 12, cost: (n) => n * 2 }),
+        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("sr5").map((name) => ({ name, attr: SkillCatalog.attrFor("sr5", name) })), { cost: 2 }),
+        ...Advancement.specRows(pnj, { cost: 7, minRank: 1 }),
+        ...Advancement.knowledgeRows(pnj, { rated: true, costNew: 1, costUp: (n) => n }),
+        ...Advancement.initiationRows(pnj, "sr5"),
+      ];
+      return { currency: "karma", label: "Karma", source: "Livre de Règles p.103-107", rows };
+    },
+
     buildCharacter(build) {
       const attrs = {};
       for (const k of this.ATTRS) {

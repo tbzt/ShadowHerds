@@ -18,6 +18,9 @@ import { EditionAnarchy2 } from "./anarchy2.js";
 import { Flavor } from "../rules/flavor.js";
 import { Magic } from "../rules/magic.js";
 import { Utils } from "../core/utils.js";
+import { Advancement } from "../rules/advancement.js";
+import { SkillCatalog } from "../rules/skillcatalog.js";
+import { Actor } from "../rules/actor.js";
 
 Object.assign(EditionAnarchy2, {
   creation: {
@@ -1373,6 +1376,47 @@ Object.assign(EditionAnarchy2, {
 
     /** Construit un personnage de forme PNJ (mêmes clés que
         EditionAnarchy2.generate()) + couche PJ (isPC, narratif, budget). */
+    /* ---- Progression en campagne (Anarchy 2 p.83-84) ----
+       EN NUYENS, pas en karma : « la création et l'évolution des personnages
+       se basent sur les nuyens ». Même barème qu'à la création (`costs`) :
+       attribut 10 000 (20 000 le dernier point), compétence 2 500 jusqu'à
+       5 puis 5 000, spécialisation et connaissance 2 500, Atout 5 000 le
+       niveau, arme 2 500 ou 5 000 (spécialiste), équipement 2 500, sort
+       5 000. Armure (2 500 le point) : pas encore proposée. */
+    advancement(pnj) {
+      const c = this.costs;
+      const possedees = new Set((pnj.weapons || []).map((w) => w.name));
+      const rows = [
+        ...Advancement.attrRows(pnj, ["FOR", "AGI", "VOL", "LOG", "CHA"], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n, dernier) => (dernier ? c.attrLastPoint : c.attrPoint) }),
+        ...Advancement.skillRows(pnj, { max: 8, cost: (n) => (n <= 5 ? c.skillPoint : c.skillPointHigh) }),
+        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("anarchy2").map((name) => ({ name, attr: SkillCatalog.attrFor("anarchy2", name) })), { cost: c.skillPoint }),
+        ...Advancement.specRows(pnj, { cost: c.specialization, minRank: 1 }),
+        ...Advancement.knowledgeRows(pnj, { rated: false, costNew: c.knowledge }),
+        ...Advancement.edgeRows(pnj, { costNew: c.edgeLevel, costLevel: () => c.edgeLevel, maxLevel: 6 }),
+        Advancement.promptRow("spell:new", "Sorts", "Nouveau sort", c.spell, "Sort", (p, v) => {
+          p.spells = p.spells || [];
+          p.spells.push(v);
+        }),
+        ...this.weaponCatalog()
+          .filter((w) => !possedees.has(w.name))
+          .map((w) => ({
+            id: `weapon:${w.name}`,
+            group: "Armes",
+            label: w.specialist ? `${w.name} (spécialiste)` : w.name,
+            cost: w.specialist ? c.weaponSpecialist : c.weaponNormal,
+            apply: (p) => {
+              p.weapons = p.weapons || [];
+              p.weapons.push(EditionAnarchy2.resolveWeapon({ name: w.name }, Actor.flatAttrs(p), p.meta));
+            },
+          })),
+        Advancement.promptRow("gear:new", "Équipement", "Nouvel équipement", c.gear, "Équipement", (p, v) => {
+          p.equip = p.equip || [];
+          p.equip.push(v);
+        }),
+      ];
+      return { currency: "nuyen", label: "Nuyens", source: "Anarchy 2 p.83-84", rows };
+    },
+
     buildCharacter(build) {
       const attrs = { ...build.attrs };
       const skills = (build.skills || []).map((s) => {

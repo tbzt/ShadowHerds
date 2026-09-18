@@ -2837,6 +2837,10 @@ export const CardRenderer = {
     // module d'édition, jamais de branche `App.edition === …` (prohibition #1).
     if (App.getEditionModule(pnj.edition)?.foundryExport)
       acts.push({ kind: "menu", label: "Foundry", attrs: `data-action="export-foundry" data-id="${id}"` });
+    // Faire évoluer : un PJ, et une édition dont le module de création
+    // porte un barème de progression (`creation.advancement`).
+    if (pnj.isPC && !pnj.pcLight && App.getEditionModule(pnj.edition)?.creation?.advancement)
+      acts.push({ kind: "menu", label: "Faire évoluer", attrs: `data-action="evolve" data-id="${id}"` });
     if (has("discard"))
       // « Écarter » (le mot du toast) — « Ranger » disait ici l'inverse de ce
       // qu'il dit une carte plus haut (Sauvegarder → « rangé dans Ombres

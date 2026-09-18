@@ -36,6 +36,7 @@ import { InfectesAnarchy1 } from "./anarchy1.infectes.js";
 import { ChangelinTraitsAnarchy1, CHANGELIN } from "./anarchy1.changelin.js";
 import { SkillCatalog } from "../rules/skillcatalog.js";
 import { Utils } from "../core/utils.js";
+import { Advancement } from "../rules/advancement.js";
 
 Object.assign(EditionAnarchy1, {
   creation: {
@@ -696,6 +697,34 @@ Object.assign(EditionAnarchy1, {
       const chg = this.changelinState(build);
       if (chg.count) out.push(`Atout Changelin (niveau ${Math.max(0, chg.niveau)}, classe ${chg.classe}) : ${chg.traits.map((t) => t.nom).join(", ")}`);
       return out;
+    },
+
+    /* ---- Progression en campagne (Anarchy p.77-79) ----
+       Attribut : 2 × nouvel indice ; compétence : nouvel indice, nouvelle
+       compétence ou connaissance : 2 ; spécialisation : 2 (indice 2 au
+       moins, une par compétence) ; Atout : le nouveau niveau, nouvel Atout
+       1 ; arme nouvelle : 2 ; équipement : 1 point pour deux. Retirer un
+       défaut (6) et améliorer une arme (3) : pas encore proposés. */
+    advancement(pnj) {
+      const rows = [
+        ...Advancement.attrRows(pnj, this.ATTRS, { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * 2 }),
+        ...Advancement.skillRows(pnj, { max: 12, cost: (n) => n }),
+        ...((pnj.skills || []).length < this.MAX_SKILLS
+          ? Advancement.newSkillRows(pnj, this.skillCatalog(), { cost: 2 })
+          : []),
+        ...Advancement.specRows(pnj, { cost: 2, minRank: 2 }),
+        ...Advancement.knowledgeRows(pnj, { rated: false, costNew: 2 }),
+        ...Advancement.edgeRows(pnj, { costNew: 1, costLevel: (n) => n, maxLevel: 6 }),
+        Advancement.promptRow("weapon:new", "Armes et équipement", "Nouvelle arme", 2, "Arme", (p, v) => {
+          p.weapons = p.weapons || [];
+          p.weapons.push({ name: v });
+        }),
+        Advancement.promptRow("gear:new", "Armes et équipement", "Équipement (un ou deux, séparés par une virgule)", 1, "Équipement", (p, v) => {
+          p.equip = p.equip || [];
+          for (const n of v.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 2)) p.equip.push(n);
+        }),
+      ];
+      return { currency: "karma", label: "Karma", source: "Anarchy p.77-79", rows };
     },
 
     buildCharacter(build) {
