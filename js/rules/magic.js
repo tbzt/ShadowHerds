@@ -645,6 +645,32 @@ export const Magic = {
     return base.rrOptions ? this._resolveRrMentor(base) : base;
   },
 
+  /** Le catalogue des esprits mentors d'une édition, pour un sélecteur :
+      un groupe, une entrée par mentor avec sa description. `[]` pour une
+      édition sans mentors (Anarchy 1). */
+  mentorCatalog(ed) {
+    const list = this.mentorSpirits[ed] || [];
+    if (!list.length) return [];
+    const fmt = (o) => `${o.skill}${o.subspec ? ` (${o.subspec})` : ""}`;
+    return [{
+      category: "Esprits mentors",
+      items: list.map((m) => ({
+        id: m.name,
+        label: m.name,
+        detail: m.desc || (m.rrOptions ? `Comportement : ${m.behavior}. Relances au choix : ${m.rrOptions.map(fmt).join(" ; ")}.` : ""),
+      })),
+    }];
+  },
+
+  /** Un esprit mentor CHOISI par son nom : un clone résolu, comme le
+      tirage — pour Anarchy 2.0, les relances sont tirées parmi les options
+      du livre (le joueur les change sur la fiche s'il préfère). */
+  mentorByName(ed, name) {
+    const base = (this.mentorSpirits[ed] || []).find((m) => m.name === name);
+    if (!base) return null;
+    return base.rrOptions ? this._resolveRrMentor(base) : { ...base };
+  },
+
   /** Résout un esprit mentor Anarchy 2.0 : tire `pick` relances parmi
       `rrOptions`, et renvoie un clone {name, behavior, chosen, desc} sans
       muter la donnée partagée. */

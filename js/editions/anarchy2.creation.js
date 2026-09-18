@@ -602,6 +602,22 @@ Object.assign(EditionAnarchy2, {
       return (Content.spells.anarchy2 || []).map((sp) => ({ name: sp.name }));
     },
 
+    /** Les esprits mentors du livre, pour les CHOISIR (p.75-76) — le tirage
+        au sort reste possible à côté. Choisi par son nom, un mentor voit ses
+        relances tirées parmi ses options, comme au tirage. */
+    mentorCatalog() {
+      return Magic.mentorCatalog("anarchy2");
+    },
+    setMentor(build, name) {
+      const m = Magic.mentorByName("anarchy2", name);
+      if (!m) return false;
+      build.mentorSpirit = m;
+      return true;
+    },
+    clearMentor(build) {
+      build.mentorSpirit = null;
+    },
+
     /** Tire un esprit mentor selon la tradition éveillée (ou null). */
     drawMentor(awakened) {
       const kindMap = { hermétique: "hermetic", chamanique: "shamanic", adepte: "adept" };
@@ -1429,6 +1445,17 @@ Object.assign(EditionAnarchy2, {
           },
         },
       ];
+      /* Esprit mentor : un Éveillé sans mentor en choisit un — il vient avec
+         l'Éveil, sans coût (p.75). Pas de ligne au registre. */
+      if (pnj.awakened && !pnj.mentorSpirit) {
+        const mentor = Advancement.catalogRow("mentor:new", "Esprit mentor", "Esprit mentor", 0, this.mentorCatalog().map((g) => ({ ...g, items: g.items.map((it) => ({ ...it, cost: 0 })) })), [], (p, id) => {
+          p.mentorSpirit = Magic.mentorByName("anarchy2", id);
+        });
+        if (mentor) {
+          mentor.cost = 0;
+          rows.push(mentor);
+        }
+      }
       /* Les seuils de blessure sont posés à la création depuis FOR et VOL
          et rien ne les recalcule (Anarchy 2 ne dérive rien) : monter FOR
          relève les seuils physiques, monter VOL les seuils mentaux. */

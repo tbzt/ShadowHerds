@@ -3353,7 +3353,48 @@ Object.assign(EditionSR5, {
         const power = Advancement.adeptPowerRow(pnj, { catalog: Content.powerCatalogFor("sr5"), add: (p, id) => Content.addPowerItem(p, "sr5", id), ppTotal: Actor.attr(pnj, "MAG") });
         if (power) rows.push(power);
       }
+      /* Esprit mentor en campagne : un Éveillé sans mentor le choisit au
+         prix du trait acheté en jeu (2 × son coût), et le trait suit. */
+      if (Actor.attr(pnj, "MAG") > 0 && !pnj.mentorSpirit) {
+        const mentor = Advancement.catalogRow("mentor:new", "Esprit mentor", "Esprit mentor (2 × le trait)", this.mentorTraitKarma() * 2, this.mentorCatalog(), [], (p, id) => {
+          p.mentorSpirit = Magic.mentorByName("sr5", id);
+          p.traits = p.traits || [];
+          const nom = (this.traitById(this.MENTOR_TRAIT_ID) || {}).nom || "Esprit mentor";
+          if (!p.traits.some((t) => String(t).startsWith(nom))) p.traits.push(`${nom} (${this.mentorTraitKarma()})`);
+        });
+        if (mentor) rows.push(mentor);
+      }
       return { currency: "karma", label: "Karma", source: "Livre de Règles p.103-107", rows };
+    },
+
+    /* ---- Esprit mentor (Livre de Règles p.78, 323-327) ----
+       Un mentor se CHOISIT — la liste est celle de `Magic.mentorSpirits`,
+       la même que le générateur de PNJ tire au sort. Le choisir pose le
+       trait « Esprit mentor » à son coût de karma ; le retirer retire le
+       trait. Le bonus de compétence du mentor est appliqué par BonusEngine
+       sur la fiche, comme pour un PNJ. */
+    MENTOR_TRAIT_ID: "esprit_mentor",
+    mentorCatalog() {
+      return Magic.mentorCatalog("sr5");
+    },
+    mentorTraitKarma() {
+      const t = this.traitById(this.MENTOR_TRAIT_ID);
+      return t ? Math.abs((Array.isArray(t.karma) ? t.karma[0] : t.karma)) : 0;
+    },
+    mentorHint() {
+      return `Choisir un mentor pose le trait « Esprit mentor » (${this.mentorTraitKarma()} karma).`;
+    },
+    setMentor(build, name) {
+      const m = Magic.mentorByName("sr5", name);
+      if (!m) return false;
+      build.mentorSpirit = m;
+      build.traits = build.traits || [];
+      if (!build.traits.some((t) => t.id === this.MENTOR_TRAIT_ID)) build.traits.push({ id: this.MENTOR_TRAIT_ID, karma: this.mentorTraitKarma() });
+      return true;
+    },
+    clearMentor(build) {
+      build.mentorSpirit = null;
+      build.traits = (build.traits || []).filter((t) => t.id !== this.MENTOR_TRAIT_ID);
     },
 
     buildCharacter(build) {
@@ -3518,6 +3559,8 @@ Object.assign(EditionSR5, {
         // L'équipement STRUCTURÉ ; `equip` en est projeté par `applyGear`.
         gear: this._sheetGear(build),
         awakened: build.awakened || null,
+        // L'esprit mentor choisi (BonusEngine lit `mentorSpirit.bonus`, la carte l'affiche).
+        mentorSpirit: build.mentorSpirit || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
         tradition: build.tradition || null,
         /* Style de vie « sans SIN » : la fiche et le kit savent déjà l'afficher

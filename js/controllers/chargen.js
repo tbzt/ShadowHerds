@@ -647,15 +647,10 @@ export const CharGen = {
             `<label class="cluster cg-check"><input type="checkbox" data-cg-action="toggle-spell" data-name="${this._esc(sp.name)}" ${b.spells.includes(sp.name) ? "checked" : ""}> ${this._esc(sp.name)}</label>`,
         )
         .join("");
-      const mentorBlock = b.mentorSpirit
-        ? `<span class="tag">✦ ${this._esc(b.mentorSpirit.name)}${b.mentorSpirit.desc ? ` — ${this._esc(b.mentorSpirit.desc)}` : ""}</span>
-           <button class="btn-icon-tiny danger" data-cg-action="clear-mentor" title="Retirer">✕</button>`
-        : `<button class="btn-secondary btn-small" data-cg-action="draw-mentor">✦ Tirer un esprit mentor</button>`;
       magicHtml = `<div class="cg-step-section">
         <div class="cg-section-label">Sorts <span class="cg-section-note">${this._kitMeter(b.spells.length, kitSpells, "au kit")} · 5 000 ¥/sort hors kit</span></div>
         <div class="cg-check-grid">${spellChecks}</div>
-        <div class="cg-section-label">Esprit mentor</div>
-        <div class="cluster cg-add-row">${mentorBlock}</div>
+        ${this._mentorSection()}
       </div>`;
     }
 
@@ -1172,6 +1167,30 @@ export const CharGen = {
       ${this._stepErrorBox("magie")}
       <p class="cg-hint">${this._esc(step.hint)}</p>
       ${blocs}
+      ${this._mentorSection()}
+    </div>`;
+  },
+
+  /** L'esprit mentor : le choisi en puce (retirable), le catalogue du
+      module dessous — et « Tirer au sort » si l'édition sait tirer
+      (Anarchy 2). Rien si le module n'a pas de mentors (Anarchy 1). */
+  _mentorSection() {
+    const c = this._creation();
+    const b = this._build;
+    if (!c.mentorCatalog) return "";
+    const groups = c.mentorCatalog();
+    if (!groups.length) return "";
+    const m = b.mentorSpirit;
+    const chip = m
+      ? `<div class="cg-pick-chosen"><span class="cg-pick-tag cg-mod-tag">✦ ${this._esc(m.name)}${m.desc ? ` <span class="cg-section-note">— ${this._esc(m.desc)}</span>` : ""}<button class="btn-icon-tiny" data-cg-action="clear-mentor" title="Retirer">✕</button></span></div>`
+      : "";
+    const tirage = c.drawMentor ? `<button class="btn-secondary btn-small" data-cg-action="draw-mentor">✦ Tirer au sort</button>` : "";
+    return `<div class="stack">
+      <div class="cg-section-label">Esprit mentor <span class="cg-section-note">${m ? "choisi" : "aucun"}</span></div>
+      ${c.mentorHint ? `<p class="cg-hint">${this._esc(c.mentorHint())}</p>` : ""}
+      ${chip}
+      ${tirage ? `<div class="cluster cg-add-row">${tirage}</div>` : ""}
+      ${this._catalogPicker({ id: "mentor", groups, action: "pick-mentor", selected: m ? [m.name] : [] })}
     </div>`;
   },
 
@@ -2313,8 +2332,13 @@ export const CharGen = {
         break;
       }
       case "clear-mentor":
-        b.mentorSpirit = null;
+        if (c.clearMentor) c.clearMentor(b);
+        else b.mentorSpirit = null;
         afterMutate();
+        break;
+      case "pick-mentor":
+        // Choisi au catalogue : le module pose ce qui va avec (le trait en SR5/SR6).
+        if (c.setMentor && c.setMentor(b, el.dataset.name)) afterMutate();
         break;
 
       case "toggle-weapon": {
