@@ -3090,7 +3090,16 @@ Object.assign(EditionSR6, {
       const cform = Actor.attr(pnj, "RES") > 0 && EditionSR6.complexFormCatalog() ? Advancement.complexFormRow(pnj, { catalog: EditionSR6.complexFormCatalog(), add: (p, id) => Content.addComplexFormItem(p, "sr6", id), cost: 5 }) : null;
       if (spell) rows.push(spell);
       if (cform) rows.push(cform);
-      rows.push(...Advancement.traitRows(pnj, { catalog: this.traitCatalog(), byId: (id) => this.traitById(id), karmaOf: (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0, mult: 2 }));
+      const karmaOf = (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0;
+      rows.push(...Advancement.traitRows(pnj, {
+        catalog: this.traitCatalog(), byId: (id) => this.traitById(id), karmaOf,
+        costNew: (t) => Math.abs(karmaOf(t)) * 2, costRemove: (t) => Math.abs(karmaOf(t)) * 2,
+        label: "Nouveau trait positif (2 × son coût)",
+      }));
+      if (Actor.attr(pnj, "MAG") > 0 && /adepte/i.test(pnj.special || "")) {
+        const power = Advancement.adeptPowerRow(pnj, { catalog: Content.powerCatalogFor("sr6"), add: (p, id) => Content.addPowerItem(p, "sr6", id), ppTotal: Actor.attr(pnj, "MAG") });
+        if (power) rows.push(power);
+      }
       return { currency: "karma", label: "Karma", source: "Livre de base p.70-72", rows };
     },
 

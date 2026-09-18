@@ -3338,7 +3338,18 @@ Object.assign(EditionSR5, {
       const cform = Actor.attr(pnj, "RES") > 0 ? Advancement.complexFormRow(pnj, { catalog: EditionSR5.complexFormCatalog(), add: (p, id) => EditionSR5.addComplexFormItem(p, id), cost: 4 }) : null;
       if (spell) rows.push(spell);
       if (cform) rows.push(cform);
-      rows.push(...Advancement.traitRows(pnj, { catalog: this.traitCatalog(), byId: (id) => this.traitById(id), karmaOf: (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0, mult: 2 }));
+      const karmaOf = (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0;
+      rows.push(...Advancement.traitRows(pnj, {
+        catalog: this.traitCatalog(), byId: (id) => this.traitById(id), karmaOf,
+        costNew: (t) => Math.abs(karmaOf(t)) * 2, costRemove: (t) => Math.abs(karmaOf(t)) * 2,
+        label: "Nouvel Avantage (2 × son coût)",
+      }));
+      /* Pouvoirs d'adepte : en points de pouvoir, pas en karma — proposés à
+         un adepte (ou adepte mystique), sans ligne au registre. */
+      if (Actor.attr(pnj, "MAG") > 0 && /adepte/i.test(pnj.special || "")) {
+        const power = Advancement.adeptPowerRow(pnj, { catalog: Content.powerCatalogFor("sr5"), add: (p, id) => Content.addPowerItem(p, "sr5", id), ppTotal: Actor.attr(pnj, "MAG") });
+        if (power) rows.push(power);
+      }
       return { currency: "karma", label: "Karma", source: "Livre de Règles p.103-107", rows };
     },
 

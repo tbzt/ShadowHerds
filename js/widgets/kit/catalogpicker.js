@@ -55,7 +55,7 @@ export const CatalogPicker = {
           const dispo = it.dispoText || (it.availability != null ? String(it.availability) : "");
           const meta = [
             it.essence != null ? `Ess. ${fmt(it.essence)}` : "",
-            it.cost != null ? `${fmt(it.cost)} ${unit}` : it.costNote || "",
+            it.cost != null && it.cost !== 0 ? `${fmt(it.cost)} ${unit}` : it.costNote || "",
             dispo ? `Disp. ${dispo}` : "",
           ].filter(Boolean).join(" · ");
           const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? (limits.dearTitle || "Au-delà des nuyens restants") : pris ? it.warn : "";

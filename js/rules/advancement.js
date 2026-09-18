@@ -234,45 +234,92 @@ export const Advancement = {
     return this.catalogRow("cform:new", "Formes complexes", "Nouvelle forme complexe", cost, catalog, pnj.complexForms, (p, id) => add(p, id));
   },
 
-  /** Traits en campagne : un nouveau trait positif se paie `mult` × son
-      coût de création ; retirer un trait négatif coûte `mult` × son bonus.
-      `catalog` : les groupes de `traitCatalog()` ; `byId` : `traitById` ;
-      `karmaOf(trait)` : le premier chiffre du barème (un trait à niveaux ou
-      à fourchette prend sa valeur basse — le meneur ajuste sur la carte).
-      Le trait est écrit sur la fiche comme à la création : « Nom (karma) ». */
-  traitRows(pnj, { catalog, byId, karmaOf, mult = 2 }) {
+  /** Traits en campagne. `costNew(ref)` : le prix d'un trait positif pris
+      en jeu (null : pas proposé) ; `costRemove(ref)` : le prix pour retirer
+      un défaut que la fiche porte (null : pas proposé). `catalog` : les
+      groupes de `traitCatalog()` ; `byId` : `traitById`. Le trait est écrit
+      sur la fiche comme à la création : « Nom (karma) » quand il en a un. */
+  traitRows(pnj, { catalog, byId, costNew, costRemove, karmaOf = () => null, label = "Nouveau trait positif" }) {
     const out = [];
-    const owned = (pnj.traits || []).map((t) => this._nameOf(t).replace(/\s*\(-?\d+\)\s*$/, ""));
-    const positifs = (catalog || [])
-      .map((g) => ({
-        ...g,
-        items: g.items
-          .map((it) => ({ it, ref: byId(it.id) }))
-          .filter(({ ref }) => ref && ref.type === "avantage" && !ref.infecte)
-          .map(({ it, ref }) => ({ ...it, cost: Math.abs(karmaOf(ref)) * mult })),
-      }))
-      .filter((g) => g.items.length);
-    const nouveau = this.catalogRow("trait:new", "Traits", `Nouveau trait positif (${mult} × son coût)`, 0, positifs, owned, (p, id) => {
-      const ref = byId(id);
-      if (!ref) return;
-      p.traits = p.traits || [];
-      p.traits.push(`${ref.nom} (${karmaOf(ref)})`);
-    });
-    if (nouveau) out.push(nouveau);
-    // Retirer un défaut que la fiche porte : reconnu par son nom au catalogue.
-    (pnj.traits || []).forEach((t, i) => {
-      const nom = this._nameOf(t).replace(/\s*\(-?\d+\)\s*$/, "");
-      const ref = (catalog || []).flatMap((g) => g.items).map((it) => byId(it.id)).find((r) => r && r.nom === nom);
-      if (!ref || ref.type !== "defaut") return;
-      out.push({
-        id: `trait:remove:${i}`,
-        group: "Traits",
-        label: `Retirer ${nom} (${mult} × son bonus)`,
-        cost: Math.abs(karmaOf(ref)) * mult,
-        apply: (p) => {
-          p.traits.splice(i, 1);
-        },
+    const nomDe = (t) => this._nameOf(t).replace(/\s*\([^()]*\)\s*$/, "");
+    const owned = (pnj.traits || []).map(nomDe);
+    if (costNew) {
+      const positifs = (catalog || [])
+        .map((g) => ({
+          ...g,
+          items: g.items
+            .map((it) => ({ it, ref: byId(it.id) }))
+            .filter(({ ref }) => ref && ref.type === "avantage" && !ref.infecte && costNew(ref) != null)
+            .map(({ it, ref }) => ({ ...it, cost: costNew(ref) })),
+        }))
+        .filter((g) => g.items.length);
+      const nouveau = this.catalogRow("trait:new", "Traits", label, 0, positifs, owned, (p, id) => {
+        const ref = byId(id);
+        if (!ref) return;
+        p.traits = p.traits || [];
+        const k = karmaOf(ref);
+        p.traits.push(k != null ? `${ref.nom} (${k})` : ref.nom);
       });
+      if (nouveau) out.push(nouveau);
+    }
+    if (costRemove) {
+      (pnj.traits || []).forEach((t, i) => {
+        const nom = nomDe(t);
+        const ref = (catalog || []).flatMap((g) => g.items).map((it) => byId(it.id)).find((r) => r && r.nom === nom);
+        if (!ref || ref.type !== "defaut") return;
+        const cost = costRemove(ref);
+        if (cost == null) return;
+        out.push({
+          id: `trait:remove:${i}`,
+          group: "Traits",
+          label: `Retirer ${nom}`,
+          cost,
+          apply: (p) => {
+            p.traits.splice(i, 1);
+          },
+        });
+      });
+    }
+    return out;
+  },
+
+  /** Pouvoirs d'adepte : le catalogue de l'édition, SANS coût en karma —
+      ils se paient en points de pouvoir, que l'application ne chiffre pas
+      par pouvoir (le catalogue ne les porte pas). La ligne le dit et
+      laisse le meneur juger ; `ppTotal` : les points, autant que la Magie. */
+  adeptPowerRow(pnj, { catalog, add, ppTotal }) {
+    const groups = [{ category: "Pouvoirs d'adepte", items: (catalog || []).map((it) => ({ ...it, cost: 0 })) }];
+    const row = this.catalogRow("power:new", "Pouvoirs d'adepte", "Nouveau pouvoir", 0, groups, pnj.powers, (p, id) => add(p, id));
+    if (!row) return null;
+    row.cost = 0;
+    row.note = `${ppTotal} point${ppTotal > 1 ? "s" : ""} de pouvoir (autant que la Magie), ${(pnj.powers || []).length} pouvoir${(pnj.powers || []).length > 1 ? "s" : ""} déjà pris — le catalogue ne porte pas le coût de chacun, c'est au meneur de juger.`;
+    return row;
+  },
+
+  /** Personnaliser une arme (Anarchy 1 p.79) : un effet, une fois par
+      arme, écrit dans son nom — « Predator [Précision] ». */
+  weaponEffectRows(pnj, { effects, cost }) {
+    const out = [];
+    (pnj.weapons || []).forEach((w, i) => {
+      const nom = String((w && w.name) || "");
+      if (!nom) return;
+      for (const [eff, desc] of effects) {
+        if (new RegExp(`\\[[^\\]]*\\b${eff}\\b`).test(nom)) continue;
+        out.push({
+          id: `weaponfx:${i}:${eff}`,
+          group: "Armes et équipement",
+          label: `${nom.replace(/\s*\[[^\]]*\]\s*$/, "")} — ${eff} (${desc})`,
+          cost,
+          apply: (p) => {
+            const arme = p.weapons[i];
+            const m = String(arme.name).match(/^(.*?)\s*\[([^\]]*)\]\s*$/);
+            const base = m ? m[1] : arme.name;
+            const effets = m ? m[2].split(",").map((x) => x.trim()).filter(Boolean) : [];
+            effets.push(eff);
+            arme.name = `${base} [${effets.join(", ")}]`;
+          },
+        });
+      }
     });
     return out;
   },

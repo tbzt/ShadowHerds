@@ -92,7 +92,7 @@ export const Evolution = {
             /* Une ligne à catalogue : le sélecteur partagé (recherche, rayons,
                coût par entrée) ; cliquer une entrée l'achète. */
             if (r.catalog) {
-              return `<div class="ev-catalog"><span class="ev-label">${this._esc(r.label)}</span>${CatalogPicker.html({
+              return `<div class="ev-catalog"><span class="ev-label">${this._esc(r.label)}</span>${r.note ? `<p class="cg-hint">${this._esc(r.note)}</p>` : ""}${CatalogPicker.html({
                 id: `ev-${r.id}`,
                 groups: r.catalog,
                 actionAttr: "data-ev-action",
@@ -144,9 +144,16 @@ export const Evolution = {
     row.apply(pnj, value);
     const mod = App.getEditionModule(pnj.edition);
     if (mod && mod.recalc) mod.recalc(pnj);
-    // Débite, persiste, rafraîchit la carte — une seule écriture, la sienne.
     const detail = item ? item.label : value;
-    UI.addLedgerEntry(pnj.id, adv.currency, -cost, `${row.label}${detail ? ` : ${detail}` : ""}`);
+    if (cost > 0) {
+      // Débite, persiste, rafraîchit la carte — une seule écriture, la sienne.
+      UI.addLedgerEntry(pnj.id, adv.currency, -cost, `${row.label}${detail ? ` : ${detail}` : ""}`);
+    } else {
+      // Sans coût dans cette monnaie (pouvoir d'adepte, en points de pouvoir) :
+      // rien au registre, mais la fiche est persistée et repeinte.
+      UI.persistEntity(pnj.id);
+      UI.refreshEntityCard(pnj.id);
+    }
     this.render();
   },
 

@@ -703,8 +703,8 @@ Object.assign(EditionAnarchy1, {
        Attribut : 2 × nouvel indice ; compétence : nouvel indice, nouvelle
        compétence ou connaissance : 2 ; spécialisation : 2 (indice 2 au
        moins, une par compétence) ; Atout : le nouveau niveau, nouvel Atout
-       1 ; arme nouvelle : 2 ; équipement : 1 point pour deux. Retirer un
-       défaut (6) et améliorer une arme (3) : pas encore proposés. */
+       1 ; arme nouvelle : 2, personnalisée : 3 l'effet ; équipement : 1
+       point pour deux ; retirer un Défaut : 6. */
     advancement(pnj) {
       const rows = [
         ...Advancement.attrRows(pnj, this.ATTRS, { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * 2 }),
@@ -723,6 +723,13 @@ Object.assign(EditionAnarchy1, {
           p.equip = p.equip || [];
           for (const n of v.split(",").map((x) => x.trim()).filter(Boolean).slice(0, 2)) p.equip.push(n);
         }),
+        // Personnaliser une arme : un effet à 3, chacun une fois par arme (p.79).
+        ...Advancement.weaponEffectRows(pnj, {
+          cost: 3,
+          effects: [["Précision", "+1 dé"], ["Létalité", "+1 dommage"], ["Portée", "un modificateur de portée réduit de 1"], ["Spécial", "un effet narratif"]],
+        }),
+        // Retirer un Défaut : 6 karma, et une explication au groupe (p.78).
+        ...Advancement.traitRows(pnj, { catalog: this.traitCatalog(), byId: (id) => this.traitById(id), costNew: null, costRemove: () => 6 }),
       ];
       return { currency: "karma", label: "Karma", source: "Anarchy p.77-79", rows };
     },
