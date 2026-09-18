@@ -95,10 +95,24 @@ export const Hub = {
     // un changement de contexte déclenché AILLEURS (panneau run, Le Pont).
     DossierBar.subscribe(() => this.render());
     this._wire();
+    this._toggleFoundry();
     this.render();
   },
 
+  /** Les entrées Foundry du menu ne s'affichent que si l'édition en a la
+      capacité (Anarchy 1 n'a ni export ni import) — lecture de l'API neutre
+      du module, comme le bouton de création dans Personnages. */
+  _toggleFoundry() {
+    const mod = App.editionModule || {};
+    for (const [action, cap] of [["foundry-dossier", "foundryExport"], ["foundry-import", "foundryImport"]]) {
+      document.querySelectorAll(`.hub-toolbar-more [data-action="${action}"]`).forEach((b) => b.toggleAttribute("hidden", !mod[cap]));
+    }
+  },
+
   render() {
+    // Le menu suit l'édition : `render` tourne à chaque affichage et à
+    // chaque changement d'édition, `initPanel` une fois au boot.
+    this._toggleFoundry();
     // D3 : dossier vide (sélection courante, indépendant du filtre texte) →
     // masque les actions qui n'ont rien à faire (Combat/Sélectionner/
     // Imprimer/Foundry) ; Charger + recherche restent utiles à vide.

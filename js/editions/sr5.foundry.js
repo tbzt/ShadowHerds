@@ -869,7 +869,9 @@ const FoundrySR5Export = {
       skills: pc ? { active: skills } : skills,
       magic: { magicType, tradition, concentration: false },
       biography: {
-        characterMetatype: pnj.meta || "",
+        // La clé Foundry (« ork »), pas le libellé français : c'est elle que
+        // l'import relit ; « Humain » ressortait en perte à chaque export.
+        characterMetatype: this.METATYPE_MAP[pnj.meta] || pnj.meta || "",
         metatypeVariant: pnj.metavariant || "",
         nickname: pnj.name || "",
         gender: pnj.gender || "",

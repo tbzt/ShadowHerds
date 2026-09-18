@@ -27,7 +27,10 @@
    reste est signalé via `note()` (même doctrine que l'export —
    perte volontaire vers le modèle simple, cf. storage.js).
    ============================================================ */
+import { Campaign } from "../rules/campaign.js";
+import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
+import { FoundryExport } from "./foundryexport.js";
 import { Contacts } from "./contacts.js";
 import { ContactsBook } from "./contactsbook.js";
 import { Debug } from "../core/debug.js";
@@ -120,30 +123,65 @@ export const FoundryImport = {
     return Characters.data.all.find((p) => (p.name || "").trim().toLowerCase() === n) || null;
   },
 
-  /** Demande l'arbitrage (D4) : écraser/ignorer/dupliquer. Résout la valeur
-      choisie, ou "skip" si annulée (croix/Échap) — le repli le plus sûr,
+  /** Demande l'arbitrage (D4) : mettre à jour / écraser / dupliquer /
+      ignorer. « Mettre à jour » est le cas courant en campagne — le joueur a
+      fait évoluer son PJ dans Foundry, on resynchronise — et le choix par
+      défaut. Résout "skip" si annulée (croix/Échap) : le repli le plus sûr,
       celui qui ne touche à rien. */
-  async _askHomonym(name) {
+  async _askHomonym(name, hasGear) {
     const choice = await Dialog.choose({
       title: "PJ déjà présent",
-      message: `Un PJ nommé « ${name} » existe déjà dans la bibliothèque. Que faire ?`,
+      message: `Un PJ nommé « ${name} » existe déjà dans la bibliothèque.\n\nMettre à jour : Foundry remplace le personnage (attributs, compétences, équipement, identités, moniteurs), ShadowHerds garde ce qui l'entoure (dossiers, contacts liés, journal, registre de campagne, portrait).${hasGear ? "\n\n⚠ Son équipement structuré par l'assistant repassera en texte : Foundry ne le rend pas." : ""}`,
       options: [
+        { value: "update", label: "Mettre à jour", primary: true },
         { value: "overwrite", label: "Écraser", danger: true },
-        { value: "skip", label: "Ignorer", primary: true },
         { value: "duplicate", label: "Dupliquer" },
+        { value: "skip", label: "Ignorer" },
       ],
     });
     return choice || "skip";
   },
 
+  /** Fusion « Mettre à jour » : `fresh` remplace le personnage, `existing`
+      garde le monde autour. EN PLACE — l'identité de l'objet est partagée
+      par la collection, le DOM et les liens du registre de relations,
+      jamais réassignée (même règle que EditModal._restore). Le registre de
+      campagne se complète sans doublon : une ligne de même ressource, même
+      montant et même raison n'est pas rejouée, le suffixe d'import compris.
+      Renvoie true si un `gear` structuré a été perdu au passage. */
+  _updateInPlace(existing, fresh) {
+    const GARDE = ["id", "pcColor", "portraitUrl", "player", "journal"];
+    const garde = {};
+    for (const k of GARDE) if (existing[k] !== undefined) garde[k] = existing[k];
+    // Les notes locales priment quand Foundry n'en apporte pas.
+    if (existing.notes && !fresh.notes) garde.notes = existing.notes;
+    const campagne = existing.campaign ? structuredClone(existing.campaign) : null;
+    const hadGear = Array.isArray(existing.gear);
+    for (const k of Object.keys(existing)) delete existing[k];
+    Object.assign(existing, fresh, garde);
+    if (campagne || fresh.campaign) {
+      const cle = (e) => `${e.res}|${Number(e.delta) || 0}|${String(e.reason || "").replace(/\s*\(importé de Foundry\)$/, "")}`;
+      const fusion = [...((campagne && campagne.ledger) || [])];
+      const vues = new Set(fusion.map(cle));
+      for (const e of (fresh.campaign && fresh.campaign.ledger) || []) {
+        if (vues.has(cle(e))) continue;
+        vues.add(cle(e));
+        fusion.push(e);
+      }
+      const c = Campaign.ensure(existing);
+      c.ledger = fusion;
+      if (campagne && campagne.customTracks) c.customTracks = campagne.customTracks;
+    }
+    return hadGear;
+  },
+
   /** Construit le PNJ ShadowHerds à partir d'un acteur Foundry et l'ajoute
       à la bonne collection. Renvoie un récap sans toaster (l'appelant
       décide du message). */
-  async _importActor(actor, caps) {
+  async _importActor(actor, chosen) {
     if (!actor || typeof actor !== "object" || !actor.system) {
       return { ok: false, reason: "invalid" };
     }
-    const chosen = this._pick(actor, caps);
     if (!chosen) return { ok: false, reason: "unsupported" };
 
     let pnj;
@@ -169,24 +207,32 @@ export const FoundryImport = {
     this._session = null;
 
     const isPc = chosen.cap.isPc(actor);
+    let cible = pnj;
+    let updated = false;
+    let gearDropped = false;
     if (isPc) {
       const homonym = this._findHomonym(pnj.name);
       if (homonym) {
-        const choice = await this._askHomonym(pnj.name);
+        const choice = await this._askHomonym(pnj.name, Array.isArray(homonym.gear));
         if (choice === "skip") return { ok: false, reason: "skipped", name: pnj.name };
         if (choice === "overwrite") Characters.remove(homonym.id);
+        if (choice === "update") {
+          gearDropped = this._updateInPlace(homonym, pnj);
+          cible = homonym;
+          updated = true;
+        }
         // "duplicate" : rien à faire, le PJ neuf s'ajoute à côté.
       }
     }
     const col = isPc ? Characters : Shadows;
-    if (isPc && typeof Characters.add === "function") {
-      Characters.data.all.push(pnj); // add() toaste ; on veut un récap groupé
-    } else {
+    if (!updated) {
+      // add() toaste ; on veut un récap groupé
       col.data.all.push(pnj);
     }
     col.save();
     col.render();
     if (typeof col.renderLabel === "function") col.renderLabel();
+    if (updated) CardRenderer.refresh(cible);
 
     // Contacts (itemContact SR5, PJ seulement — cf. Characters.addContactLink)
     // : après le push, pnj.id existe déjà dans Characters.data.all (requis
@@ -195,20 +241,21 @@ export const FoundryImport = {
     // d'édition — couche 3 ne descend pas vers la couche 5).
     let linkedContacts = 0;
     if (isPc && typeof chosen.cap.readContacts === "function") {
-      linkedContacts = this._linkContacts(pnj, chosen.cap.readContacts(actor), chosen.id);
+      linkedContacts = this._linkContacts(cible, chosen.cap.readContacts(actor), chosen.id);
     }
 
     // Véhicules/drones (itemVehicle) : entités liées « qui suivent leur
     // maître » (Shadows.data.all + ownerId, socle existant — cf.
     // js/catalogs/vehicles.js) — PJ et PNJ tous deux propriétaires possibles.
+    // Une mise à jour ne recrée pas les véhicules déjà liés au PJ.
     let linkedVehicles = 0;
-    if (typeof chosen.cap.readVehicles === "function") {
-      linkedVehicles = this._spawnVehicles(pnj, chosen.cap.readVehicles(actor), chosen.id);
+    if (!updated && typeof chosen.cap.readVehicles === "function") {
+      linkedVehicles = this._spawnVehicles(cible, chosen.cap.readVehicles(actor), chosen.id);
     }
 
     return {
-      ok: true, edition: chosen.id, isPc, name: pnj.name,
-      unresolved: unresolved.length, linkedContacts, linkedVehicles,
+      ok: true, edition: chosen.id, isPc, name: cible.name, updated, gearDropped,
+      unresolved: unresolved.length, notes: unresolved, linkedContacts, linkedVehicles,
     };
   },
 
@@ -295,39 +342,73 @@ export const FoundryImport = {
     input.click();
   },
 
-  /** Lit et importe une liste de fichiers, puis toaste un récap unique. */
-  async _runImport(files, caps) {
-    let pj = 0;
-    let pnjCount = 0;
-    let failed = 0;
-    let skipped = 0;
-    let unresolved = 0;
-    let contactsLinked = 0;
-    let vehiclesSpawned = 0;
+  /** Pré-vol : les fichiers sont LUS d'abord, et l'écran dit, par acteur,
+      l'édition détectée, PJ ou PNJ, le nom — avant d'importer quoi que ce
+      soit. On confirme tel quel, ou on force une édition pour tout le lot
+      (une détection peut se tromper entre deux systèmes proches). Résout
+      la liste `[{ actor, chosen }]`, ou null si annulé. */
+  async _preflight(files, caps) {
+    const lot = [];
     for (const file of files) {
       let data;
       try {
         data = await this._readFile(file);
       } catch (e) {
-        failed++;
         toast(e.message, "danger");
         continue;
       }
       // Foundry exporte un acteur par fichier, mais on tolère un tableau.
-      const actors = Array.isArray(data) ? data : [data];
-      for (const actor of actors) {
-        const res = await this._importActor(actor, caps);
-        if (!res.ok) {
-          if (res.reason === "skipped") skipped++;
-          else failed++;
-          continue;
-        }
-        if (res.isPc) pj++;
-        else pnjCount++;
-        unresolved += res.unresolved;
-        contactsLinked += res.linkedContacts || 0;
-        vehiclesSpawned += res.linkedVehicles || 0;
+      for (const actor of Array.isArray(data) ? data : [data]) {
+        const chosen = actor && actor.system ? this._pick(actor, caps) : null;
+        lot.push({ file: file.name, actor, chosen });
       }
+    }
+    if (!lot.length) return null;
+    const nomDe = (c) => (c && (c.mod.label || c.id)) || "édition inconnue";
+    const lignes = lot.map((x) => {
+      if (!x.chosen) return `• ${x.file} — format non reconnu`;
+      const type = x.chosen.cap.isPc(x.actor) ? "PJ" : "PNJ";
+      return `• ${x.file} — ${nomDe(x.chosen)} · ${type} · ${(x.actor && x.actor.name) || "sans nom"}`;
+    });
+    const options = [{ value: "go", label: "Importer", primary: true }];
+    for (const c of caps) options.push({ value: `force:${c.id}`, label: `Tout en ${nomDe(c)}` });
+    options.push({ value: "cancel", label: "Annuler" });
+    const choix = await Dialog.choose({ title: "Importer depuis Foundry", message: lignes.join("\n"), options });
+    if (!choix || choix === "cancel") return null;
+    if (choix.startsWith("force:")) {
+      const forced = caps.find((c) => c.id === choix.slice(6));
+      for (const x of lot) if (x.actor && x.actor.system) x.chosen = forced;
+    }
+    return lot;
+  },
+
+  /** Importe le lot confirmé, puis un toast de récap et, s'il y a eu des
+      pertes, la liste à l'écran. */
+  async _runImport(files, caps) {
+    const lot = await this._preflight(files, caps);
+    if (!lot) return;
+    let pj = 0;
+    let pnjCount = 0;
+    let updated = 0;
+    let failed = 0;
+    let skipped = 0;
+    let contactsLinked = 0;
+    let vehiclesSpawned = 0;
+    const notes = [];
+    for (const { actor, chosen } of lot) {
+      const res = await this._importActor(actor, chosen);
+      if (!res.ok) {
+        if (res.reason === "skipped") skipped++;
+        else failed++;
+        continue;
+      }
+      if (res.isPc) pj++;
+      else pnjCount++;
+      if (res.updated) updated++;
+      if (res.gearDropped) notes.push({ kind: "équipement structuré", value: res.name, fallback: "repassé en texte (Foundry ne le rend pas)" });
+      for (const n of res.notes || []) notes.push({ ...n, value: `${res.name} : ${n.value}` });
+      contactsLinked += res.linkedContacts || 0;
+      vehiclesSpawned += res.linkedVehicles || 0;
     }
     if (!pj && !pnjCount) {
       if (skipped) toast(`${skipped} PJ ignoré(s) (déjà présent)`, "warning");
@@ -339,12 +420,14 @@ export const FoundryImport = {
     if (pnjCount) parts.push(`${pnjCount} PNJ`);
     const head = `${parts.join(" + ")} importé${pj + pnjCount > 1 ? "s" : ""} depuis Foundry`;
     const tail = [];
+    if (updated) tail.push(`${updated} mis à jour`);
     if (contactsLinked) tail.push(`${contactsLinked} contact(s) lié(s)`);
     if (vehiclesSpawned) tail.push(`${vehiclesSpawned} véhicule(s)/drone(s)`);
-    if (unresolved) tail.push(`${unresolved} champ(s) non repris — voir console`);
+    if (notes.length) tail.push(`${notes.length} élément(s) non repris`);
     if (skipped) tail.push(`${skipped} ignoré(s) (déjà présent)`);
     if (failed) tail.push(`${failed} échec(s)`);
-    toast(tail.length ? `${head} · ${tail.join(" · ")}` : head, unresolved || failed ? "warning" : "success");
+    toast(tail.length ? `${head} · ${tail.join(" · ")}` : head, notes.length || failed ? "warning" : "success");
+    if (notes.length) FoundryExport.recap("Import depuis Foundry", notes);
   },
 };
 

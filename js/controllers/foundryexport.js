@@ -81,7 +81,19 @@ export const FoundryExport = {
     extras.forEach((extraActor, i) => {
       this._download(extraActor, base.replace(/\.json$/, `-vehicule-${i + 1}.json`));
     });
-    return { ok: true, files: 1 + extras.length, extras: extras.length, unresolved: unresolved.length };
+    return { ok: true, files: 1 + extras.length, extras: extras.length, unresolved: unresolved.length, notes: unresolved };
+  },
+
+  /** Les mappings non résolus, à l'écran : une ligne par perte, copiable.
+      Le toast disait « voir console » — un meneur ne lit pas la console. */
+  recap(titre, notes) {
+    const lignes = (notes || []).map((n) => `• ${n.kind} « ${n.value} »${n.fallback !== undefined ? ` → ${n.fallback}` : " (ignoré)"}`);
+    if (!lignes.length) return;
+    return Dialog.notice({
+      title: titre,
+      message: `${lignes.length} élément${lignes.length > 1 ? "s" : ""} sans correspondance Foundry :\n\n${lignes.join("\n")}`,
+      copyText: lignes.join("\n"),
+    });
   },
 
   /** Les contacts d'un PJ, en données plates pour le module d'édition : le
@@ -124,10 +136,8 @@ export const FoundryExport = {
     }
     const extraMsg = res.extras ? ` (+${res.extras} véhicule${res.extras > 1 ? "s" : ""} lié${res.extras > 1 ? "s" : ""})` : "";
     if (res.unresolved) {
-      console.warn(
-        `[foundry-export] « ${pnj.name} » (${pnj.edition}) : ${res.unresolved} mapping(s) non résolu(s) — export tout de même produit, voir détails ci-dessus.`,
-      );
-      toast(`« ${pnj.name} » exporté${extraMsg} — ${res.unresolved} mapping(s) non résolu(s) (voir console).`, "warning");
+      toast(`« ${pnj.name} » exporté${extraMsg} — ${res.unresolved} élément(s) sans correspondance.`, "warning");
+      this.recap(`Export de « ${pnj.name} »`, res.notes);
     } else {
       toast(`« ${pnj.name} » exporté pour Foundry${extraMsg}.`);
     }
@@ -165,20 +175,21 @@ export const FoundryExport = {
     if (!ok) return;
 
     let files = 0;
-    let unresolved = 0;
     let failed = 0;
+    const notes = [];
     for (const pnj of ents) {
       const res = this._exportEntity(pnj);
       if (!res.ok) failed++;
       else {
         files += res.files;
-        unresolved += res.unresolved;
+        for (const n of res.notes || []) notes.push({ ...n, value: `${pnj.name} : ${n.value}` });
       }
     }
     const parts = [`${ents.length - failed}/${ents.length} fiche(s) exportée(s)`, `${files} fichier(s)`];
-    if (unresolved) parts.push(`${unresolved} mapping(s) non résolu(s) — voir console`);
+    if (notes.length) parts.push(`${notes.length} élément(s) sans correspondance`);
     if (failed) parts.push(`${failed} échec(s)`);
-    toast(parts.join(" · "), unresolved || failed ? "warning" : "success");
+    toast(parts.join(" · "), notes.length || failed ? "warning" : "success");
+    if (notes.length) this.recap("Export vers Foundry", notes);
   },
 };
 

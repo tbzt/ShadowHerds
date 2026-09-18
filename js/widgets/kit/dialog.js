@@ -179,6 +179,25 @@ export const Dialog = {
     return this._open(() => footer.querySelector("button")?.focus());
   },
 
+  /** Un récap à lire, plusieurs lignes, avec « Copier » quand le texte vaut
+      d'être collé ailleurs (un ticket, un message au joueur). Remplace le
+      toast « voir console » : un meneur ne lit pas la console. Résout
+      quand la modale se ferme. */
+  async notice({ title = "", message = "", copyText = null } = {}) {
+    const options = [];
+    if (copyText) options.push({ value: "copy", label: "Copier" });
+    options.push({ value: "ok", label: "Fermer", primary: true });
+    const choix = await this.choose({ title, message, options });
+    if (choix === "copy" && navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(copyText);
+        toast("Copié.");
+      } catch {
+        toast("Copie impossible dans ce navigateur.", "warning");
+      }
+    }
+  },
+
   /** Le pied est reconstruit par `choose()` (boutons dynamiques) : le
       remettre à sa forme statique Annuler/Valider avant tout prompt/confirm. */
   _restoreFooter() {
