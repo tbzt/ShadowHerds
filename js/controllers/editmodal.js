@@ -4,6 +4,7 @@
    EDIT MODAL — édition avancée d'un PNJ sauvegardé
    ============================================================ */
 import { Actor } from "../rules/actor.js";
+import { GearList } from "../widgets/gear/gearlist.js";
 import { Campaign } from "../rules/campaign.js";
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
 import { Characters } from "./characters.js";
@@ -52,6 +53,7 @@ export const EditModal = {
       : pnj.type === "vehicle"
         ? this._buildFormVehicle(pnj)
         : this._buildForm(pnj);
+    this._mountGear(pnj);
 
     // Autocomplétion @/# câblée par l'auto-attach délégué sur
     // `data-mentions` (Mentions.wireAuto) — plus de câblage explicite ici,
@@ -883,6 +885,43 @@ export const EditModal = {
     </div>`;
   },
 
+  /** GearList sur la zone Équipement d'un PJ à `gear` : hôte = l'entité,
+      catalogue sans limite de création (on achète en campagne), plis en
+      mémoire. Rien si la zone n'est pas là (PJ texte, PNJ, véhicule). */
+  _mountGear(pnj) {
+    const rows = document.getElementById("em-gear-rows");
+    if (!rows || !Array.isArray(pnj.gear)) return;
+    const c = App.getEditionModule(pnj.edition)?.creation;
+    if (!c || !c.applyGear) return;
+    GearList.mount("editmodal", {
+      creation: c,
+      rows,
+      catalog: document.getElementById("em-gear-catalog"),
+      host: () => pnj,
+      freeAdd: true,
+      onChange: () => this._onGearChange(pnj, c),
+    });
+  },
+
+  /** `gear` a changé : `equip`, l'armure et le Score Défensif se
+      reprojettent ; l'Essence se recalcule depuis les implants — sauf pour
+      un Infecté, dont l'Essence porte une règle propre (perte à
+      l'infection) que ce recalcul ne connaît pas. La persistance et le
+      `recalc` complet viennent à la fermeture, comme pour tout le reste. */
+  _onGearChange(pnj, c) {
+    c.applyGear(pnj);
+    if (!pnj.infected && c.essenceUsed && c.ESSENCE_MAX != null) {
+      const ess = Math.max(0, Math.round((c.ESSENCE_MAX - c.essenceUsed(pnj).total) * 100) / 100);
+      Actor.setBase(pnj, "ESS", ess);
+      /* Le champ Essence du formulaire est relu à la fermeture (`_readForm`)
+         et écraserait ce recalcul avec la valeur d'ouverture : on l'aligne.
+         Mesuré : 0,35 recalculé, 2,35 persisté. */
+      const champ = document.getElementById("em-attr-ESS");
+      if (champ) champ.value = ess;
+    }
+    this._refreshZoneSummary("em-gear-rows", this._zoneCount((pnj.gear || []).length, "objet", "objets"));
+  },
+
   /* ---- Construction du formulaire ---- */
   _buildForm(pnj) {
     let html = "";
@@ -1160,15 +1199,16 @@ export const EditModal = {
     }
 
     /* Un PJ à `gear` (assistant, depuis 1.221.0) : son `equip` est PROJETÉ
-       depuis `gear` par `creation.applyGear` — la textarea l'écraserait, puis
-       la projection écraserait la textarea. Deux vérités, le défaut que la
-       structure corrige : la zone est verrouillée jusqu'à l'éditeur ligne à
-       ligne partagé avec l'assistant (P6). Présence de `gear`, jamais une
-       branche d'édition. */
+       depuis `gear` par `creation.applyGear` — pas de textarea, qui
+       l'écraserait. La zone reçoit GearList, la même liste que l'assistant
+       (montée par `_mountGear` une fois le DOM posé) ; chaque mutation
+       reprojette (`_onGearChange`). Présence de `gear`, jamais une branche
+       d'édition. */
     if (Array.isArray(pnj.gear)) {
-      html += this._zoneLocked(
+      html += this._zone(
         "Équipement",
-        `${pnj.gear.length} objet${pnj.gear.length > 1 ? "s" : ""} — structuré par l'assistant, édition ligne à ligne dans la version suivante`,
+        `<div id="em-gear-rows" class="stack"></div><div id="em-gear-catalog" class="em-gear-catalog"></div>`,
+        { summary: this._zoneCount(pnj.gear.length, "objet", "objets") },
       );
     } else {
       // ---- Section : Équipement (toujours affichée : on peut désormais en

@@ -999,221 +999,19 @@
   cursor: default;
 }
 
-/* ============================================================
-   SÉLECTEUR DE CATALOGUE (équipement, sorts, formes, pouvoirs)
-   Une liste déroulante unique tenait 572 objets d'équipement et 192 sorts,
-   sans recherche et réduits à leur nom. Ici : un champ de recherche, un
-   filtre de catégorie, et le détail du livre sous chaque entrée. La liste est
-   bornée en hauteur et défile — à 375 px comme au large, l'écran reste
-   navigable et les boutons du pied restent atteignables.
-   ============================================================ */
-.cg-pick-bar {
-  gap: 6px;
-  margin-top: 6px;
-}
-.cg-pick-search {
-  flex: 1 1 12em;
-  min-width: 0;
-  min-height: 36px;
-}
-/* Les rayons : des puces qu'on voit toutes, à la place du <select> natif
-   de catégorie (CONTRIBUTING § Direction artistique). Une seule allumée. */
-.cg-pick-shelves {
-  gap: 4px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-.cg-pick-shelf {
-  min-height: 30px;
-  padding: 3px 10px;
-  font-size: var(--fs-xs);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-pill);
-  color: var(--text-dim);
-  cursor: pointer;
-  transition:
-    border-color var(--dur-base),
-    color var(--dur-base);
-}
-.cg-pick-shelf:hover {
-  border-color: var(--accent);
-}
-.cg-pick-shelf.is-on {
-  border-color: var(--accent);
-  color: var(--text);
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-}
-.cg-pick-list {
-  max-height: 42vh;
-  overflow-y: auto;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-top: 6px;
-}
-/* Une entrée : nom et catégorie sur la première ligne, la ligne de stats
-   du livre et ce qu'il en coûte (Essence · prix · Disp.) sur la seconde —
-   le prix se lit AVANT le choix, pas après, dans un champ à saisir. */
-.cg-pick-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    "name cat"
-    "detail meta";
-  gap: 2px 10px;
-  width: 100%;
-  min-height: 44px;
-  padding: 6px 10px;
-  border: 0;
-  border-bottom: 1px solid var(--border);
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.cg-pick-item:hover {
-  background: var(--bg-raised);
-}
-.cg-pick-item.pris {
-  opacity: 0.6;
-}
-.cg-pick-name {
-  grid-area: name;
-  font-weight: 600;
-}
-.cg-pick-cat {
-  grid-area: cat;
-  font-size: var(--fs-2xs);
-  color: var(--accent2);
-  white-space: nowrap;
-}
-.cg-pick-detail {
-  grid-area: detail;
-  font-size: var(--fs-xs);
-  color: var(--text-dim, inherit);
-  opacity: 0.8;
-}
-.cg-pick-meta {
-  grid-area: meta;
-  align-self: end;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  color: var(--text);
-}
-/* Hors Disponibilité de création : visible, barrée, inerte — l'absence doit
-   se lire (cf. la grille de priorités), pas disparaître. */
-.cg-pick-item.is-out {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.cg-pick-item.is-out .cg-pick-name {
-  text-decoration: line-through;
-}
-/* Au-delà des nuyens restants : on peut, mais on le voit venir. */
-.cg-pick-item.is-dear .cg-pick-meta {
-  color: var(--warning);
-}
 /* Cellule de budget sous 10 % : le reste passe à l'ambre, pas au rouge. */
 .cg-budget-cell.is-low em {
   color: var(--warning);
 }
 
 /* ============================================================
-   ÉQUIPEMENT EN NUYENS — deux volets, une rangée repliée par objet
-   Sous 1000 px : une colonne, le panier d'abord, le catalogue ensuite à
-   hauteur fixe (l'ajout ne fait pas défiler). Dès 1000 px : le catalogue
-   à gauche, collant sous l'en-tête du modal (qui est le conteneur de
-   défilement), le panier à droite.
+   ÉQUIPEMENT EN NUYENS — la mise en page de l'étape
+   Les rangées et le sélecteur sont le widget GearList (gearlist.css) ;
+   ici seulement les deux volets propres à l'assistant.
    ============================================================ */
 .cg-gear-layout {
   display: grid;
   gap: var(--sp-3);
-}
-.cg-gear-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  transition: border-color var(--dur-base);
-}
-.cg-gear-row:focus-within {
-  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
-}
-.cg-gear-details {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-/* Le résumé EST la cible : nom, puis prix · Disp. · Essence · accessoires.
-   Le chevron dit qu'il y a un dessous. */
-.cg-gear-summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px var(--sp-3);
-  min-height: 32px;
-  cursor: pointer;
-  list-style: none;
-}
-.cg-gear-summary::-webkit-details-marker {
-  display: none;
-}
-.cg-gear-summary::before {
-  content: "▸";
-  flex: none;
-  font-size: var(--fs-xs);
-  color: var(--text-dim);
-  transition: transform var(--dur-fast) var(--ease-standard);
-}
-.cg-gear-details[open] > .cg-gear-summary::before {
-  transform: rotate(90deg);
-}
-.cg-gear-name {
-  font-family: var(--font-display);
-  font-size: var(--fs-md);
-  letter-spacing: 0.02em;
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-.cg-gear-meta {
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  font-variant-numeric: tabular-nums;
-  color: var(--text-dim);
-  white-space: nowrap;
-}
-.cg-gear-flag {
-  color: var(--warning);
-}
-.cg-gear-body {
-  padding: var(--sp-2) 0 0 1.1em;
-}
-.cg-gear-remove {
-  flex: none;
-  margin-top: 4px;
-}
-/* Les largeurs de champ, en classes : elles étaient en `style=""` inline. */
-.cg-in-price {
-  width: 7em;
-}
-.cg-in-dispo {
-  width: 4.5em;
-}
-.cg-in-indice {
-  width: 3.2em;
-}
-@media (max-width: 700px) {
-  .cg-gear-meta {
-    margin-left: 0;
-    flex-basis: 100%;
-    white-space: normal;
-  }
 }
 @media (min-width: 1000px) {
   #chargen-body[data-kind="gear_nuyen"] .cg-gear-layout {
@@ -1235,18 +1033,6 @@
   #chargen-body[data-kind="gear_nuyen"] .cg-gear-catalog .cg-pick-list {
     max-height: calc(90vh - 300px);
   }
-}
-/* Le sélecteur d'accessoires DANS une rangée : le même objet que le
-   catalogue, borné plus bas — il vit dans un pli, pas dans un volet. */
-.cg-gear-body .cg-pick-list {
-  max-height: 30vh;
-}
-/* Montures déjà prises : on peut (deux Dessous sur un M23), on le voit. */
-.cg-pick-item.is-taken .cg-pick-name {
-  color: var(--warning);
-}
-.cg-gear-family {
-  align-items: center;
 }
 .cg-pick-chosen {
   display: flex;
@@ -1293,8 +1079,6 @@
   opacity: 0.6;
 }
 @media (max-width: 700px) {
-  .cg-pick-list { max-height: 50vh; }
-  .cg-pick-cat { display: none; }
   /* Chrome mobile : seules les cellules de l'étape courante restent, la
      barre de tête se replie, l'identité passe sous le titre. */
   .cg-budget-cats.has-current .cg-budget-cell:not(.is-current) { display: none; }
