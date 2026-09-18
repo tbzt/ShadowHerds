@@ -20,6 +20,7 @@ import { Dialog } from "../widgets/kit/dialog.js";
 import { FocusTrap } from "../widgets/kit/focustrap.js";
 import { PnjLookup } from "./pnjlookup.js";
 import { CardRenderer } from "../widgets/card/cardrenderer.js";
+import { CatalogPicker } from "../widgets/kit/catalogpicker.js";
 
 export const Evolution = {
   currentId: null,
@@ -88,6 +89,20 @@ export const Evolution = {
             (g) => `<div class="cg-section-label">${this._esc(g.label)}</div>
         <div class="stack stack--tight ev-rows">${g.rows
           .map((r) => {
+            /* Une ligne à catalogue : le sélecteur partagé (recherche, rayons,
+               coût par entrée) ; cliquer une entrée l'achète. */
+            if (r.catalog) {
+              return `<div class="ev-catalog"><span class="ev-label">${this._esc(r.label)}</span>${CatalogPicker.html({
+                id: `ev-${r.id}`,
+                groups: r.catalog,
+                actionAttr: "data-ev-action",
+                action: "buy-item",
+                attrs: `data-row="${this._esc(r.id)}"`,
+                limits: { nuyenLeft: solde, dearTitle: "Au-delà du solde disponible" },
+                unit,
+                vide: "Rien à choisir.",
+              })}</div>`;
+            }
             const cher = r.cost > solde;
             return `<div class="cluster ev-row${cher ? " is-dear" : ""}">
               <span class="ev-label">${this._esc(r.label)}</span>
@@ -98,24 +113,29 @@ export const Evolution = {
           )
           .join("")
       : `<p class="cg-hint">Rien à faire progresser : tout est au maximum.</p>`;
+    CatalogPicker.init();
   },
 
   /** Une progression : la ligne est retrouvée par son id sur un contrat
       recalculé (les coûts bougent après chaque achat), le texte demandé
       s'il y a lieu, la fiche mutée, recalculée, le registre débité. */
-  async buy(rowId) {
+  async buy(rowId, itemId = null) {
     const pnj = this.currentId && PnjLookup.find(this.currentId);
     if (!pnj) return;
     const c = this._creationOf(pnj);
     const adv = c.advancement(pnj);
     const row = adv.rows.find((r) => r.id === rowId);
     if (!row) return;
+    // Une entrée de catalogue : son coût prime, son libellé va au registre.
+    const item = row.catalog && itemId != null ? row.catalog.flatMap((g) => g.items).find((it) => String(it.id) === String(itemId)) : null;
+    if (row.catalog && !item) return;
+    const cost = item ? item.cost : row.cost;
     const solde = Campaign.balance(pnj.campaign, adv.currency);
-    if (row.cost > solde) {
+    if (cost > solde) {
       toast("Au-delà du solde disponible.", "warning");
       return;
     }
-    let value = null;
+    let value = item ? item.id : null;
     if (row.prompt) {
       value = await Dialog.prompt({ title: row.label, label: row.prompt, confirmLabel: "Valider" });
       if (value === null || !String(value).trim()) return;
@@ -125,7 +145,8 @@ export const Evolution = {
     const mod = App.getEditionModule(pnj.edition);
     if (mod && mod.recalc) mod.recalc(pnj);
     // Débite, persiste, rafraîchit la carte — une seule écriture, la sienne.
-    UI.addLedgerEntry(pnj.id, adv.currency, -row.cost, `${row.label}${value ? ` : ${value}` : ""}`);
+    const detail = item ? item.label : value;
+    UI.addLedgerEntry(pnj.id, adv.currency, -cost, `${row.label}${detail ? ` : ${detail}` : ""}`);
     this.render();
   },
 
@@ -136,7 +157,10 @@ export const Evolution = {
       const el = e.target.closest("[data-ev-action]");
       if (!el || !document.getElementById("evolution-overlay")?.contains(el)) return;
       if (el.dataset.evAction === "buy") this.buy(el.dataset.id);
-      else if (el.dataset.evAction === "close") this.close();
+      else if (el.dataset.evAction === "buy-item") {
+        if (el.getAttribute("aria-disabled") === "true") return;
+        this.buy(el.dataset.row, el.dataset.id);
+      } else if (el.dataset.evAction === "close") this.close();
     });
   },
 };

@@ -37,3 +37,15 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* Une ligne à catalogue : le libellé, puis le sélecteur borné plus bas
+   qu'un volet — il vit dans une modale de lecture. */
+.ev-catalog {
+  padding: 4px 0 var(--sp-2);
+}
+.ev-catalog > .ev-label {
+  display: block;
+  margin-bottom: 4px;
+}
+.ev-catalog .cg-pick-list {
+  max-height: 32vh;
+}

@@ -34,9 +34,11 @@ export const CatalogPicker = {
                        l'ambre mais reste choisissable : c'est la validation
                        qui refuse un budget dépassé, pas le catalogue.
      `attrs` : attributs ajoutés à chaque entrée (« data-idx="3" »).
+     `unit` : l'unité du coût affiché — « ¥ » par défaut, « Karma » pour une
+     progression payée au karma.
      `it.id` sort en `data-id`, `it.warn` (avertissement du module : monture
      déjà prise) en classe `is-taken` + titre. */
-  html({ id, groups, actionAttr = "data-cg-action", action, selected, vide, limits, attrs }) {
+  html({ id, groups, actionAttr = "data-cg-action", action, selected, vide, limits, attrs, unit = "¥" }) {
     const esc = this.esc;
     const sel = new Set(selected || []);
     const fmt = (v) => Number(v).toLocaleString("fr-FR");
@@ -53,10 +55,10 @@ export const CatalogPicker = {
           const dispo = it.dispoText || (it.availability != null ? String(it.availability) : "");
           const meta = [
             it.essence != null ? `Ess. ${fmt(it.essence)}` : "",
-            it.cost != null ? `${fmt(it.cost)} ¥` : it.costNote || "",
+            it.cost != null ? `${fmt(it.cost)} ${unit}` : it.costNote || "",
             dispo ? `Disp. ${dispo}` : "",
           ].filter(Boolean).join(" · ");
-          const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? "Au-delà des nuyens restants" : pris ? it.warn : "";
+          const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? (limits.dearTitle || "Au-delà des nuyens restants") : pris ? it.warn : "";
           return `<button type="button" class="cg-pick-item${dejaPris ? " pris" : ""}${hors ? " is-out" : ""}${cher ? " is-dear" : ""}${pris ? " is-taken" : ""}" ${actionAttr}="${esc(action)}"
             data-name="${esc(it.label)}" data-cat="${esc(g.category)}" data-shelf="${esc(rayon)}" data-cost="${it.cost != null ? it.cost : ""}"${it.kind ? ` data-kind="${esc(it.kind)}"` : ""}${it.id != null ? ` data-id="${esc(it.id)}"` : ""}${attrs ? ` ${attrs}` : ""}
             ${hors ? 'aria-disabled="true"' : ""}${titre ? ` title="${esc(titre)}"` : ""}

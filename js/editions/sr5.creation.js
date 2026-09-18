@@ -3317,8 +3317,9 @@ Object.assign(EditionSR5, {
        Attributs : nouvel indice × 5 ; compétences actives : nouvel indice
        × 2 (indice 1 → 2 karma pour une nouvelle) ; spécialisation : 7 ;
        connaissances : nouvel indice × 1 ; initiation : 10 + grade × 3
-       (Esoteric). Sorts, formes complexes et traits ne sont pas encore
-       proposés ici — ils demandent un choix au catalogue, pas un chiffre. */
+       (Esoteric) ; sort 5, forme complexe 4, Avantage 2 × coût, Défaut
+       retiré 2 × bonus. Pouvoirs d'adepte : en points de pouvoir, pas
+       en karma — hors de cette liste. */
     advancement(pnj) {
       const speciaux = this.SPECIAL_ATTRS.filter((k) => k === "CHC" || Actor.base(pnj, k) > 0);
       const rows = [
@@ -3329,6 +3330,15 @@ Object.assign(EditionSR5, {
         ...Advancement.knowledgeRows(pnj, { rated: true, costNew: 1, costUp: (n) => n }),
         ...Advancement.initiationRows(pnj, "sr5"),
       ];
+      /* Sorts (5) pour un Éveillé qui lance, formes complexes (4) pour un
+         technomancien, traits : un Avantage à 2 × son coût, un Défaut retiré
+         à 2 × son bonus (p.107). */
+      const lance = Actor.attr(pnj, "MAG") > 0 && pnj.special !== "Adepte";
+      const spell = lance ? Advancement.spellRow(pnj, { catalog: EditionSR5.spellCatalog(), add: (p, id) => EditionSR5.addSpellItem(p, id), cost: 5 }) : null;
+      const cform = Actor.attr(pnj, "RES") > 0 ? Advancement.complexFormRow(pnj, { catalog: EditionSR5.complexFormCatalog(), add: (p, id) => EditionSR5.addComplexFormItem(p, id), cost: 4 }) : null;
+      if (spell) rows.push(spell);
+      if (cform) rows.push(cform);
+      rows.push(...Advancement.traitRows(pnj, { catalog: this.traitCatalog(), byId: (id) => this.traitById(id), karmaOf: (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0, mult: 2 }));
       return { currency: "karma", label: "Karma", source: "Livre de Règles p.103-107", rows };
     },
 

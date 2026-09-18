@@ -9,11 +9,14 @@
    SR5 Livre de Règles p.103-107, SR6 p.70-72, Anarchy 1 p.77-79,
    Anarchy 2 p.83-84 (en nuyens, pas en karma).
 
-   Contrat d'une ligne : { id, group, label, cost, prompt?, apply(pnj, value) }
+   Contrat d'une ligne : { id, group, label, cost, prompt?, catalog?, apply(pnj, value) }
    — `prompt` (un libellé) demande un texte avant d'appliquer (nom d'une
-   spécialisation, d'une connaissance, d'un Atout). `apply` MUTE la fiche
-   et ne persiste rien ; le contrôleur recalcule, débite le registre de
-   campagne et sauve.
+   spécialisation, d'une connaissance, d'un Atout) ; `catalog` (des groupes
+   `{ category, items: [{ id, label, detail?, cost? }] }`) offre un choix
+   dans une liste — sorts, formes complexes, traits — et `apply` reçoit l'id
+   de l'entrée, dont `cost` prime sur celui de la ligne. `apply` MUTE la
+   fiche et ne persiste rien ; le contrôleur recalcule, débite le registre
+   de campagne et sauve.
    ============================================================ */
 import { Actor } from "./actor.js";
 import { Esoteric } from "./esoteric.js";
@@ -199,6 +202,79 @@ export const Advancement = {
   /** Une ligne libre : un nom demandé, une action. */
   promptRow(id, group, label, cost, prompt, apply) {
     return { id, group, label, cost, prompt, apply };
+  },
+
+  /** Le nom d'une entrée de fiche qui peut être une chaîne ou un objet. */
+  _nameOf(x) {
+    return String((x && typeof x === "object" ? x.name : x) || "").trim();
+  },
+
+  /** Une ligne à catalogue : les entrées déjà sur la fiche (par nom) sont
+      retirées, chaque entrée porte le coût de la ligne sauf le sien. */
+  catalogRow(id, group, label, cost, groups, owned, apply) {
+    const pris = new Set((owned || []).map((x) => this._nameOf(x)));
+    const catalog = (groups || [])
+      .map((g) => ({ ...g, items: (g.items || []).filter((it) => !pris.has(it.label)).map((it) => ({ ...it, cost: it.cost ?? cost })) }))
+      .filter((g) => g.items.length);
+    if (!catalog.length) return null;
+    // Le coût de la ligne : celui donné, sinon le moins cher du catalogue —
+    // un contrat lisible d'un coup, jamais un zéro qui mentirait.
+    const min = Math.min(...catalog.flatMap((g) => g.items.map((it) => it.cost)));
+    return { id, group, label, cost: cost || min, catalog, apply };
+  },
+
+  /** Un nouveau sort, au catalogue de l'édition (`spellCatalog()`), posé
+      par `addSpellItem(pnj, id)`. */
+  spellRow(pnj, { catalog, add, cost }) {
+    return this.catalogRow("spell:new", "Sorts", "Nouveau sort", cost, catalog, pnj.spells, (p, id) => add(p, id));
+  },
+
+  /** Une nouvelle forme complexe (technomancien). */
+  complexFormRow(pnj, { catalog, add, cost }) {
+    return this.catalogRow("cform:new", "Formes complexes", "Nouvelle forme complexe", cost, catalog, pnj.complexForms, (p, id) => add(p, id));
+  },
+
+  /** Traits en campagne : un nouveau trait positif se paie `mult` × son
+      coût de création ; retirer un trait négatif coûte `mult` × son bonus.
+      `catalog` : les groupes de `traitCatalog()` ; `byId` : `traitById` ;
+      `karmaOf(trait)` : le premier chiffre du barème (un trait à niveaux ou
+      à fourchette prend sa valeur basse — le meneur ajuste sur la carte).
+      Le trait est écrit sur la fiche comme à la création : « Nom (karma) ». */
+  traitRows(pnj, { catalog, byId, karmaOf, mult = 2 }) {
+    const out = [];
+    const owned = (pnj.traits || []).map((t) => this._nameOf(t).replace(/\s*\(-?\d+\)\s*$/, ""));
+    const positifs = (catalog || [])
+      .map((g) => ({
+        ...g,
+        items: g.items
+          .map((it) => ({ it, ref: byId(it.id) }))
+          .filter(({ ref }) => ref && ref.type === "avantage" && !ref.infecte)
+          .map(({ it, ref }) => ({ ...it, cost: Math.abs(karmaOf(ref)) * mult })),
+      }))
+      .filter((g) => g.items.length);
+    const nouveau = this.catalogRow("trait:new", "Traits", `Nouveau trait positif (${mult} × son coût)`, 0, positifs, owned, (p, id) => {
+      const ref = byId(id);
+      if (!ref) return;
+      p.traits = p.traits || [];
+      p.traits.push(`${ref.nom} (${karmaOf(ref)})`);
+    });
+    if (nouveau) out.push(nouveau);
+    // Retirer un défaut que la fiche porte : reconnu par son nom au catalogue.
+    (pnj.traits || []).forEach((t, i) => {
+      const nom = this._nameOf(t).replace(/\s*\(-?\d+\)\s*$/, "");
+      const ref = (catalog || []).flatMap((g) => g.items).map((it) => byId(it.id)).find((r) => r && r.nom === nom);
+      if (!ref || ref.type !== "defaut") return;
+      out.push({
+        id: `trait:remove:${i}`,
+        group: "Traits",
+        label: `Retirer ${nom} (${mult} × son bonus)`,
+        cost: Math.abs(karmaOf(ref)) * mult,
+        apply: (p) => {
+          p.traits.splice(i, 1);
+        },
+      });
+    });
+    return out;
   },
 };
 

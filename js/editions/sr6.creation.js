@@ -3069,8 +3069,9 @@ Object.assign(EditionSR6, {
     /* ---- Progression en campagne (Livre de base p.70-72) ----
        Attributs : 5 × nouveau rang ; compétences : 5 × nouveau rang (rang
        1 → 5 pour une nouvelle) ; spécialisation : 5 ; connaissance : 3 ;
-       initiation/submersion : 10 + niveau (Esoteric). Sorts, formes
-       complexes, traits et maîtrises : pas encore proposés ici. */
+       initiation/submersion : 10 + niveau (Esoteric) ; sort 5, forme
+       complexe 5, trait positif 2 × coût, trait négatif retiré 2 × coût.
+       Maîtrises : pas encore proposées ici. */
     advancement(pnj) {
       const speciaux = this.SPECIAL_ATTRS.filter((k) => k === "ATO" || Actor.base(pnj, k) > 0);
       const rows = [
@@ -3081,6 +3082,15 @@ Object.assign(EditionSR6, {
         ...Advancement.knowledgeRows(pnj, { rated: false, costNew: 3 }),
         ...Advancement.initiationRows(pnj, "sr6"),
       ];
+      /* Sort 5, forme complexe 5, trait positif 2 × son coût, trait négatif
+         retiré 2 × son coût (p.71-72). */
+      const lance = Actor.attr(pnj, "MAG") > 0 && pnj.special !== "Adepte";
+      const spell = lance ? Advancement.spellRow(pnj, { catalog: EditionSR6.spellCatalog(), add: (p, id) => EditionSR6.addSpellItem(p, id), cost: 5 }) : null;
+      // L'édition n'a pas d'`addComplexFormItem` propre : le geste est celui de Content.
+      const cform = Actor.attr(pnj, "RES") > 0 && EditionSR6.complexFormCatalog() ? Advancement.complexFormRow(pnj, { catalog: EditionSR6.complexFormCatalog(), add: (p, id) => Content.addComplexFormItem(p, "sr6", id), cost: 5 }) : null;
+      if (spell) rows.push(spell);
+      if (cform) rows.push(cform);
+      rows.push(...Advancement.traitRows(pnj, { catalog: this.traitCatalog(), byId: (id) => this.traitById(id), karmaOf: (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0, mult: 2 }));
       return { currency: "karma", label: "Karma", source: "Livre de base p.70-72", rows };
     },
 
