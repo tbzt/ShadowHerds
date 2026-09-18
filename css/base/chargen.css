@@ -1,8 +1,12 @@
 /* ============================================================
    CHARGEN — assistant de création de personnage jouable
    ============================================================ */
+/* 1240 px : à 1440 de large, 860 px laissaient 40 % de l'écran vide et
+   empilaient le catalogue sous les objets choisis. Les étapes qui n'ont
+   pas deux volets gardent une colonne de lecture (`.cg-form-grid`,
+   `.cg-attr-grid` savent remplir). */
 .chargen-modal {
-  width: min(860px, 96vw);
+  width: min(1240px, 96vw);
 }
 /* CHARGEN — 2e écran témoin D3 : composé avec .cluster/.stack
    (foundation.css). Ce qui reste ci-dessous n'est que le vrai écart au
@@ -1115,6 +1119,122 @@
 /* Cellule de budget sous 10 % : le reste passe à l'ambre, pas au rouge. */
 .cg-budget-cell.is-low em {
   color: var(--warning);
+}
+
+/* ============================================================
+   ÉQUIPEMENT EN NUYENS — deux volets, une rangée repliée par objet
+   Sous 1000 px : une colonne, le panier d'abord, le catalogue ensuite à
+   hauteur fixe (l'ajout ne fait pas défiler). Dès 1000 px : le catalogue
+   à gauche, collant sous l'en-tête du modal (qui est le conteneur de
+   défilement), le panier à droite.
+   ============================================================ */
+.cg-gear-layout {
+  display: grid;
+  gap: var(--sp-3);
+}
+.cg-gear-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color var(--dur-base);
+}
+.cg-gear-row:focus-within {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+}
+.cg-gear-details {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+/* Le résumé EST la cible : nom, puis prix · Disp. · Essence · accessoires.
+   Le chevron dit qu'il y a un dessous. */
+.cg-gear-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--sp-3);
+  min-height: 32px;
+  cursor: pointer;
+  list-style: none;
+}
+.cg-gear-summary::-webkit-details-marker {
+  display: none;
+}
+.cg-gear-summary::before {
+  content: "▸";
+  flex: none;
+  font-size: var(--fs-xs);
+  color: var(--text-dim);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+.cg-gear-details[open] > .cg-gear-summary::before {
+  transform: rotate(90deg);
+}
+.cg-gear-name {
+  font-family: var(--font-display);
+  font-size: var(--fs-md);
+  letter-spacing: 0.02em;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.cg-gear-meta {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.cg-gear-flag {
+  color: var(--warning);
+}
+.cg-gear-body {
+  padding: var(--sp-2) 0 0 1.1em;
+}
+.cg-gear-remove {
+  flex: none;
+  margin-top: 4px;
+}
+/* Les largeurs de champ, en classes : elles étaient en `style=""` inline. */
+.cg-in-price {
+  width: 7em;
+}
+.cg-in-dispo {
+  width: 4.5em;
+}
+.cg-in-indice {
+  width: 3.2em;
+}
+@media (max-width: 700px) {
+  .cg-gear-meta {
+    margin-left: 0;
+    flex-basis: 100%;
+    white-space: normal;
+  }
+}
+@media (min-width: 1000px) {
+  #chargen-body[data-kind="gear_nuyen"] .cg-gear-layout {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-areas: "catalogue panier";
+    gap: var(--sp-4);
+    align-items: start;
+  }
+  #chargen-body[data-kind="gear_nuyen"] .cg-gear-catalog {
+    grid-area: catalogue;
+    position: sticky;
+    top: 72px; /* sous l'en-tête collant du modal — mesuré, pas deviné : 61 px + marge */
+  }
+  #chargen-body[data-kind="gear_nuyen"] .cg-gear-cart {
+    grid-area: panier;
+  }
+  /* La liste prend la hauteur du modal, moins l'en-tête, les puces, la
+     recherche et le pied : le catalogue ne recule plus sous les objets. */
+  #chargen-body[data-kind="gear_nuyen"] .cg-pick-list {
+    max-height: calc(90vh - 300px);
+  }
 }
 .cg-pick-chosen {
   display: flex;

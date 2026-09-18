@@ -371,6 +371,10 @@ export const CharGen = {
     // répète pas au-dessus de lui-même.
     const compte = groupe && groupe.steps.length > 1 ? `${groupe.label} · ${pos}/${groupe.steps.length}` : groupe && groupe.label !== step.label ? groupe.label : "";
     const titre = `<h3 class="cg-step-title" tabindex="-1"><span class="cg-step-count">${this._esc(compte)}</span>${this._esc(step.label)}</h3>`;
+    // Le `kind` sur le corps : le CSS y accroche la mise en page propre à
+    // une forme d'étape (les deux volets de l'équipement en nuyens), sans
+    // savoir quelle édition l'utilise.
+    el.dataset.kind = step.kind;
     el.innerHTML = this._resumeBanner() + titre + this[`_render_${step.kind}`].call(this);
     if (step.kind === "review") this._mountReview();
   },
@@ -1213,7 +1217,7 @@ export const CharGen = {
           ].filter(Boolean).join(" · ");
           const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? "Au-delà des nuyens restants" : "";
           return `<button class="cg-pick-item${dejaPris ? " pris" : ""}${hors ? " is-out" : ""}${cher ? " is-dear" : ""}" data-cg-action="${this._esc(action)}"
-            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}" data-shelf="${this._esc(rayon)}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}
+            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}" data-shelf="${this._esc(rayon)}" data-cost="${it.cost != null ? it.cost : ""}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}
             ${hors ? 'aria-disabled="true"' : ""}${titre ? ` title="${this._esc(titre)}"` : ""}
             data-hay="${this._esc(`${it.label} ${it.detail || ""} ${g.category}`.toLowerCase())}">
             <span class="cg-pick-name">${dejaPris ? "✓ " : ""}${this._esc(it.label)}</span>
@@ -1244,6 +1248,15 @@ export const CharGen = {
     </div>`;
   },
 
+  /* ---- Étape : équipement en nuyens (SR5, SR6) ----
+     Deux volets dès 1000 px : le catalogue à gauche, collant, et le panier
+     à droite — le catalogue reculait sous les objets choisis dès le
+     troisième, et chaque ajout faisait défiler le modal pour le retrouver.
+     Une rangée par objet, repliée : nom et résumé (prix, Disp., Essence,
+     accessoires) sur une ligne, le détail dans un <details> natif. Les
+     mutations d'équipement repeignent le panier seul (`_refreshGear`),
+     jamais le catalogue : sa recherche, son rayon et son défilement
+     survivent à l'ajout. */
   _render_gear_nuyen() {
     const c = this._creation();
     const b = this._build;
@@ -1254,108 +1267,181 @@ export const CharGen = {
     // interdit simplement l'illégal de Disponibilité ≥ 7.
     const limits = c.gearLimits(b);
 
-    const rows = (b.gear || [])
-      .map(
-        (g, i) =>
-          (() => {
-        /* Accessoires montés sur CET objet. Le conflit de monture est dit à
-           l'endroit où il se produit, pas dans un message global : deux
-           accessoires « Dessous » sur la même arme, c'est cette arme-là qui
-           est en faute. */
-        /* Un mod est `{ id, indice }` (js/rules/modrefs.js). Le brouillon est
-           mis à cette forme ici, une fois pour toutes : les anciens (ids nus)
-           n'ont pas besoin de migration, ils sont relus tels quels. */
-        g.mods = ModRefs.normalize(g.mods);
-        // Un objet porte un `uid` (les hôtes d'implants s'y réfèrent) ; les
-        // brouillons d'avant en reçoivent un au premier rendu.
-        if (!g.uid) g.uid = Utils.uid();
-        const mods = g.mods;
-        const conflits = c.accessoryConflicts ? c.accessoryConflicts(g) : [];
-        const tags = mods
-          .map((ref, k) => {
-            const a = c.accessoryById(ModRefs.id(ref));
-            if (!a) return "";
-            /* Un objet à indice (« Autopilote amélioré », « Protection ignifuge ») :
-               son indice se choisit ICI, borné par la plage du livre s'il y en a
-               une. C'est lui qui résout « 1 × Indice », « [Indice] », « Indice
-               × 250 ¥ » — sans lui, l'objet est nommé, pas compté. */
-            const plage = ModRefs.indiceRange(a);
-            const indice = ModRefs.usesIndice(a)
-              ? `<label class="cg-mod-indice" title="Indice de cet objet${plage ? ` (${plage.min}–${plage.max})` : ""}">i
-                  <input type="number" data-cg="gear.${i}.mods.${k}.indice" value="${ref.indice ?? ""}" min="${plage ? plage.min : 1}"${plage ? ` max="${plage.max}"` : ""} style="width:3.2em"></label>`
-              : "";
-            return `<span class="cg-pick-tag cg-mod-tag">${this._esc(a.nom)}${a.monture && a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""}${indice}<button class="btn-icon-tiny" data-cg-action="remove-mod" data-idx="${i}" data-k="${k}" title="Retirer">✕</button></span>`;
-          })
-          .join("");
-        /* ⚠ TOUS les groupes du catalogue, chacun dans son <optgroup>. Ne
-           prendre que le premier (`[0]`) a fait disparaître les accessoires
-           d'armes de tous les menus le jour où les mods de véhicule ont été
-           mis en tête — une régression silencieuse : rien ne cassait, il
-           manquait juste la moitié du choix. */
-        /* Les accessoires QUI CONVIENNENT à cet objet : une armure ne se voit
-           plus proposer les mods de châssis. Le tri est au module
-           (`accessoryCatalogFor`, par famille) ; un objet sans famille reçoit
-           tout, comme avant. */
-        const opts = (c.accessoryCatalogFor ? c.accessoryCatalogFor(g) : c.accessoryCatalog ? c.accessoryCatalog() : [])
-          .filter((grp) => grp.items.length)
-          .map(
-            (grp) =>
-              `<optgroup label="${this._esc(grp.category)}">${grp.items
-                .map((a) => `<option value="${this._esc(a.id)}" title="${this._esc(a.detail || "")}">${this._esc(a.label)}</option>`)
-                .join("")}</optgroup>`,
-          )
-          .join("");
-        const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g) + this._armorCapacity(c, g, i);
-        const implant = c.isImplant && c.isImplant(g);
-        return `<div class="stack cg-list-row">
-        <div class="cluster">
-          <span>${this._esc(g.name || "")}</span>
-          <input type="number" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" style="width:7em" title="${implant ? "Prix au tarif standard — la gamme s'applique ensuite" : "Coût en nuyens"}">
-          <span class="cg-section-note">¥</span>
-          ${g.costNote && !g.cost ? `<span class="cg-section-note" title="Le livre donne une formule, pas un nombre : à calculer">${this._esc(g.costNote)}</span>` : ""}
-          <input type="number" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" style="width:4.5em" title="${implant ? "Disponibilité standard — la gamme s'applique ensuite" : "Disponibilité"}">
-          <span class="cg-section-note">Disp.</span>
-          <button class="btn-icon-tiny danger" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
-        </div>
-        ${implant ? this._implantRow(c, g, i, b) : ""}
-        ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
-        ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
-        ${reserves}
-        ${
-          opts
-            ? `<div class="cluster cg-add-row">
-                <select data-cg-mod-pick="${i}" aria-label="Accessoire à ajouter"><option value="">— accessoire à ajouter —</option>${opts}</select>
-                <button class="btn-secondary btn-small" data-cg-action="add-mod" data-idx="${i}">＋ Ajouter</button>
-              </div>`
-            : ""
-        }
-      </div>`;
-      })(),
-      )
-      .join("");
-
-
     return `<div class="stack">
-      ${this._stepErrorBox("gear")}
+      <div id="cg-gear-errors">${this._stepErrorBox("gear")}</div>
       <p class="cg-hint">${this._esc(limits.hint)} Les implants entrent avec l'Essence et le prix du livre ; le reste se saisit.</p>
-      ${rows || '<p class="cg-hint">Aucun équipement.</p>'}
-      ${this._catalogPicker({
-        id: "gear",
-        groups: c.gearCatalog() || [],
-        action: "pick-gear",
-        selected: (b.gear || []).map((g) => g.name),
-        limits: {
-          // La Disponibilité est jugée par le module (même prédicat que la
-          // validation) ; le reste en nuyens est celui de la cellule.
-          allowed: c.availabilityAllowed ? (it) => c.availabilityAllowed(it.availability, b) : null,
-          nuyenLeft: nuyenCell && nuyenCell.total != null ? nuyenCell.total - nuyenCell.used : null,
-        },
-      })}
-      <div class="cluster cg-add-row">
-        <input type="text" id="cg-sr-gear-free" placeholder="Équipement libre…">
-        <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
+      <div class="cg-gear-layout">
+        <div class="stack cg-gear-cart">
+          <div id="cg-gear-rows" class="stack">${this._gearRowsHtml()}</div>
+          <div class="cluster cg-add-row">
+            <input type="text" id="cg-sr-gear-free" placeholder="Équipement libre…">
+            <button class="btn-secondary btn-small" data-cg-action="add-gear-free">＋ Ajouter</button>
+          </div>
+        </div>
+        <div class="cg-gear-catalog">
+          ${this._catalogPicker({
+            id: "gear",
+            groups: c.gearCatalog() || [],
+            action: "pick-gear",
+            selected: (b.gear || []).map((g) => g.name),
+            limits: {
+              // La Disponibilité est jugée par le module (même prédicat que la
+              // validation) ; le reste en nuyens est celui de la cellule.
+              allowed: c.availabilityAllowed ? (it) => c.availabilityAllowed(it.availability, b) : null,
+              nuyenLeft: nuyenCell && nuyenCell.total != null ? nuyenCell.total - nuyenCell.used : null,
+            },
+          })}
+        </div>
       </div>
     </div>`;
+  },
+
+  /** Le panier : son en-tête (compte, total) et une rangée par objet. C'est
+      ce que `_refreshGear` repeint seul. */
+  _gearRowsHtml() {
+    const c = this._creation();
+    const b = this._build;
+    const gear = b.gear || [];
+    const nuyenCell = c.budget(b).cells.find((x) => x.label === "Nuyens");
+    const x = (n) => Number(n).toLocaleString("fr-FR");
+    const tete = `<div class="cg-section-label">Équipement choisi <span class="cg-section-note">${gear.length} objet${gear.length > 1 ? "s" : ""}${nuyenCell ? ` · ${x(nuyenCell.used)} ¥` : ""}</span></div>`;
+    return tete + (gear.map((g, i) => this._gearRowHtml(c, b, g, i)).join("") || '<p class="cg-hint">Aucun équipement — choisis dans le catalogue.</p>');
+  },
+
+  /** Une rangée d'objet : résumé sur une ligne, détail replié. */
+  _gearRowHtml(c, b, g, i) {
+    const x = (n) => Number(n).toLocaleString("fr-FR");
+    /* Un mod est `{ id, indice }` (js/rules/modrefs.js). Le brouillon est
+       mis à cette forme ici, une fois pour toutes : les anciens (ids nus)
+       n'ont pas besoin de migration, ils sont relus tels quels. */
+    g.mods = ModRefs.normalize(g.mods);
+    // Un objet porte un `uid` (les hôtes d'implants s'y réfèrent) ; les
+    // brouillons d'avant en reçoivent un au premier rendu.
+    if (!g.uid) g.uid = Utils.uid();
+    const mods = g.mods;
+    /* Accessoires montés sur CET objet. Le conflit de monture est dit à
+       l'endroit où il se produit, pas dans un message global : deux
+       accessoires « Dessous » sur la même arme, c'est cette arme-là qui
+       est en faute. */
+    const conflits = c.accessoryConflicts ? c.accessoryConflicts(g) : [];
+    const tags = mods
+      .map((ref, k) => {
+        const a = c.accessoryById(ModRefs.id(ref));
+        if (!a) return "";
+        /* Un objet à indice (« Autopilote amélioré », « Protection ignifuge ») :
+           son indice se choisit ICI, borné par la plage du livre s'il y en a
+           une. C'est lui qui résout « 1 × Indice », « [Indice] », « Indice
+           × 250 ¥ » — sans lui, l'objet est nommé, pas compté. */
+        const plage = ModRefs.indiceRange(a);
+        const indice = ModRefs.usesIndice(a)
+          ? `<label class="cg-mod-indice" title="Indice de cet objet${plage ? ` (${plage.min}–${plage.max})` : ""}">i
+              <input type="number" class="cg-in-indice" data-cg="gear.${i}.mods.${k}.indice" value="${ref.indice ?? ""}" min="${plage ? plage.min : 1}"${plage ? ` max="${plage.max}"` : ""}></label>`
+          : "";
+        return `<span class="cg-pick-tag cg-mod-tag">${this._esc(a.nom)}${a.monture && a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""}${indice}<button class="btn-icon-tiny" data-cg-action="remove-mod" data-idx="${i}" data-k="${k}" title="Retirer">✕</button></span>`;
+      })
+      .join("");
+    /* ⚠ TOUS les groupes du catalogue, chacun dans son <optgroup>. Ne
+       prendre que le premier (`[0]`) a fait disparaître les accessoires
+       d'armes de tous les menus le jour où les mods de véhicule ont été
+       mis en tête — une régression silencieuse : rien ne cassait, il
+       manquait juste la moitié du choix. */
+    /* Les accessoires QUI CONVIENNENT à cet objet : une armure ne se voit
+       plus proposer les mods de châssis. Le tri est au module
+       (`accessoryCatalogFor`, par famille). */
+    const opts = (c.accessoryCatalogFor ? c.accessoryCatalogFor(g) : c.accessoryCatalog ? c.accessoryCatalog() : [])
+      .filter((grp) => grp.items.length)
+      .map(
+        (grp) =>
+          `<optgroup label="${this._esc(grp.category)}">${grp.items
+            .map((a) => `<option value="${this._esc(a.id)}" title="${this._esc(a.detail || "")}">${this._esc(a.label)}</option>`)
+            .join("")}</optgroup>`,
+      )
+      .join("");
+    const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g) + this._armorCapacity(c, g, i);
+    const implant = c.isImplant && c.isImplant(g);
+    const st = implant ? c.implantState(g, b) : null;
+    /* Le résumé, sur la ligne repliée : ce qu'on paie et ce que ça coûte en
+       Essence — pour un implant, à la gamme choisie. */
+    const cout = st ? st.cost : g.cost;
+    const dispo = st ? st.availability : g.availability;
+    const resume = [
+      cout ? `${x(cout)} ¥` : g.costNote ? g.costNote : "prix à saisir",
+      dispo != null && dispo !== "" ? `Disp. ${dispo}` : "",
+      st ? `Essence ${st.essence == null ? "?" : x(st.essence)}` : "",
+      mods.length ? `${mods.length} accessoire${mods.length > 1 ? "s" : ""}` : "",
+    ].filter(Boolean).join(" · ");
+    const alerte = conflits.length ? ` <span class="cg-gear-flag" title="${this._esc(conflits.join(" ; "))}">⚑</span>` : "";
+    const open = ((b._ui && b._ui.openGear) || []).includes(g.uid);
+    return `<div class="cg-gear-row" data-gear-uid="${this._esc(g.uid)}">
+      <details class="cg-gear-details" data-gear-fold="${this._esc(g.uid)}"${open ? " open" : ""}>
+        <summary class="cg-gear-summary">
+          <span class="cg-gear-name">${this._esc(g.name || "")}</span>
+          <span class="cg-gear-meta">${this._esc(resume)}${alerte}</span>
+        </summary>
+        <div class="stack cg-gear-body">
+          <div class="cluster cg-add-row">
+            <label class="cg-section-note cg-essence-in">Prix <input type="number" class="cg-in-price" min="0" step="100" data-cg="gear.${i}.cost" value="${g.cost || 0}" title="${implant ? "Prix au tarif standard — la gamme s'applique ensuite" : "Coût en nuyens"}"> ¥</label>
+            ${g.costNote && !g.cost ? `<span class="cg-section-note" title="Le livre donne une formule, pas un nombre : à calculer">${this._esc(g.costNote)}</span>` : ""}
+            <label class="cg-section-note cg-essence-in">Disp. <input type="number" class="cg-in-dispo" min="0" data-cg="gear.${i}.availability" value="${g.availability ?? ""}" title="${implant ? "Disponibilité standard — la gamme s'applique ensuite" : "Disponibilité"}"></label>
+          </div>
+          ${implant ? this._implantRow(c, g, i, b) : ""}
+          ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
+          ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
+          ${reserves}
+          ${
+            opts
+              ? `<div class="cluster cg-add-row">
+                  <select data-cg-mod-pick="${i}" aria-label="Accessoire à ajouter"><option value="">— accessoire à ajouter —</option>${opts}</select>
+                  <button class="btn-secondary btn-small" data-cg-action="add-mod" data-idx="${i}">＋ Ajouter</button>
+                </div>`
+              : ""
+          }
+        </div>
+      </details>
+      <button class="btn-icon-tiny danger cg-gear-remove" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
+    </div>`;
+  },
+
+  /** Repeint le panier, le compte, les erreurs de l'étape, le budget et le
+      rail — et RIEN du catalogue, dont on met seulement à jour « pris » et
+      « au-delà du reste ». Hors de l'étape (un champ d'implant touché depuis
+      une autre vue, cas théorique), on retombe sur le rendu complet. */
+  _refreshGear() {
+    this._saveDraft();
+    const rows = document.getElementById("cg-gear-rows");
+    if (!rows) {
+      this._renderAll();
+      return;
+    }
+    const c = this._creation();
+    const b = this._build;
+    rows.innerHTML = this._gearRowsHtml();
+    const errs = document.getElementById("cg-gear-errors");
+    if (errs) errs.innerHTML = this._stepErrorBox("gear");
+    const noms = new Set((b.gear || []).map((g) => g.name));
+    const cell = c.budget(b).cells.find((x) => x.label === "Nuyens");
+    const reste = cell && cell.total != null ? cell.total - cell.used : null;
+    for (const it of document.querySelectorAll('[data-pick="gear"] .cg-pick-item')) {
+      const pris = noms.has(it.dataset.name);
+      it.classList.toggle("pris", pris);
+      const nom = it.querySelector(".cg-pick-name");
+      if (nom) nom.textContent = `${pris ? "✓ " : ""}${it.dataset.name}`;
+      if (!it.classList.contains("is-out")) {
+        const cout = it.dataset.cost === "" || it.dataset.cost == null ? null : Number(it.dataset.cost);
+        it.classList.toggle("is-dear", reste != null && cout != null && cout > reste);
+      }
+    }
+    this._renderBudget();
+    this._renderSteps();
+  },
+
+  /** Déplie la rangée d'un objet (celui qu'on vient d'ajouter : ses options
+      sont là). État d'interface, dans `_ui` avec le reste. */
+  _openGearFold(uid) {
+    if (!uid) return;
+    const ui = (this._build._ui = this._build._ui || { seen: [] });
+    ui.openGear = ui.openGear || [];
+    if (!ui.openGear.includes(uid)) ui.openGear.push(uid);
   },
 
   /* La GAMME d'un implant : le sélecteur, et ce qu'elle fait — Essence,
@@ -2147,6 +2233,9 @@ export const CharGen = {
     if (path === "keywords.3") this._build.lifestyle = val;
     this._saveDraft();
     if (el.dataset.cgRerender === "false") this._renderBudget();
+    // Un champ d'équipement (prix, Disp., gamme, indice, hôte, membre…)
+    // repeint le panier, pas le catalogue à côté.
+    else if (path.startsWith("gear.")) this._refreshGear();
     else this._renderAll();
   },
 
@@ -2400,9 +2489,11 @@ export const CharGen = {
         const txt = (src?.value || "").trim();
         if (txt) {
           b.gear = b.gear || [];
-          b.gear.push({ name: txt, cost: 0, availability: null });
+          const item = { uid: Utils.uid(), name: txt, cost: 0, availability: null };
+          b.gear.push(item);
           if (src) src.value = "";
-          afterMutate();
+          this._openGearFold(item.uid);
+          this._refreshGear();
         }
         break;
       }
@@ -2518,7 +2609,7 @@ export const CharGen = {
           // Le même mod peut se poser deux fois (deux Dessous sur un M23) :
           // on n'écarte plus le doublon, on retire par position.
           g.mods.push(a && ModRefs.usesIndice(a) ? { id, indice: plage ? plage.min : 1 } : { id });
-          afterMutate();
+          this._refreshGear();
         }
         break;
       }
@@ -2526,7 +2617,7 @@ export const CharGen = {
         const g = (b.gear || [])[Number(el.dataset.idx)];
         if (g && g.mods) {
           g.mods = ModRefs.normalize(g.mods).filter((_, k) => k !== Number(el.dataset.k));
-          afterMutate();
+          this._refreshGear();
         }
         break;
       }
@@ -2545,8 +2636,9 @@ export const CharGen = {
              c'était une clé d'édition logée ici. */
           const item = c.gearFromCatalog ? c.gearFromCatalog(brut) : { name: nom, cost: 0, ...(brut.kind ? { kind: brut.kind } : {}) };
           b.gear.push(item);
+          this._openGearFold(item.uid);
         }
-        afterMutate();
+        this._refreshGear();
         break;
       }
       case "pick-trait": {
@@ -2637,7 +2729,7 @@ export const CharGen = {
       }
       case "remove-gear":
         b.gear.splice(Number(el.dataset.idx), 1);
-        afterMutate();
+        this._refreshGear();
         break;
 
       case "add-contact":
@@ -2709,6 +2801,23 @@ export const CharGen = {
       const id = e.target?.dataset?.pickSearch;
       if (id && overlay()?.contains(e.target)) filtrer(id);
     });
+    /* Le pli d'une rangée d'objet : son état vit dans le brouillon (`_ui`),
+       pour survivre au repeint du panier et à la reprise. `toggle` ne
+       remonte pas, d'où la capture. */
+    document.addEventListener(
+      "toggle",
+      (e) => {
+        const d = e.target;
+        if (!d || !d.dataset || !d.dataset.gearFold || !overlay()?.contains(d) || !this._build) return;
+        const ui = (this._build._ui = this._build._ui || { seen: [] });
+        const ouverts = new Set(ui.openGear || []);
+        if (d.open) ouverts.add(d.dataset.gearFold);
+        else ouverts.delete(d.dataset.gearFold);
+        ui.openGear = [...ouverts];
+        this._saveDraft();
+      },
+      true,
+    );
     // Les puces de rayon : une seule allumée, « Tout » par défaut.
     document.addEventListener("click", (e) => {
       const puce = e.target.closest("[data-pick-shelf]");
