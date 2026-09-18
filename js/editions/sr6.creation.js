@@ -3069,25 +3069,29 @@ Object.assign(EditionSR6, {
     /* ---- Progression en campagne (Livre de base p.70-72) ----
        Attributs : 5 × nouveau rang ; compétences : 5 × nouveau rang (rang
        1 → 5 pour une nouvelle) ; spécialisation : 5 ; connaissance : 3 ;
+       maîtrise 5 (spécialisation déjà là, rang 5 au moins) ;
        initiation/submersion : 10 + niveau (Esoteric) ; sort 5, forme
-       complexe 5, trait positif 2 × coût, trait négatif retiré 2 × coût.
-       Maîtrises : pas encore proposées ici. */
+       complexe 5, trait positif 2 × coût, trait négatif retiré 2 × coût. */
     advancement(pnj) {
+      // Le barème est `karmaCosts` (core p.70), déjà celui de la création.
+      const kc = this.karmaCosts;
       const speciaux = this.SPECIAL_ATTRS.filter((k) => k === "ATO" || Actor.base(pnj, k) > 0);
       const rows = [
-        ...Advancement.attrRows(pnj, [...this.ATTRS, ...speciaux], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * 5 }),
-        ...Advancement.skillRows(pnj, { max: 9, cost: (n) => n * 5 }),
-        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("sr6").map((name) => ({ name, attr: SkillCatalog.attrFor("sr6", name) })), { cost: 5 }),
-        ...Advancement.specRows(pnj, { cost: 5, minRank: 1 }),
-        ...Advancement.knowledgeRows(pnj, { rated: false, costNew: 3 }),
+        ...Advancement.attrRows(pnj, [...this.ATTRS, ...speciaux], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * kc.attrMult }),
+        ...Advancement.skillRows(pnj, { max: 9, cost: (n) => n * kc.skillMult }),
+        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("sr6").map((name) => ({ name, attr: SkillCatalog.attrFor("sr6", name) })), { cost: 1 * kc.skillMult }),
+        ...Advancement.specRows(pnj, { cost: kc.specialization, minRank: 1 }),
+        // Maîtrise : une spécialisation déjà là et le rang 5 au moins (p.71).
+        ...Advancement.masteryRows(pnj, { cost: kc.mastery, minRank: 5 }),
+        ...Advancement.knowledgeRows(pnj, { rated: false, costNew: kc.knowledge }),
         ...Advancement.initiationRows(pnj, "sr6"),
       ];
       /* Sort 5, forme complexe 5, trait positif 2 × son coût, trait négatif
          retiré 2 × son coût (p.71-72). */
       const lance = Actor.attr(pnj, "MAG") > 0 && pnj.special !== "Adepte";
-      const spell = lance ? Advancement.spellRow(pnj, { catalog: EditionSR6.spellCatalog(), add: (p, id) => EditionSR6.addSpellItem(p, id), cost: 5 }) : null;
+      const spell = lance ? Advancement.spellRow(pnj, { catalog: EditionSR6.spellCatalog(), add: (p, id) => EditionSR6.addSpellItem(p, id), cost: kc.spell }) : null;
       // L'édition n'a pas d'`addComplexFormItem` propre : le geste est celui de Content.
-      const cform = Actor.attr(pnj, "RES") > 0 && EditionSR6.complexFormCatalog() ? Advancement.complexFormRow(pnj, { catalog: EditionSR6.complexFormCatalog(), add: (p, id) => Content.addComplexFormItem(p, "sr6", id), cost: 5 }) : null;
+      const cform = Actor.attr(pnj, "RES") > 0 && EditionSR6.complexFormCatalog() ? Advancement.complexFormRow(pnj, { catalog: EditionSR6.complexFormCatalog(), add: (p, id) => Content.addComplexFormItem(p, "sr6", id), cost: kc.complexForm }) : null;
       if (spell) rows.push(spell);
       if (cform) rows.push(cform);
       const karmaOf = (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0;

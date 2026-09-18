@@ -3321,21 +3321,24 @@ Object.assign(EditionSR5, {
        retiré 2 × bonus. Pouvoirs d'adepte : en points de pouvoir, pas
        en karma — hors de cette liste. */
     advancement(pnj) {
+      // Le barème est `karmaCosts`, celui de la création par Karma — une
+      // seule source pour les deux temps.
+      const kc = this.karmaCosts;
       const speciaux = this.SPECIAL_ATTRS.filter((k) => k === "CHC" || Actor.base(pnj, k) > 0);
       const rows = [
-        ...Advancement.attrRows(pnj, [...this.ATTRS, ...speciaux], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * 5 }),
-        ...Advancement.skillRows(pnj, { max: 12, cost: (n) => n * 2 }),
-        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("sr5").map((name) => ({ name, attr: SkillCatalog.attrFor("sr5", name) })), { cost: 2 }),
-        ...Advancement.specRows(pnj, { cost: 7, minRank: 1 }),
-        ...Advancement.knowledgeRows(pnj, { rated: true, costNew: 1, costUp: (n) => n }),
+        ...Advancement.attrRows(pnj, [...this.ATTRS, ...speciaux], { max: (k) => this.attrRangeFor(pnj, k)[1], cost: (n) => n * kc.attrMult }),
+        ...Advancement.skillRows(pnj, { max: 12, cost: (n) => n * kc.skillMult }),
+        ...Advancement.newSkillRows(pnj, SkillCatalog.skillsFor("sr5").map((name) => ({ name, attr: SkillCatalog.attrFor("sr5", name) })), { cost: 1 * kc.skillMult }),
+        ...Advancement.specRows(pnj, { cost: kc.specialization, minRank: 1 }),
+        ...Advancement.knowledgeRows(pnj, { rated: true, costNew: 1 * kc.knowledgeMult, costUp: (n) => n * kc.knowledgeMult }),
         ...Advancement.initiationRows(pnj, "sr5"),
       ];
       /* Sorts (5) pour un Éveillé qui lance, formes complexes (4) pour un
          technomancien, traits : un Avantage à 2 × son coût, un Défaut retiré
          à 2 × son bonus (p.107). */
       const lance = Actor.attr(pnj, "MAG") > 0 && pnj.special !== "Adepte";
-      const spell = lance ? Advancement.spellRow(pnj, { catalog: EditionSR5.spellCatalog(), add: (p, id) => EditionSR5.addSpellItem(p, id), cost: 5 }) : null;
-      const cform = Actor.attr(pnj, "RES") > 0 ? Advancement.complexFormRow(pnj, { catalog: EditionSR5.complexFormCatalog(), add: (p, id) => EditionSR5.addComplexFormItem(p, id), cost: 4 }) : null;
+      const spell = lance ? Advancement.spellRow(pnj, { catalog: EditionSR5.spellCatalog(), add: (p, id) => EditionSR5.addSpellItem(p, id), cost: kc.spell }) : null;
+      const cform = Actor.attr(pnj, "RES") > 0 ? Advancement.complexFormRow(pnj, { catalog: EditionSR5.complexFormCatalog(), add: (p, id) => EditionSR5.addComplexFormItem(p, id), cost: kc.complexForm }) : null;
       if (spell) rows.push(spell);
       if (cform) rows.push(cform);
       const karmaOf = (t) => (Array.isArray(t.karma) ? t.karma[0] : t.karma) || 0;

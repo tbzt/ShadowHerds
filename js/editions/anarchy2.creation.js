@@ -1382,7 +1382,7 @@ Object.assign(EditionAnarchy2, {
        attribut 10 000 (20 000 le dernier point), compétence 2 500 jusqu'à
        5 puis 5 000, spécialisation et connaissance 2 500, Atout 5 000 le
        niveau, arme 2 500 ou 5 000 (spécialiste), équipement 2 500, sort
-       5 000. Armure (2 500 le point) : pas encore proposée. */
+       5 000, armure 2 500 le point (dans les seuils physiques). */
     advancement(pnj) {
       const c = this.costs;
       const possedees = new Set((pnj.weapons || []).map((w) => w.name));
@@ -1413,7 +1413,35 @@ Object.assign(EditionAnarchy2, {
           p.equip = p.equip || [];
           p.equip.push(v);
         }),
+        /* Armure : 2 500 ¥ le point (p.84). La fiche Anarchy 2 ne porte pas
+           d'indice d'Armure — elle est DANS les seuils physiques (FOR +
+           Armure, +3, +6) : un point de plus relève les trois seuils, et la
+           fiche garde le compte des points ajoutés (`armorExtra`). */
+        {
+          id: "armor:+1",
+          group: "Équipement",
+          label: `+1 point d'Armure (seuils physiques +1${pnj.armorExtra ? `, déjà +${pnj.armorExtra}` : ""})`,
+          cost: c.armorPoint,
+          apply: (p) => {
+            p.armorExtra = (p.armorExtra || 0) + 1;
+            if (Array.isArray(p.physMonitor)) p.physMonitor = p.physMonitor.map((v) => v + 1);
+            if (Array.isArray(p.physMagicMonitor)) p.physMagicMonitor = p.physMagicMonitor.map((v) => v + 1);
+          },
+        },
       ];
+      /* Les seuils de blessure sont posés à la création depuis FOR et VOL
+         et rien ne les recalcule (Anarchy 2 ne dérive rien) : monter FOR
+         relève les seuils physiques, monter VOL les seuils mentaux. */
+      for (const r of rows) {
+        if (r.id !== "attr:FOR" && r.id !== "attr:VOL") continue;
+        const orig = r.apply;
+        const key = r.id === "attr:FOR" ? "physMonitor" : "mentMonitor";
+        r.apply = (p) => {
+          orig(p);
+          if (Array.isArray(p[key])) p[key] = p[key].map((v) => v + 1);
+          if (key === "physMonitor" && Array.isArray(p.physMagicMonitor)) p.physMagicMonitor = p.physMagicMonitor.map((v) => v + 1);
+        };
+      }
       return { currency: "nuyen", label: "Nuyens", source: "Anarchy 2 p.83-84", rows };
     },
 

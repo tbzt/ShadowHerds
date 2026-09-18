@@ -1915,13 +1915,16 @@ export const CardRenderer = {
           `${this._esc(s.name)}&nbsp;<strong style="color:var(--text)">${eff}</strong>`,
         );
         if (s.spec && s.spec !== true) {
-          // Spécialité : +2 dés sur le pool en SR5/SR6 (le bonus d'objet
-          // s'ajoute aussi à la spécialité, même réserve de base).
-          const specN = Number.isFinite(n) ? Math.max(0, n + 2 + attrVal + bonus - malus) : null;
+          // Spécialité : +2 dés sur le pool en SR5/SR6, +3 quand elle est
+          // MAÎTRISÉE (SR6 p.98, `mastery` posé en campagne). Le bonus
+          // d'objet s'ajoute aussi à la spécialité, même réserve de base.
+          const plus = s.mastery ? 3 : 2;
+          const specN = Number.isFinite(n) ? Math.max(0, n + plus + attrVal + bonus - malus) : null;
           const specRollable = !!(specN && specN >= 1);
+          const specTxt = `+${plus}${s.mastery ? ", maîtrise" : ""}`;
           const specRoll = specRollable
-            ? ` data-roll="${specN}"${pnjAttr} data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}"${a ? ` data-roll-detail="${this._esc(`${s.name} ${n} + 2${attrTxt}${srcTxt}`)}"` : ""} title="Spécialité ${this._esc(s.spec)} : ${specN} dés (+2)${this._esc(attrTxt)}${malusTxt}${this._esc(srcTxt)}"`
-            : ` title="Spécialité ${this._esc(s.spec)} : +2 dés${malusTxt}"`;
+            ? ` data-roll="${specN}"${pnjAttr} data-roll-label="${this._esc(s.name)} · ${this._esc(s.spec)}"${a ? ` data-roll-detail="${this._esc(`${s.name} ${n} + ${plus}${attrTxt}${srcTxt}`)}"` : ""} title="Spécialité ${this._esc(s.spec)} : ${specN} dés (${specTxt})${this._esc(attrTxt)}${malusTxt}${this._esc(srcTxt)}"`
+            : ` title="Spécialité ${this._esc(s.spec)} : ${specTxt} dés${malusTxt}"`;
           html += this._rollableTag(
             specRollable,
             `tag skill-tag skill-tag-spec${specRollable ? " rollable" : ""}`,

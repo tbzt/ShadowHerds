@@ -58,7 +58,8 @@ export const Advancement = {
         apply: (p) => {
           const sk = p.skills[i];
           sk.val = next;
-          if (sk.spec) sk.specVal = next + 2;
+          // +2 dés pour une spécialisation, +3 quand elle est maîtrisée (SR6).
+          if (sk.spec) sk.specVal = next + (sk.mastery ? 3 : 2);
           for (const x of sk.extraSpecs || []) x.val = next + 2;
         },
       });
@@ -100,6 +101,28 @@ export const Advancement = {
           sk.spec = v;
           sk.specVal = (Number(sk.val) || 0) + 2;
           if (sk.attr) sk.specAttr = sk.attr;
+        },
+      });
+    });
+    return out;
+  },
+
+  /** Maîtrise (SR6 p.71, 98) : sur une compétence qui a déjà sa
+      spécialisation et un rang de `minRank` au moins ; la spécialisation
+      passe de +2 à +3 dés. Une par compétence. */
+  masteryRows(pnj, { cost, minRank = 5 }) {
+    const out = [];
+    (pnj.skills || []).forEach((s, i) => {
+      if (!s.spec || s.spec === true || s.mastery || (Number(s.val) || 0) < minRank) return;
+      out.push({
+        id: `mastery:${i}`,
+        group: "Spécialisations",
+        label: `Maîtrise de ${s.name} (${s.spec})`,
+        cost,
+        apply: (p) => {
+          const sk = p.skills[i];
+          sk.mastery = true;
+          sk.specVal = (Number(sk.val) || 0) + 3;
         },
       });
     });
