@@ -1195,7 +1195,10 @@ export const CharGen = {
      de catégorie : six puces qu'on voit, pas vingt-trois options qu'on
      déroule. Un catalogue sans rayon (traits, sorts) prend ses catégories
      pour puces, s'il en a peu. */
-  _catalogPicker({ id, groups, action, selected, vide, limits }) {
+  /* `attrs` : attributs ajoutés à chaque entrée (« data-idx="3" » — l'objet
+     hôte d'un sélecteur d'accessoires). `it.id` sort en `data-id`, `it.warn`
+     (un avertissement du module : monture déjà prise) en classe + titre. */
+  _catalogPicker({ id, groups, action, selected, vide, limits, attrs }) {
     const sel = new Set(selected || []);
     const fmt = (v) => Number(v).toLocaleString("fr-FR");
     let n = 0;
@@ -1207,6 +1210,7 @@ export const CharGen = {
           const rayon = g.shelf || g.category;
           const hors = !!(limits && limits.allowed && !limits.allowed(it));
           const cher = !hors && !!(limits && limits.nuyenLeft != null && it.cost != null && it.cost > limits.nuyenLeft);
+          const pris = !hors && !!it.warn;
           /* Ce que le livre dit avant le choix : Essence, prix (ou sa
              formule), Disponibilité (texte du livre, « 12R », sinon nombre). */
           const dispo = it.dispoText || (it.availability != null ? String(it.availability) : "");
@@ -1215,9 +1219,9 @@ export const CharGen = {
             it.cost != null ? `${fmt(it.cost)} ¥` : it.costNote || "",
             dispo ? `Disp. ${dispo}` : "",
           ].filter(Boolean).join(" · ");
-          const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? "Au-delà des nuyens restants" : "";
-          return `<button class="cg-pick-item${dejaPris ? " pris" : ""}${hors ? " is-out" : ""}${cher ? " is-dear" : ""}" data-cg-action="${this._esc(action)}"
-            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}" data-shelf="${this._esc(rayon)}" data-cost="${it.cost != null ? it.cost : ""}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}
+          const titre = hors ? "Disponibilité au-delà de la limite de création" : cher ? "Au-delà des nuyens restants" : pris ? it.warn : "";
+          return `<button class="cg-pick-item${dejaPris ? " pris" : ""}${hors ? " is-out" : ""}${cher ? " is-dear" : ""}${pris ? " is-taken" : ""}" data-cg-action="${this._esc(action)}"
+            data-name="${this._esc(it.label)}" data-cat="${this._esc(g.category)}" data-shelf="${this._esc(rayon)}" data-cost="${it.cost != null ? it.cost : ""}"${it.kind ? ` data-kind="${this._esc(it.kind)}"` : ""}${it.id != null ? ` data-id="${this._esc(it.id)}"` : ""}${attrs ? ` ${attrs}` : ""}
             ${hors ? 'aria-disabled="true"' : ""}${titre ? ` title="${this._esc(titre)}"` : ""}
             data-hay="${this._esc(`${it.label} ${it.detail || ""} ${g.category}`.toLowerCase())}">
             <span class="cg-pick-name">${dejaPris ? "✓ " : ""}${this._esc(it.label)}</span>
@@ -1340,23 +1344,50 @@ export const CharGen = {
         return `<span class="cg-pick-tag cg-mod-tag">${this._esc(a.nom)}${a.monture && a.monture !== "—" ? ` (${this._esc(a.monture)})` : ""}${indice}<button class="btn-icon-tiny" data-cg-action="remove-mod" data-idx="${i}" data-k="${k}" title="Retirer">✕</button></span>`;
       })
       .join("");
-    /* ⚠ TOUS les groupes du catalogue, chacun dans son <optgroup>. Ne
-       prendre que le premier (`[0]`) a fait disparaître les accessoires
-       d'armes de tous les menus le jour où les mods de véhicule ont été
-       mis en tête — une régression silencieuse : rien ne cassait, il
-       manquait juste la moitié du choix. */
-    /* Les accessoires QUI CONVIENNENT à cet objet : une armure ne se voit
-       plus proposer les mods de châssis. Le tri est au module
-       (`accessoryCatalogFor`, par famille). */
-    const opts = (c.accessoryCatalogFor ? c.accessoryCatalogFor(g) : c.accessoryCatalog ? c.accessoryCatalog() : [])
-      .filter((grp) => grp.items.length)
-      .map(
-        (grp) =>
-          `<optgroup label="${this._esc(grp.category)}">${grp.items
-            .map((a) => `<option value="${this._esc(a.id)}" title="${this._esc(a.detail || "")}">${this._esc(a.label)}</option>`)
-            .join("")}</optgroup>`,
-      )
-      .join("");
+    /* Les accessoires QUI CONVIENNENT à cet objet — ceux de sa famille,
+       aucun sans famille (le repli « tout » offrait un rack à drones à un
+       commlink). ⚠ TOUS les groupes de la famille : ne prendre que le
+       premier a fait disparaître les accessoires d'armes le jour où les
+       mods de véhicule ont été mis en tête. Sur une arme, une entrée dont
+       toutes les montures sont prises se lit à l'ambre : on peut, mais on
+       le sait avant. */
+    const famille = c.gearFamily ? c.gearFamily(g) : null;
+    const familleAuto = c.gearFamily ? c.gearFamily({ ...g, family: undefined }) : null;
+    let groupesMods = (famille && c.accessoryCatalogFor ? c.accessoryCatalogFor(g) : []).filter((grp) => grp.items.length);
+    if (famille === "arme" && c.accessoryMounts) {
+      const occupees = new Set(c.accessoryMounts(g).occupation.filter((o) => o.nom).map((o) => o.monture));
+      groupesMods = groupesMods.map((grp) => ({
+        ...grp,
+        items: grp.items.map((it) => {
+          const a = c.accessoryById(it.id);
+          const m = a && Array.isArray(a.montures) ? a.montures : null;
+          const prises = m && m.length && m.every((x) => occupees.has(x));
+          return prises ? { ...it, warn: `Monture${m.length > 1 ? "s" : ""} déjà prise${m.length > 1 ? "s" : ""} : ${m.join(", ")}` } : it;
+        }),
+      }));
+    }
+    /* Un objet que rien ne classe (texte libre, matériel divers) : le meneur
+       dit ce qu'il est, et les accessoires de cette famille arrivent. Les
+       puces restent visibles tant que la famille vient de lui, pour se
+       reprendre. */
+    const puces = familleAuto
+      ? ""
+      : `<div class="cluster cg-add-row cg-gear-family">
+          <span class="cg-section-note">Cet objet est</span>
+          ${[["arme", "une arme"], ["armure", "une armure"], ["vehicule", "un véhicule"]]
+            .map(([f, l]) => `<button type="button" class="cg-pick-shelf${g.family === f ? " is-on" : ""}" data-cg-action="set-gear-family" data-idx="${i}" data-family="${f}" aria-pressed="${g.family === f}">${l}</button>`)
+            .join("")}
+          ${g.family ? "" : `<span class="cg-section-note">— sans famille, pas d'accessoire</span>`}
+        </div>`;
+    const opts = groupesMods.length
+      ? this._catalogPicker({
+          id: `mods-${g.uid}`,
+          groups: groupesMods,
+          action: "add-mod",
+          attrs: `data-idx="${i}"`,
+          vide: "Aucun accessoire pour cette famille.",
+        })
+      : "";
     const reserves = this._vehicleReserves(c, g, i) + this._weaponSlots(c, g) + this._armorCapacity(c, g, i);
     const implant = c.isImplant && c.isImplant(g);
     const st = implant ? c.implantState(g, b) : null;
@@ -1388,14 +1419,8 @@ export const CharGen = {
           ${tags ? `<div class="cg-pick-chosen">${tags}</div>` : ""}
           ${conflits.map((t) => `<p class="cg-hint">⚑ ${this._esc(t)}</p>`).join("")}
           ${reserves}
-          ${
-            opts
-              ? `<div class="cluster cg-add-row">
-                  <select data-cg-mod-pick="${i}" aria-label="Accessoire à ajouter"><option value="">— accessoire à ajouter —</option>${opts}</select>
-                  <button class="btn-secondary btn-small" data-cg-action="add-mod" data-idx="${i}">＋ Ajouter</button>
-                </div>`
-              : ""
-          }
+          ${puces}
+          ${opts ? `<div class="cg-section-label">Accessoires <span class="cg-section-note">choisir dans la liste</span></div>${opts}` : ""}
         </div>
       </details>
       <button class="btn-icon-tiny danger cg-gear-remove" data-cg-action="remove-gear" data-idx="${i}" title="Retirer">✕</button>
@@ -2597,10 +2622,8 @@ export const CharGen = {
       }
       case "add-mod": {
         const i = Number(el.dataset.idx);
-        // ⚠ `overlay()` n'est pas dans la portée de `_handleAction` : les
-        // autres cas y passent tous par `document`. S'aligner, pas inventer.
-        const sel = document.querySelector(`[data-cg-mod-pick="${i}"]`);
-        const id = sel && sel.value;
+        // L'entrée cliquée du sélecteur porte l'id de l'accessoire.
+        const id = el.dataset.id;
         const g = (b.gear || [])[i];
         if (g && id) {
           g.mods = ModRefs.normalize(g.mods);
@@ -2731,6 +2754,20 @@ export const CharGen = {
         b.gear.splice(Number(el.dataset.idx), 1);
         this._refreshGear();
         break;
+      case "set-gear-family": {
+        // Recliquer la famille choisie la retire : l'objet redevient sans
+        // famille, et ses accessoires (qui n'ont plus de sens) avec.
+        const g = (b.gear || [])[Number(el.dataset.idx)];
+        if (!g) break;
+        if (g.family === el.dataset.family) {
+          delete g.family;
+          g.mods = [];
+        } else {
+          g.family = el.dataset.family;
+        }
+        this._refreshGear();
+        break;
+      }
 
       case "add-contact":
         b.contacts = b.contacts || [];

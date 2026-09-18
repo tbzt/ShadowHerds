@@ -1278,6 +1278,10 @@ Object.assign(EditionSR5, {
     /* ---- Famille d'un objet : arme, armure ou véhicule ----
        Cf. sr6.creation.js : c'est elle qui trie les accessoires proposés. */
     gearFamily(gear) {
+      /* La famille DITE par le meneur prime (« Cet objet est une arme »,
+         posé sur un objet libre que rien ne classe) ; sinon on la lit sur la
+         clé du catalogue, le nom, puis les accessoires déjà montés. */
+      if (gear && gear.family) return gear.family;
       const kind = gear && gear.kind;
       if (kind && Object.prototype.hasOwnProperty.call(this.WEAPON_MOUNTS_BY_KIND, kind)) return "arme";
       if (kind === "armures") return "armure";
@@ -1297,8 +1301,11 @@ Object.assign(EditionSR5, {
 
     accessoryCatalogFor(gear) {
       const fam = this.gearFamily(gear);
-      const tout = this.accessoryCatalog();
-      return fam ? tout.filter((g) => g.famille === fam) : tout;
+      /* Sans famille : RIEN. Le repli « tout » offrait un rack à drones à un
+         commlink — deux cent cinquante options sans rapport. Décision du
+         2026-09-17 : l'écran demande la famille, le catalogue ne devine pas. */
+      if (!fam) return [];
+      return this.accessoryCatalog().filter((g) => g.famille === fam);
     },
 
     gearFromCatalog({ name, detail, kind }) {
