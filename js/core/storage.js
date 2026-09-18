@@ -195,7 +195,7 @@ export const Storage = {
       ajoutée à `_MIGRATIONS`. Publique (contrairement à `_MIGRATIONS`) : les
       paquets exportés (`Backup`) la tamponnent pour savoir, à l'import, s'ils
       ont besoin d'être migrés. Voir CONTRIBUTING.md § Versionner les schémas. */
-  SCHEMA_VERSION: 12,
+  SCHEMA_VERSION: 13,
 
   /** Chaîne de migrations de schéma, ordonnée par version croissante. Chaque
       `up()` mute le `localStorage` brut (pas de dépendance à `_edition`) et
@@ -735,6 +735,16 @@ export const Storage = {
         localStorage.setItem(key, JSON.stringify(prefs));
         Debug.warn("storage", "migration v12 (preRollEdge pill→panel)");
       },
+    },
+    {
+      v: 13,
+      /** 1.221.0 : la fiche d'un PJ créé par l'assistant (SR5, SR6) porte
+          `gear`, l'équipement STRUCTURÉ, dont `equip` est projeté
+          (`creation.applyGear`). Forme ADDITIVE : un PJ sans `gear` reste en
+          texte, rien à réécrire. Le numéro dit qu'un profil ou un export peut
+          contenir des PJ à `gear` — une app restée à 12 refuse proprement un
+          paquet tamponné 13 au lieu de l'ingérer sans le comprendre. */
+      up() {},
     },
   ],
 

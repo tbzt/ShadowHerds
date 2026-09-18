@@ -1159,38 +1159,51 @@ export const EditModal = {
       });
     }
 
-    // ---- Section : Équipement (toujours affichée : on peut désormais en
-    // ajouter à un PNJ qui n'en a pas encore, via le catalogue). ----
-    // ME1c/D-ME-2 : saisie libre seule ici (chaînes « un par ligne ») — les
-    // objets structurés (#63, indice borné) sortent vers « Augmentations »
-    // juste en dessous (D-ME-2b), sinon mix textarea+rows dans une section.
-    html += `<div class="modal-section">
-        <div class="modal-section-title">Équipement</div>
-        <div class="stack form-group">
-          <label>Un élément par ligne</label>
-          <textarea id="em-equip" rows="4">${this._equipTextLines(pnj).join("\n")}</textarea>
-        </div>
-        ${this._equipCatalogControls(pnj)}
-      </div>`;
+    /* Un PJ à `gear` (assistant, depuis 1.221.0) : son `equip` est PROJETÉ
+       depuis `gear` par `creation.applyGear` — la textarea l'écraserait, puis
+       la projection écraserait la textarea. Deux vérités, le défaut que la
+       structure corrige : la zone est verrouillée jusqu'à l'éditeur ligne à
+       ligne partagé avec l'assistant (P6). Présence de `gear`, jamais une
+       branche d'édition. */
+    if (Array.isArray(pnj.gear)) {
+      html += this._zoneLocked(
+        "Équipement",
+        `${pnj.gear.length} objet${pnj.gear.length > 1 ? "s" : ""} — structuré par l'assistant, édition ligne à ligne dans la version suivante`,
+      );
+    } else {
+      // ---- Section : Équipement (toujours affichée : on peut désormais en
+      // ajouter à un PNJ qui n'en a pas encore, via le catalogue). ----
+      // ME1c/D-ME-2 : saisie libre seule ici (chaînes « un par ligne ») — les
+      // objets structurés (#63, indice borné) sortent vers « Augmentations »
+      // juste en dessous (D-ME-2b), sinon mix textarea+rows dans une section.
+      html += `<div class="modal-section">
+          <div class="modal-section-title">Équipement</div>
+          <div class="stack form-group">
+            <label>Un élément par ligne</label>
+            <textarea id="em-equip" rows="4">${this._equipTextLines(pnj).join("\n")}</textarea>
+          </div>
+          ${this._equipCatalogControls(pnj)}
+        </div>`;
 
-    // ---- Section : Augmentations (objets structurés d'équip — #63 à indice
-    // non résolu + cyber/bioware à indice fixe). Toujours montée dans le DOM
-    // (#em-equip-ratings reste une cible stable pour _rerenderEquip, ajout
-    // d'item en cours d'édition compris) ; masquée par CSS quand vide
-    // (`.em-augmentations-section:has(#em-equip-ratings:empty)`, classe portée
-    // par la card-zone). Réutilise #em-equip-ratings + _equipRatingRows
-    // inchangés (contrat Failsafe : data-idx/id="em-equip-rating-<i>" et le
-    // réordre de _readForm ne bougent pas). ----
-    const augCount = (pnj.equip || []).filter((it) => it && typeof it === "object").length;
-    html += this._zone(
-      "Augmentations",
-      `<div id="em-equip-ratings" class="stack stack--tight em-skills-list">${this._equipRatingRows(pnj)}</div>`,
-      {
-        summary: this._zoneCount(augCount, "augmentation", "augmentations"),
-        collapsed: true,
-        zoneClass: "em-augmentations-section",
-      },
-    );
+      // ---- Section : Augmentations (objets structurés d'équip — #63 à indice
+      // non résolu + cyber/bioware à indice fixe). Toujours montée dans le DOM
+      // (#em-equip-ratings reste une cible stable pour _rerenderEquip, ajout
+      // d'item en cours d'édition compris) ; masquée par CSS quand vide
+      // (`.em-augmentations-section:has(#em-equip-ratings:empty)`, classe portée
+      // par la card-zone). Réutilise #em-equip-ratings + _equipRatingRows
+      // inchangés (contrat Failsafe : data-idx/id="em-equip-rating-<i>" et le
+      // réordre de _readForm ne bougent pas). ----
+      const augCount = (pnj.equip || []).filter((it) => it && typeof it === "object").length;
+      html += this._zone(
+        "Augmentations",
+        `<div id="em-equip-ratings" class="stack stack--tight em-skills-list">${this._equipRatingRows(pnj)}</div>`,
+        {
+          summary: this._zoneCount(augCount, "augmentation", "augmentations"),
+          collapsed: true,
+          zoneClass: "em-augmentations-section",
+        },
+      );
+    }
 
     // ---- Section : Identités (SIN) ----
     html += this._buildIdentitiesSection(pnj);

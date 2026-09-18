@@ -5068,6 +5068,14 @@ export const EditionSR5 = {
     BonusEngine.stripItems(pnj, "sr5", items);
     pnj.equip = (pnj.equip || []).filter((i) => !strs.has(ItemResolver.itemStr(i)));
     if (Array.isArray(pnj.augs)) pnj.augs = pnj.augs.filter((i) => !strs.has(ItemResolver.itemStr(i)));
+    /* Un PJ à `gear` (assistant) : `equip` en est la projection, filtrer la
+       ligne ne suffit pas — l'implant reviendrait au prochain `applyGear`.
+       On retire l'objet lui-même, par son nom, puis on reprojette. */
+    if (Array.isArray(pnj.gear) && this.creation && this.creation.applyGear) {
+      const noms = new Set(rejetes.map((x) => x.nom));
+      pnj.gear = pnj.gear.filter((g) => !noms.has(g.name));
+      this.creation.applyGear(pnj);
+    }
     pnj.zooImplantsRejetes = [...(pnj.zooImplantsRejetes || []), ...rejetes.map((x) => x.nom)];
     return this.recalc(pnj);
   },

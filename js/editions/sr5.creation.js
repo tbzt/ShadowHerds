@@ -1334,6 +1334,82 @@ Object.assign(EditionSR5, {
       return item;
     },
 
+    /* ---- PROJECTION : `gear` → `equip` ----
+       Depuis 1.221.0 la fiche d'un PJ créé par l'assistant porte `gear`, la
+       liste STRUCTURÉE du brouillon (uid, coût, Disponibilité, accessoires en
+       {id, indice}, gamme, indice, hôte, membre, famille). `equip`, que tout
+       le reste de l'app lit (carte, jets, BonusEngine, export, impression,
+       recherche), en est la PROJECTION — écrite ici et nulle part ailleurs.
+       Un PJ sans `gear` (PNJ généré, PJ importé, PJ d'avant) garde son
+       `equip` texte : `applyGear` ne le touche pas.
+
+       ⚠ Une seule vérité : sur un PJ à `gear`, écrire `equip` à la main est
+       un bug — la projection l'écraserait au tour suivant. Les écrivains
+       mutent `gear` puis rejouent `applyGear`. */
+    UNARMED_LINE: "Mains nues [Allonge —, VD (FOR)E, PA —]",
+
+    /** Les lignes d'équipement d'un hôte (brouillon ou fiche) depuis son
+        `gear` : « Nom [détail, accessoires] », et pour un implant l'objet
+        `{str, cat, grade, essence, rating, hote, membre}` que lit
+        l'application. `host` est ce qui porte `gear` — les hôtes d'implants
+        s'y résolvent par uid. */
+    gearLines(host) {
+      return (host.gear || []).map((g) => {
+      const mods = ModRefs.normalize(g.mods).map((ref) => {
+        const a = this.accessoryById(ModRefs.id(ref));
+        const n = ModRefs.indice(ref);
+        return a ? `${a.nom}${n ? " " + n : ""}` : null;
+      }).filter(Boolean);
+      /* ⚠ L'arme sortait sans sa ligne de stats : « Ares Predator V » nu.
+         Or la fiche ne reconnaît une arme qu'à son bloc « [PRE…, VD…] »
+         (ItemResolver.splitEquip) — un PJ du générateur n'avait donc AUCUN
+         jet d'arme, quand le même Predator saisi à la main en avait un.
+         Tout objet du catalogue reprend la langue de l'app : « Nom
+         [détail, accessoires] », comme « Veste pare-balles [9] ». */
+      const detailArme = !this.isImplant(g) && g.detail ? `${g.detail}${mods.length ? `, ${mods.join(", ")}` : ""}` : "";
+      const nom = detailArme ? `${g.name} [${detailArme}]` : mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
+      /* Une AUGMENTATION entre dans la langue du générateur : un objet
+         `{str, cat}` (cf. ItemResolver.addEquipString), avec la ligne de
+         stats du livre — c'est elle que lisent le routage Augmentations,
+         BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
+         d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
+      if (this.isImplant(g)) {
+        /* ⚠ L'indice choisi restait dans le brouillon : « Orthoderme 3 »
+           sortait « Orthoderme [Indice 1-4, …] », que BonusEngine lit comme
+           une plage non résolue → bonus 0. L'objet porte `rating`, la langue
+           du stepper (ItemResolver.itemRating). */
+        const st = this.implantState(g, host);
+        const gamme = g.grade && g.grade !== "standard" ? ` · ${st.grade.toLowerCase()}` : "";
+        const loge = st.hote ? ` · dans ${st.hote.name}` : "";
+        // Un cybermembre porte ses attributs propres sur sa ligne.
+        const membre = st.membre ? ` · FOR ${st.membre.FOR}, AGI ${st.membre.AGI}${st.membre.armure ? `, Armure +${st.membre.armure}` : ""}` : "";
+        return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${membre}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(Number(g.rating) > 0 ? { rating: Number(g.rating) } : {}), ...(st.hote ? { hote: st.hote.name } : {}), ...(st.membre ? { membre: { FOR: st.membre.FOR, AGI: st.membre.AGI, armure: st.membre.armure } } : {}) };
+      }
+      return nom;
+    });
+    },
+
+    /** Pose sur la fiche ce que `gear` implique : `equip` (lignes + mains
+        nues + lignes innées, cf. `equipInnate`), l'armure portée. Idempotente.
+        Rien sur un PJ sans `gear`. */
+    applyGear(pnj) {
+      if (!Array.isArray(pnj.gear)) return pnj;
+      pnj.equip = [...this.gearLines(pnj), this.UNARMED_LINE, ...(pnj.equipInnate || [])];
+      const armure = this.armorWorn(pnj);
+      pnj.armure = armure ? armure.armure : 0;
+      pnj.armureNom = armure ? armure.nom : null;
+      return pnj;
+    },
+
+    /** Le `gear` de la fiche depuis celui du brouillon : une copie profonde
+        (le brouillon est effacé après, la fiche ne doit rien lui devoir), un
+        `uid` par objet, les accessoires normalisés. */
+    _sheetGear(build) {
+      return (build.gear || [])
+        .filter((g) => g && String(g.name || "").trim())
+        .map((g) => ({ ...JSON.parse(JSON.stringify(g)), uid: g.uid || Utils.uid(), mods: ModRefs.normalize(g.mods) }));
+    },
+
     /** L'indice d'Armure PORTÉ (Livre de Règles p.169) : la meilleure
         protection de l'équipement, plus les compléments notés « +N » (casque,
         bouclier — Run & Gun, appendice). Les protections entières ne se
@@ -3307,7 +3383,6 @@ Object.assign(EditionSR5, {
       const profil = this.magicProfile(build);
       const SPECIAL = { technomancien: "Technomancien", adepte: "Adepte", magicien: "Magicien", specialise: "Magicien spécialisé", mystique: "Adepte mystique" };
       const special = profil ? SPECIAL[profil.key] || null : inf && inf.eveilImpose ? "Magicien" : null;
-      const armure = this.armorWorn(build);
       /* La fiche parle la langue du générateur : `meta` est la SOUCHE,
          `metavariant` la variante, `metaTraits` ses traits raciaux — la
          section « Traits de métavariante » de la carte les lit. Un Satyre
@@ -3395,45 +3470,8 @@ Object.assign(EditionSR5, {
           infectedPowers: [...inf.pouvoirs, ...((build.infecte || {}).gratuit ? [`${build.infecte.gratuit} (offert)`] : [])],
           infectedWeaknesses: inf.faiblesses,
         } : {}),
-        /* ⚠ Les accessoires choisis restaient dans le brouillon : la fiche ne
-           recevait que le nom de l'objet. Ils voyagent maintenant avec lui,
-           en clair — « Ares Predator V (Lunette de visée, Silencieux) ». */
-        /* Tout le monde a ses poings : la ligne « Mains nues » que le
-           générateur de PNJ pose sur chaque fiche — c'est elle qui porte la
-           VD d'un cybermembre (SR5 p.458), résolue par la carte. */
-        equip: [...(build.gear || []).map((g) => {
-          const mods = ModRefs.normalize(g.mods).map((ref) => {
-            const a = this.accessoryById(ModRefs.id(ref));
-            const n = ModRefs.indice(ref);
-            return a ? `${a.nom}${n ? " " + n : ""}` : null;
-          }).filter(Boolean);
-          /* ⚠ L'arme sortait sans sa ligne de stats : « Ares Predator V » nu.
-             Or la fiche ne reconnaît une arme qu'à son bloc « [PRE…, VD…] »
-             (ItemResolver.splitEquip) — un PJ du générateur n'avait donc AUCUN
-             jet d'arme, quand le même Predator saisi à la main en avait un.
-             Tout objet du catalogue reprend la langue de l'app : « Nom
-             [détail, accessoires] », comme « Veste pare-balles [9] ». */
-          const detailArme = !this.isImplant(g) && g.detail ? `${g.detail}${mods.length ? `, ${mods.join(", ")}` : ""}` : "";
-          const nom = detailArme ? `${g.name} [${detailArme}]` : mods.length ? `${g.name} (${mods.join(", ")})` : g.name;
-          /* Une AUGMENTATION entre dans la langue du générateur : un objet
-             `{str, cat}` (cf. ItemResolver.addEquipString), avec la ligne de
-             stats du livre — c'est elle que lisent le routage Augmentations,
-             BonusEngine (« Réflexes câblés 1 » → +1D6) et le coût en Essence
-             d'un implant rejeté. Une chaîne nue en faisait un objet « Porté ». */
-          if (this.isImplant(g)) {
-            /* ⚠ L'indice choisi restait dans le brouillon : « Orthoderme 3 »
-               sortait « Orthoderme [Indice 1-4, …] », que BonusEngine lit comme
-               une plage non résolue → bonus 0. L'objet porte `rating`, la langue
-               du stepper (ItemResolver.itemRating). */
-            const st = this.implantState(g, build);
-            const gamme = g.grade && g.grade !== "standard" ? ` · ${st.grade.toLowerCase()}` : "";
-            const loge = st.hote ? ` · dans ${st.hote.name}` : "";
-            // Un cybermembre porte ses attributs propres sur sa ligne.
-            const membre = st.membre ? ` · FOR ${st.membre.FOR}, AGI ${st.membre.AGI}${st.membre.armure ? `, Armure +${st.membre.armure}` : ""}` : "";
-            return { str: `${g.detail ? `${nom} [${g.detail}]` : nom}${membre}${gamme}${loge}`, cat: g.kind, grade: g.grade || "standard", essence: st.essence, ...(Number(g.rating) > 0 ? { rating: Number(g.rating) } : {}), ...(st.hote ? { hote: st.hote.name } : {}), ...(st.membre ? { membre: { FOR: st.membre.FOR, AGI: st.membre.AGI, armure: st.membre.armure } } : {}) };
-          }
-          return nom;
-        }), "Mains nues [Allonge —, VD (FOR)E, PA —]"],
+        // L'équipement STRUCTURÉ ; `equip` en est projeté par `applyGear`.
+        gear: this._sheetGear(build),
         awakened: build.awakened || null,
         // Lue par la fiche (section Tradition) et par les règles de Drain.
         tradition: build.tradition || null,
@@ -3450,9 +3488,7 @@ Object.assign(EditionSR5, {
         special,
         // L'attribut de Drain de la tradition : `recalc` en tire `drainResist`.
         traditionDrainAttr: this.drainAttr(build),
-        // Armure portée, lue sur l'équipement : `recalc` en tire l'Encaissement.
-        armure: armure ? armure.armure : 0,
-        armureNom: armure ? armure.nom : null,
+        // Armure portée : posée par `applyGear` depuis `gear`, `recalc` en tire l'Encaissement.
         // Dés d'initiative de la forme animale d'un zoocanthrope (p.77) ; 1 sinon.
         initDice: mv && mv.init ? parseInt(mv.init, 10) || 1 : 1,
         contacts: build.contacts || [],
@@ -3471,6 +3507,7 @@ Object.assign(EditionSR5, {
          PNJ générés et de l'édition manuelle. Et les bonus des augmentations
          (Réflexes câblés → +1D6…) passent par BonusEngine, comme pour un
          PNJ : un PJ créé avec des réflexes câblés n'en avait pas les dés. */
+      this.applyGear(pnj);
       BonusEngine.apply(pnj, "sr5");
       return EditionSR5.recalc(pnj);
     },
