@@ -248,6 +248,14 @@ export const EncounterBinding = {
         case "toggle-scene-type":
           Encounter.toggleSceneType();
           break;
+        case "to-combat":
+          // Action primaire d'une scène sociale (barre du bas).
+          Encounter.toCombat();
+          break;
+        case "set-register":
+          // Commutateur Sociale / Combat de l'en-tête de scène.
+          Encounter.setRegister(el.dataset.register);
+          break;
         case "edge-step":
           // ±1 Atout du combattant actif (SR6).
           Encounter.adjustEdge(id, parseInt(el.dataset.delta, 10) || 0);

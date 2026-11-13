@@ -643,6 +643,47 @@
   display: flex;
 }
 
+/* ---- Registre SOCIAL : la liste des présents, pas un ordre de tour ----
+   Piloté par .is-social (`Encounter.register()`). Une conversation n'a ni
+   tour ni round : « Tour suivant », « Round suivant » et « ⚄ Initiative » se
+   taisent, et l'action primaire devient le PASSAGE au combat. Déclaré APRÈS
+   le bloc narratif : en Anarchy sociale, c'est bien « Passer au combat » qui
+   reste, pas « Round suivant ». */
+.encounter-social-only {
+  display: none;
+}
+.encounter-modal.is-social .encounter-toolbar [data-action="roll-and-sort"],
+.encounter-modal.is-social .encounter-toolbar [data-action="next-round"],
+.encounter-modal.is-social .encounter-turn-bar [data-action="next-turn"],
+.encounter-modal.is-social .encounter-turn-bar .encounter-narrative-only {
+  display: none;
+}
+.encounter-modal.is-social .encounter-social-only {
+  display: flex;
+}
+/* La ligne d'attitude d'un présent : voix de la fiction (corps, casse
+   normale), un cran sous le nom. */
+.encounter-nrow-line {
+  font-family: var(--font-body);
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  color: var(--text-dim);
+}
+/* Téléphone, réglette compacte choisie par le MJ (`.rail-compact`) : ses
+   jetons sont des scores d'initiative — en social ils n'ont rien à dire, la
+   liste des présents reprend sa place. */
+@media (max-width: 640px) {
+  .encounter-modal.is-social.rail-compact .encounter-rail {
+    display: none;
+  }
+  .encounter-modal.is-social.rail-compact #encounter-active-lead {
+    display: block;
+  }
+  .encounter-modal.is-social.rail-compact #encounter-list {
+    display: flex;
+  }
+}
+
 /* ---- R2-E : scène Matrice seule (state.motors sans "combat") ----
    Le tiroir Matrice devient la surface principale : liste/réglette d'init,
    « Ajouter », « Lancer & classer », « Round/Tour suivant » n'ont plus de
@@ -1587,6 +1628,91 @@ button.encounter-token-init:active {
   gap: var(--sp-2);
   margin-left: auto;
   margin-right: var(--sp-2);
+}
+/* Registre de scène (Sociale / Combat) — dans l'en-tête, entre le titre qu'il
+   qualifie et les ressources de scène. Deux puces-toggle canoniques (`.chip` +
+   `.is-active`, pnj-card.css) ; on ne pose ici que leur mise en forme, la
+   même que `.hub-type-chip` (display, pilule). Cible tactile : le bloc
+   `pointer: coarse` de `.chip` la porte déjà à `--hit-cozy`. */
+.encounter-register {
+  flex: none;
+  flex-wrap: nowrap;
+  gap: var(--sp-1);
+  margin-left: var(--sp-3);
+}
+.encounter-register > .chip {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.04em;
+  padding: 3px var(--sp-3);
+  border-radius: var(--radius-pill);
+  /* Plancher de cible : mesuré à 22px en Anarchy 1 (mono plus basse). */
+  min-height: var(--hit-min);
+}
+.encounter-register > .chip:not(.is-active) {
+  background: transparent;
+  color: var(--text-dim);
+}
+/* Téléphone : l'en-tête ne tient pas titre + registre + ressources + fermer
+   sur une ligne — mesuré à 375px, il débordait de 72px en SR5 (Bruit) et de
+   131px en Anarchy 1 (Menace), puces hors écran. Un choix caché derrière un
+   débordement n'existe pas (Grammaire, loi 5) : le registre prend sa propre
+   rangée, sous le titre. */
+@media (max-width: 640px) {
+  .encounter-modal .modal-header {
+    flex-wrap: wrap;
+  }
+  .encounter-register {
+    order: 1;
+    flex-basis: 100%;
+    margin-left: 0;
+  }
+}
+/* La console en registre social : l'incarnation d'abord, séparée de
+   l'offensive qui reste dessous. */
+.encounter-exchange {
+  padding-bottom: var(--sp-3);
+  margin-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+/* Le comportement À JOUER (`CardRenderer._exchangePlay`). Tout est dans la
+   voix de la FICTION (`--font-body`, casse normale, aucun mono — DESIGN-SYSTEM
+   § 4.2) et c'est la hiérarchie qui parle : l'attitude est la plus grande
+   chose du panneau, parce que c'est elle que le MJ lit avant d'ouvrir la
+   bouche ; les indications et la motivation suivent au corps courant. Aucune
+   boîte, aucun libellé en capitales : la phrase se suffit. */
+.exchange-play {
+  max-width: var(--measure);
+  padding: var(--sp-2) 0 var(--sp-3);
+}
+.exchange-play p,
+.exchange-cues {
+  margin: 0;
+  padding: 0;
+}
+.exchange-lead {
+  font-family: var(--font-body);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text);
+}
+.exchange-cues {
+  list-style: none;
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  color: var(--text);
+}
+.exchange-want {
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: 1.5;
+  color: var(--text);
+}
+.exchange-want-key {
+  color: var(--text-dim);
 }
 .encounter-noise {
   display: inline-flex;

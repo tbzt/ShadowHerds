@@ -463,7 +463,14 @@ export const Encounter = {
       });
       if (!ok) return false;
     }
-    this.state = EncounterStore.readBundle(dossierId) || this._empty();
+    const bundle = EncounterStore.readBundle(dossierId);
+    this.state = bundle || this._empty();
+    // Première ouverture (aucun bundle) : la préparation dit le registre. Une
+    // scène déjà jouée garde celui où on l'a laissée — il voyage dans le bundle.
+    if (!bundle) {
+      const node = Dossiers.get(dossierId);
+      this.state.register = this._registerForSceneType(node && node.sceneType);
+    }
     this.activeDossierId = dossierId;
     // Miroir vers la scène vivante d'App.context (persistée) → survit au reload.
     if (typeof App !== "undefined" && App.context) App.context.setScene(dossierId);
@@ -1709,7 +1716,8 @@ export const Encounter = {
   },
 
   rollInit(pnjId) {
-    this._rollInit(pnjId);
+    // Lancer l'initiative EST le passage au combat (registre de scène).
+    if (this._rollInit(pnjId)) this.state.register = "combat";
     this._commit();
   },
 
@@ -1722,6 +1730,8 @@ export const Encounter = {
     for (const c of this.state.combatants) {
       if (c.init == null && this._rollInit(c.pnjId, true)) rolled++;
     }
+    // Le geste « Initiative » vaut intention, même si tout était déjà lancé.
+    this.state.register = "combat";
     this._commit();
     this._initFeedback(rolled, false);
   },
@@ -1776,6 +1786,7 @@ export const Encounter = {
     }
     this._sortInPlace();
     this.state.turnIndex = this._firstEligibleIndex();
+    this.state.register = "combat"; // même passage que `rollAllInit`
     this._commit();
     this._initFeedback(rolled, true);
   },
@@ -2407,7 +2418,12 @@ export const Encounter = {
     // pour aller à la bibliothèque en plein round renvoyait le MJ hors de la
     // scène (CODIR 2026-09-03, D5). Même geste que le ⛶ de Réagir
     // (react-expand) — frères = toute la file qui a une fiche, pour feuilleter.
-    CardPeek.open(pnjId, { siblings: this._peekSiblings(), view: "combat" });
+    // La fiche s'ouvre sur la face du registre : en scène sociale on vient
+    // voir qui il est, pas ses armes.
+    CardPeek.open(pnjId, {
+      siblings: this._peekSiblings(),
+      view: this.register() === "social" ? "incarner" : "combat",
+    });
   },
 
   /** Ids feuilletables depuis la FILE (coup d'œil sur le nom) : tout
@@ -2832,6 +2848,48 @@ export const Encounter = {
 
   hasMotor(key) {
     return ((this.state && this.state.motors) || ["combat"]).includes(key);
+  },
+
+  /* ---- Registre de scène : ce qu'on REGARDE, pas ce qui tourne ----------
+     "social" ou "combat". Ce n'est pas un moteur (les moteurs partagent une
+     ronde ; une conversation n'en a pas) et il ne coupe rien : il choisit la
+     face des fiches et le titre de la scène. Trois écrivains, tous des
+     gestes du MJ : le commutateur de l'en-tête (`setRegister`), l'initiative
+     (`rollInit`/`rollAllInit` → "combat") et l'ouverture d'une scène préparée
+     (`restore`, d'après son type de trame). */
+
+  /** SEUL lecteur du registre — le rendu, le titre et la sidebar passent par
+      ici, jamais par `state.register` (un fait, une expression). Une scène
+      persistée avant ce champ se lit "combat" : elle garde l'aspect qu'elle
+      avait. */
+  register() {
+    return this.state && this.state.register === "social" ? "social" : "combat";
+  },
+
+  setRegister(value) {
+    if (!this.state) return;
+    const next = value === "social" ? "social" : "combat";
+    if (this.register() === next) return;
+    this.state.register = next;
+    // `_commit` incrémente la révision : le cache de la fiche active tombe.
+    this._commit();
+  },
+
+  /** « Passer au combat » — l'action primaire d'une scène sociale. Là où le
+      livre a une initiative, la lancer EST le passage (`rollAndSort` pose le
+      registre) ; là où il n'en a pas (`combatModel.narrative`), on bascule
+      simplement. La capacité tranche, jamais le nom de l'édition. */
+  toCombat() {
+    if (this._model().narrative) this.setRegister("combat");
+    else this.rollAndSort();
+  },
+
+  /** Registre d'OUVERTURE d'une scène préparée, d'après son type de trame
+      (`Dossiers.setSceneType`, vocabulaire de `FLOW_TYPES`). Seule « action »
+      ouvre en combat ; accroche, repérage, sociale, décision, retombée et les
+      scènes non typées ouvrent en social. */
+  _registerForSceneType(sceneType) {
+    return sceneType === "action" ? "combat" : "social";
   },
 
   /** Allume ou éteint le moteur MATRICE, sans toucher aux autres.

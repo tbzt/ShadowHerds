@@ -97,6 +97,7 @@ export const CardRenderer = {
     return (
       `<div class="pnj-card-frame">` +
       this._header(pnj, deps) +
+      (actions === null ? "" : this._lensRow(pnj, deps)) +
       this._body(pnj, deps) +
       this._footModulesHtml(pnj, deps) +
       this._journal(pnj, deps) +
@@ -925,6 +926,93 @@ export const CardRenderer = {
     return html;
   },
 
+  /** Blocs d'ÉCHANGE du PNJ en focus, pour la console du tracker quand la
+      scène est en registre « social » (`Encounter.register()`) — pendant
+      d'`offenseBlocks`. Trois temps, dans l'ordre où le MJ s'en sert :
+        1. ce que le PNJ DONNE À JOUER (`_exchangePlay`) : l'attitude en
+           phrase, les indications de jeu, ce qu'il veut ;
+        2. les jets sociaux de SON livre (`_exchangeRolls`), décrits par
+           `socialBlock(pnj)` du module d'édition — aucune branche ici ;
+        3. toutes ses compétences, les sociales en tête.
+      Pas d'armes : l'offensive est la face du registre « combat ». Pas de
+      coquille repliable non plus — la console n'a pas de pli, et celui de la
+      carte (souvent fermé en bibliothèque) ne doit pas la vider. */
+  exchangeBlocks(pnj, deps = CardRenderer.liveDeps()) {
+    if (!pnj || pnj._adhoc) return "";
+    const mod = App.getEditionModule(pnj.edition);
+    const social = mod && mod.socialBlock ? mod.socialBlock(pnj) : { pools: [], skills: [], limit: null };
+    const base = (n) => String(n || "").replace(/\s*\(.*\)\s*$/, "").trim();
+    const isSocial = (s) => social.skills.includes(base(s.name));
+    const skills = (pnj.skills || []).slice().sort(
+      (a, b) => isSocial(b) - isSocial(a) || (a.name || "").localeCompare(b.name || "", "fr"),
+    );
+    return (
+      this._exchangePlay(pnj) +
+      this._flavorLists(pnj) +
+      this._exchangeRolls(pnj, social) +
+      this._skillsBlock(pnj, skills)
+    );
+  },
+
+  /** La ligne qui dit comment un personnage SE TIENT — son attitude, à défaut
+      son style, sa motivation ou son premier mot-clé (PJ). Texte nu, "" si la
+      fiche n'a rien : la liste des présents d'une scène sociale s'en sert
+      pour dire, d'un coup d'œil, qui est qui. */
+  attitudeLine(pnj) {
+    const f = pnj && pnj.flavor;
+    return (f && (f.attitude || f.style || f.motivation)) || (pnj && pnj.keywords && pnj.keywords[0]) || "";
+  },
+
+  /** L'incarnation mise en forme pour être JOUÉE, pas consultée : l'attitude
+      est la phrase qu'on lit d'abord (c'est elle qui donne le ton de la
+      voix), âge · signe · style · manie sont des indications de jeu, la
+      motivation dit ce qu'il cherche dans l'échange. Mêmes champs que la zone
+      Incarnation de la carte (`pnj.flavor`, js/rules/flavor.js), autre
+      hiérarchie. Sans attitude, la première indication en tient lieu. */
+  _exchangePlay(pnj) {
+    const f = pnj.flavor;
+    if (!f) return "";
+    const cues = [f.age != null ? `${f.age} ans` : null, f.signe, f.style, f.manie].filter(Boolean);
+    const lead = f.attitude || cues.shift() || "";
+    if (!lead && !f.motivation) return "";
+    const cap = (s) => String(s).charAt(0).toUpperCase() + String(s).slice(1);
+    return `<div class="stack stack--tight exchange-play">
+      ${lead ? `<p class="exchange-lead">${this._esc(cap(lead))}</p>` : ""}
+      ${cues.length ? `<ul class="exchange-cues">${cues.map((c) => `<li>${this._esc(cap(c))}</li>`).join("")}</ul>` : ""}
+      ${f.motivation ? `<p class="exchange-want"><span class="exchange-want-key">Veut</span> ${this._esc(f.motivation)}</p>` : ""}
+    </div>`;
+  },
+
+  /** Jets sociaux d'attributs (Sang-froid, Jauger les intentions… selon le
+      livre) en pastilles lançables — même pastille et même décompte que les
+      « Jets de situation » de la carte (`_gmPoolRow`) — et la limite quand
+      l'édition en a une. Rien si l'édition n'en déclare aucun (Anarchy 2). */
+  _exchangeRolls(pnj, social) {
+    const cells = social.pools
+      .map((p) => this._gmPoolRow(p.label, p.value, p.title, p.key ? { key: p.key, pnj } : {}))
+      .join("");
+    const limit = social.limit
+      ? `<span class="stat-pill" title="${this._esc(social.limit.label)} — plafonne les succès des tests sociaux">${this._esc(social.limit.label)}&nbsp;<strong>${this._esc(String(social.limit.value))}</strong></span>`
+      : "";
+    if (!cells && !limit) return "";
+    return `<div class="card-section gm-pools-section">
+      <div class="card-section-label">Jets sociaux</div>
+      <div class="cluster stats-row">${cells}${limit}</div>
+    </div>`;
+  },
+
+  /** Section Compétences d'un PNJ hors de son corps de carte. Deux rendus
+      existent (puces à réserve, ou puces attribut + compétence + RR) : c'est
+      la FORME déclarée par le module d'édition (`skillModel.shape`) qui
+      choisit, jamais le nom de l'édition. */
+  _skillsBlock(pnj, skills) {
+    if (!skills || !skills.length) return "";
+    const mod = App.getEditionModule(pnj.edition);
+    if (mod && mod.skillModel && mod.skillModel.shape === "extended")
+      return this._skillsSectionAnarchy(pnj, skills, this._anarchyAtouts(pnj));
+    return this._skillsSection(skills, Utils.dicePenalty(pnj, pnj.edition), { pnj });
+  },
+
   /** Blocs d'OFFENSE du combattant actif, pour la console « Agir » du tracker
       (V7, principe « Agir produit / Réagir subit ») — ce que le PNJ PRODUIT à
       son tour, SANS moniteur (il ne subit rien sur son tour : le malus de
@@ -1195,41 +1283,52 @@ export const CardRenderer = {
     );
   },
 
-  /** Sélecteur d'onglets glyphes = le RAIL « carnet » hors-cadre (doctrine
-      §5), posé en frère du `.pnj-card-frame` dans la bande droite réservée
-      par `.pnj-card.has-rail` — plus jamais dans le header (le glyphe ⚔ ne
-      peut donc plus se lire comme le ✕ du coin-fermer). Présent dans TOUS les
-      contextes de carte autonome, y compris le mur d'Ombres (le garde
-      `context:"library"` est levé) ; la bande est réservée par carte,
-      à l'intérieur du footprint, donc aucune collision avec la colonne
-      voisine du layout multi-colonnes. Hit-area ≥ 44 px (padding), délégation
-      data-lens (jamais de <select> natif). Entités liées (véhicules/esprits)
-      exclues (I7). PJ-c/D5 : onglet(s) de module phare (Suivi ❖) ajoutés après
-      les 3 vues — pas une vue, un accès direct 1-tap qui replie/déplie CE
-      module précis (data-zone-toggle, même mécanique qu'un pli manuel).
-      CO-e (carte Contact) : vues filtrées par `_viewsFor` (un contact n'offre
-      pas Combat, I3) — le rail affiche donc ☰❝◈ pour un contact, jamais ⚔. */
+  /** LA RANGÉE DE VUES — « Incarner · Combat · Fiche », en toutes lettres, sous
+      l'en-tête de la carte. Elle remplace les trois glyphes ☰❝⚔ du rail : un
+      glyphe nu ne disait pas qu'une fiche a plusieurs faces, ni lesquelles.
+      (Le rail avait sorti ces onglets de l'en-tête parce que ⚔ s'y lisait
+      comme le ✕ de fermeture ; avec des mots, la raison tombe.) Même
+      délégation `data-lens` qu'avant, jamais de <select> natif. L'ordre est
+      celui du jeu : qui il est, puis ce qu'il fait au combat, puis tout.
+      Un contact n'offre pas Combat (`_viewsFor`, I3). Entités liées
+      (véhicules/esprits) exclues (I7). Le PAYSAGE (`_curatedView`) n'est pas
+      une vue de pli mais un état de rendu : il ferme la rangée, à l'écart, et
+      seulement là où la carte est assez large pour lui (requête de conteneur
+      CSS) ; hors contacts, qui n'ont pas de contenu de combat à curer. */
+  _lensRow(pnj, deps) {
+    if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
+    const current = this._curatedView.has(pnj.id) ? null : this._currentViewKey(pnj, deps);
+    const order = ["incarner", "combat", "fiche"];
+    const views = this._viewsFor(pnj)
+      .slice()
+      .sort((x, y) => order.indexOf(x.key) - order.indexOf(y.key))
+      .map((v) => {
+        const on = v.key === current;
+        return `<button type="button" class="lens-view${on ? " is-active" : ""}" data-lens="${v.key}" data-id="${pnj.id}" aria-pressed="${on}">${this._esc(v.label)}</button>`;
+      })
+      .join("");
+    const curated = CardRenderer.isContact(pnj)
+      ? ""
+      : `<button type="button" class="lens-view lens-curated${this._curatedView.has(pnj.id) ? " is-active" : ""}" data-curated-toggle data-id="${pnj.id}" title="Vue de jeu épurée : le système à gauche, la fiction à droite" aria-pressed="${this._curatedView.has(pnj.id)}">Paysage</button>`;
+    return `<div class="cluster lens-row" role="group" aria-label="Vue de la fiche">${views}${curated}</div>`;
+  },
+
+  /** Le RAIL « carnet » hors-cadre (doctrine §5), posé en frère du
+      `.pnj-card-frame` dans la bande droite réservée par `.pnj-card.has-rail`.
+      Il ne porte plus que les raccourcis de MODULE phare (Suivi ❖ d'un PJ,
+      Relation ◈ d'un contact) — pas des vues : un accès direct 1-tap qui
+      replie/déplie CE module (data-zone-toggle, même mécanique qu'un pli
+      manuel). Une carte sans module phare n'a donc plus de rail, et récupère
+      sa bande. Hit-area ≥ 44 px au doigt. */
   _lensSelector(pnj, deps) {
     if (pnj.type === "vehicle" || pnj.type === "spirit" || pnj.ownerId) return "";
-    const current = this._currentViewKey(pnj, deps);
-    const viewTabs = this._viewsFor(pnj).map((v) => {
-      const active = v.key === current ? " active" : "";
-      return `<button type="button" class="lens-tab${active}" data-lens="${v.key}" data-id="${pnj.id}" title="Vue : ${this._esc(v.label)}" aria-label="Vue : ${this._esc(v.label)}" aria-pressed="${v.key === current}">${v.glyph}</button>`;
-    }).join("");
     const moduleTabs = CardRenderer._MODULES.filter((m) => m.placement === "foot" && m.applies(pnj))
       .map((m) => {
         const open = this._zoneIsOpen(pnj, m.key, deps);
         return `<button type="button" class="lens-tab${open ? " active" : ""}" data-zone-toggle="${m.key}" data-id="${pnj.id}" title="${this._esc(m.label)}" aria-label="${this._esc(m.label)}" aria-pressed="${open}">${m.glyph}</button>`;
       })
       .join("");
-    // Toggle PAYSAGE ÉPURÉ — vue de jeu optionnelle, posée dans le MÊME rail
-    // que les lentilles (un seul endroit, pas de chrome éparpillé). N'est pas une
-    // « vue » de pli : un état de rendu à part (`_curatedView`), séparé des
-    // ☰❝⚔ par un fin filet. Hors contacts (pas de contenu de combat à curer).
-    const curatedToggle = CardRenderer.isContact(pnj)
-      ? ""
-      : `<button type="button" class="lens-tab lens-curated${this._curatedView.has(pnj.id) ? " active" : ""}" data-curated-toggle data-id="${pnj.id}" title="Vue de jeu épurée (paysage)" aria-label="Vue de jeu épurée (paysage)" aria-pressed="${this._curatedView.has(pnj.id)}">◫</button>`;
-    return `<div class="cluster lens-selector" role="tablist" aria-label="Vue">${viewTabs}${moduleTabs}${curatedToggle}</div>`;
+    return moduleTabs ? `<div class="cluster lens-selector" role="group" aria-label="Modules">${moduleTabs}</div>` : "";
   },
 
   /* ---- Traits raciaux de métavariante ---- */
@@ -1266,7 +1365,7 @@ export const CardRenderer = {
      éditable en ligne (`data-contact-flavor`) + ajoute le bouton ⟳ (relance
      tout le portrait, ex-`ContactRenderer._portrait`). Sortie PNJ inchangée
      octet pour octet quand `editable` est faux (défaut). */
-  _flavorSection(pnj, deps = CardRenderer.liveDeps()) {
+  _flavorBody(pnj, deps = CardRenderer.liveDeps()) {
     const f = pnj.flavor;
     const editable = !!(deps && deps.editable);
     const defs = f
@@ -1293,6 +1392,14 @@ export const CardRenderer = {
     let html = rows
       ? `<div class="card-section flavor-section">${reroll ? `<div class="card-section-label">Portrait${reroll}</div>` : ""}${rows}</div>`
       : "";
+    return html + this._flavorLists(pnj);
+  },
+
+  /** Mots-clés, comportements et répliques (champs neutres d'un PJ, PJ-b) —
+      partagés par la zone Incarnation de la carte et la console de scène en
+      registre social (`exchangeBlocks`). */
+  _flavorLists(pnj) {
+    let html = "";
     if (pnj.keywords && pnj.keywords.length) html += this._listSection("Mots-clés", pnj.keywords);
     if (pnj.behaviors && pnj.behaviors.length) html += this._listSection("Comportements", pnj.behaviors);
     if (pnj.quotes && pnj.quotes.length) {
@@ -1303,7 +1410,15 @@ export const CardRenderer = {
         </div>
       </div>`;
     }
+    return html;
+  },
+
+  /** Zone Incarnation de la CARTE : le corps ci-dessus dans sa coquille
+      repliable (pli par carte, `_zoneIsOpen`). */
+  _flavorSection(pnj, deps = CardRenderer.liveDeps()) {
+    const html = this._flavorBody(pnj, deps);
     if (!html) return "";
+    const f = pnj.flavor;
     const summary = (f && (f.style || f.attitude || f.motivation)) || (pnj.keywords && pnj.keywords[0]) || "";
     return this._zoneShell(pnj, "incarnation", html, summary);
   },
@@ -1383,21 +1498,36 @@ export const CardRenderer = {
      fichiers cardrenderer.sr5/sr6/anarchy.js.
      ======================================================== */
 
-  /** Préférences d'affichage, avec défaut ADAPTATIF. Recâblé
-      sur le moteur de vues — plus de réglage global (les 3 cases attributs/
-      Jets de situation/équipement et le levier layout ont été retirés des
-      Réglages, remplacés par les vues + le pli par carte). L'ancien blob
-      `cardDisplay` hérité n'est plus jamais lu (aucun crash, présentation
-      pure). Reste le SEUL défaut adaptatif par contexte : bibliothèque
-      (consultation) → toujours compact ; sinon responsive (≤1024px). */
-  _displayPrefs(deps) {
-    const shows = { showGmPools: true, showAttributes: true, showEquipment: true };
-    if (deps && deps.context === "library") return { layout: "compact", ...shows };
-    const compact =
-      typeof window !== "undefined" &&
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(max-width: 1024px)").matches;
-    return { layout: compact ? "compact" : "expanded", ...shows };
+  /** Préférences d'affichage des corps d'édition. Plus de réglage global (les
+      3 cases attributs / Jets de situation / équipement ont été retirés des
+      Réglages, remplacés par les vues + le pli par carte) : tout est montré.
+      L'ancien défaut de PLI qui vivait ici — tout ouvert au-dessus de 1024px,
+      tout fermé en dessous, « toujours compact » pour un contexte
+      `library` que plus aucun appelant ne passait — est remplacé par la vue
+      par défaut (`_defaultView`). */
+  _displayPrefs() {
+    return { showGmPools: true, showAttributes: true, showEquipment: true };
+  },
+
+  /** La vue sur laquelle s'ouvre une carte que personne n'a encore réglée.
+      Un PNJ ou un contact s'ouvre sur « Incarner » : qui il est, comment il se
+      tient — le reste tient en une ligne de résumé par zone, à un tap. Un PJ
+      s'ouvre sur sa « Fiche » : le MJ ne l'incarne pas, il le consulte.
+      Dispatch par la FORME de la donnée (`isPC`), aucune branche d'édition,
+      et plus aucune largeur d'écran : le défaut dit ce qu'on vient chercher,
+      pas la place qu'on a. */
+  _defaultView(pnj) {
+    return pnj && pnj.isPC ? "fiche" : "incarner";
+  },
+
+  /** Pli d'une zone dans la vue par défaut : le preset `zones` pour les quatre
+      zones universelles, les `lenses` du module pour les modules, fermé pour
+      tout le reste (Journal). */
+  _defaultZoneOpen(pnj, zoneKey) {
+    const view = this._VIEWS.find((v) => v.key === this._defaultView(pnj));
+    if (zoneKey in view.zones) return view.zones[zoneKey];
+    const mod = this._MODULES.find((m) => m.key === zoneKey);
+    return mod ? mod.lenses.includes(view.key) : false;
   },
 
   /** Libellés verrouillés (CONTRIBUTING § Chrome de carte). Magie/Matrice
@@ -1418,7 +1548,7 @@ export const CardRenderer = {
 
   /** Cette zone est-elle ouverte pour cette carte ? Résolution (I4) :
       1. override par carte, PAR ZONE (persisté, sparse) — gagne et reste.
-      2. défaut de contexte (_displayPrefs).
+      2. la vue par défaut de la carte (`_defaultView` → `_defaultZoneOpen`).
       Compat : l'ancien pnj._refOpen (booléen unique) ne couvrait
       que l'ex-Référence → lu comme repli pour la zone "details" seulement,
       tant qu'aucun override _zoneOpen.details n'existe. Présentation pure,
@@ -1427,7 +1557,7 @@ export const CardRenderer = {
     const map = pnj._zoneOpen;
     if (map && typeof map[zoneKey] === "boolean") return map[zoneKey];
     if (zoneKey === "details" && typeof pnj._refOpen === "boolean") return pnj._refOpen;
-    return this._displayPrefs(deps).layout === "expanded";
+    return this._defaultZoneOpen(pnj, zoneKey);
   },
 
   /** Pastille de réserve lançable (Défense, Encaissement…).

@@ -37,6 +37,29 @@ export const EncounterRenderer = {
       alors ignorée plutôt que de planter le rendu. Un PJ ad-hoc porte
       pnj._adhoc (pas de fiche à ouvrir).
       model: { rerollEachRound, passDecrement } de l'édition active. */
+  /** La scène est-elle en registre « social » ? Une seule expression pour le
+      titre, la console du PNJ en focus et la perche de la sidebar — elle
+      délègue à `Encounter.register()`, seul lecteur du fait. */
+  _isSocial() {
+    return typeof Encounter !== "undefined" && Encounter.register() === "social";
+  },
+
+  /** La console suit-elle un FOCUS posé au tap plutôt que le tour
+      d'initiative ? Oui quand le livre n'a pas d'ordre de tour
+      (`combatModel.narrative`) et oui en registre social, où personne n'a de
+      « tour ». Le focus est celui du mode narratif (`_narrativeFocus`,
+      persisté dans `state.focusId`) : un seul mécanisme, deux raisons. */
+  _usesFocus(model) {
+    return !!(model && model.narrative) || this._isSocial();
+  },
+
+  /** LE combattant que la console et le bandeau de veille affichent. Les deux
+      recopiaient « narratif ? focus : tour actif » ; ils lisent désormais
+      cette seule expression. */
+  _focusRow(rows, state, model) {
+    return this._usesFocus(model) ? this._narrativeFocus(rows) : rows[state.turnIndex];
+  },
+
   render(state, rows, model) {
     model = model || { passDecrement: 0 };
 
@@ -47,6 +70,21 @@ export const EncounterRenderer = {
     const passEl = document.getElementById("encounter-pass");
     if (passEl) passEl.textContent = this._passSuffix(state, model);
 
+    // Registre de scène (`Encounter.register()`, seul lecteur du fait) : en
+    // « social » le titre dit « Scène sociale » et tait l'horloge de combat —
+    // une conversation n'a ni round ni passe. La classe `is-social` est un
+    // FAIT posé sur la modale ; le commutateur reflète l'état (aria-pressed).
+    const social = this._isSocial();
+    const wordEl = document.getElementById("encounter-register-word");
+    if (wordEl) wordEl.textContent = social ? "sociale" : "";
+    const clockEl = document.getElementById("encounter-clock");
+    if (clockEl) clockEl.hidden = social;
+    document.querySelectorAll('#encounter-overlay [data-action="set-register"]').forEach((b) => {
+      const on = (b.dataset.register === "social") === social;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+
     // CH combat (Vague N) : mode narratif (Anarchy) — pas d'initiative ni d'ordre,
     // juste un pool qu'on éteint. Piloté par la CAPACITÉ combatModel.narrative
     // déclarée dans le module d'édition (jamais une branche App.edition ici) ;
@@ -54,6 +92,7 @@ export const EncounterRenderer = {
     const narrative = !!model.narrative;
     const modal = document.querySelector(".encounter-modal");
     if (modal) modal.classList.toggle("is-narrative", narrative);
+    if (modal) modal.classList.toggle("is-social", social);
 
     // Scène Matrice seule — pas de réglette d'init ni de liste vide à
     // afficher, le tiroir Matrice (toujours ouvert dans ce mode) est la
@@ -130,7 +169,7 @@ export const EncounterRenderer = {
     // ici l'id effectif — le tap mémorisé s'il est encore vivant, sinon le
     // premier « à jouer » — pour que la ligne surlignée et la fiche active
     // montrent le MÊME combattant. État de vue éphémère, aucune clé Storage.
-    this._narrativeFocusId = narrative ? (this._narrativeFocus(rows) || {}).pnjId || null : null;
+    this._narrativeFocusId = this._usesFocus(model) ? (this._narrativeFocus(rows) || {}).pnjId || null : null;
 
     // Miroir de la Réserve de menace dans l'en-tête (Anarchy) — visibilité
     // pilotée par combatModel.threatReserve, valeur lue sur DiceRoller (source
@@ -172,9 +211,10 @@ export const EncounterRenderer = {
     // state.combatants et turnIndex sont INTACTS (les data-id restent valides),
     // la file se recompose seule au « Tour suivant ». Une seule règle d'ordre
     // pour mobile ET desktop. En narratif (Anarchy, sans initiative), l'ordre
-    // reste manuel (glisser) — pas de rotation.
+    // reste manuel (glisser) — pas de rotation. En registre social non plus :
+    // personne n'a de tour, l'ordre des présents ne bouge pas.
     let liveQueue = liveList;
-    if (!narrative) {
+    if (!narrative && !social) {
       const startPos = Math.max(0, liveList.findIndex((x) => x.i === state.turnIndex));
       liveQueue = liveList.slice(startPos).concat(liveList.slice(0, startPos));
     }
@@ -187,7 +227,20 @@ export const EncounterRenderer = {
     // manuel) — tout va dans le reste.
     let leadHtml = "";
     let waitingHtml;
-    if (narrative) {
+    if (social) {
+      // Registre SOCIAL : la liste des PRÉSENTS, pas un ordre de tour. Même
+      // split que les deux autres formes (le focus isolé en tête, pour que la
+      // console s'intercale sous lui sur mobile), mais des lignes qui disent
+      // qui est là et comment il se tient — ni initiative, ni jetons.
+      const lead = liveQueue.find((x) => x.r.pnjId === this._narrativeFocusId) || null;
+      leadHtml =
+        `<div class="cluster encounter-queue-sep">Présents<span class="encounter-queue-count">${liveQueue.length}</span></div>` +
+        (lead ? this._rowSocial(lead.r) : "");
+      waitingHtml = liveQueue
+        .filter((x) => x !== lead)
+        .map((x) => this._rowSocial(x.r))
+        .join("");
+    } else if (narrative) {
       // Même split qu'en ordonné (D1), avec un « actif » choisi autrement : pas
       // le tour (il n'y en a pas), mais le focus posé par le tap (this.
       // _narrativeFocusId, résolu plus haut). Sans cette isolation, la fiche
@@ -222,7 +275,9 @@ export const EncounterRenderer = {
       ? `<div class="encounter-downsep">Hors de combat · sans initiative</div>` +
         downList
           .map((x) =>
-            narrative
+            social
+              ? this._rowSocial(x.r)
+              : narrative
               ? this._rowNarrative(x.r)
               : this._row(x.r, false, this._outOfPass(x.r, state, model), this._effectiveInit(x.r, state, model), false),
           )
@@ -250,11 +305,13 @@ export const EncounterRenderer = {
     // En narratif : compteur « X / N ont joué » + ligne expliquant le silence
     // des actions chiffrées (sans elle, l'absence d'init/tri
     // est lue comme une panne plutôt qu'une règle appliquée à la lettre).
-    const progressHtml = narrative ? this._narrativeNote() + this._narrativeProgress(rows) : "";
+    // Le compteur « ont joué » et les dispositifs narratifs sont du COMBAT
+    // Anarchy : ils se taisent en registre social.
+    const progressHtml = narrative && !social ? this._narrativeNote() + this._narrativeProgress(rows) : "";
     // En narratif (Anarchy 2), le brickage n'a pas de fiche active où loger
     // — une bande dédiée en pied de liste (gate scène Matrice), avant l'action
     // de fin de scène. Vide (donc invisible) hors scène Matrice.
-    const devicesHtml = narrative ? this._narrativeDevices(rows, state) : "";
+    const devicesHtml = narrative && !social ? this._narrativeDevices(rows, state) : "";
     // Action de fin de scène rendue en pied de liste (le tracker n'a pas de
     // barre d'outils modifiable ici) : réinitialise tous les moniteurs.
     // Lot 6 (feel) : on capture les positions des lignes AVANT le re-render, et
@@ -598,6 +655,36 @@ export const EncounterRenderer = {
       sont empilés. Pas de jeton d'init, ⚄ ni tri — l'ordre se réordonne à la
       main via ⠿ (câblé par EncounterDrag.init). Le ✕ (retirer) et « voir la
       fiche » (panneau complet) restent derrière ⋯. */
+  /** Ligne d'un PRÉSENT en registre social : qui est là, et comment il se
+      tient. Le nom, sa nature, ses états, et la ligne d'attitude de sa fiche
+      (`CardRenderer.attitudeLine`). Ni initiative, ni jeton « a joué », ni
+      jauge : ce sont des objets de combat. Un tap met le présent en focus —
+      même action `focus-active` et même composant `.encounter-nrow` que la
+      ligne narrative, dont elle est la forme la plus dépouillée. */
+  _rowSocial(r) {
+    const { pnjId, pnj } = r;
+    const isMatrix = r.kind === "matrix";
+    const isFocused = pnjId === this._narrativeFocusId;
+    const { alias, family, full } = Utils.parseName(pnj.name);
+    const name = Utils.escHtml(alias || family || full);
+    const colorDot = r.isPJ ? CardRenderer._pcAvatar(pnj) : "";
+    const line = isMatrix ? "" : CardRenderer.attitudeLine(pnj);
+    const menuItems = [
+      pnj._adhoc || isMatrix
+        ? null
+        : { attrs: `data-action="focus-combatant" data-id="${pnjId}"`, label: "Voir la fiche" },
+      this._dismissMenuItem(r),
+      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
+    ].filter(Boolean);
+    return `<div class="cluster encounter-nrow is-present${r.down ? " down" : ""}${isFocused ? " is-focused" : ""}" data-action="focus-active" data-id="${pnjId}" role="button" tabindex="0" aria-current="${isFocused ? "true" : "false"}" title="Toucher pour voir comment le jouer">
+      <div class="stack encounter-nrow-body">
+        <span class="cluster"><span class="encounter-nrow-name" title="${Utils.escHtml(full)}">${colorDot}${name}</span><span class="encounter-kind">${this._kindLabel(r)}</span>${r.down ? this._downBadge() : ""}${isMatrix ? "" : this._rowStatuses(pnj)}</span>
+        ${line ? `<span class="encounter-nrow-line">${Utils.escHtml(line)}</span>` : ""}
+      </div>
+      <span class="cluster encounter-controls">${this._rowMenu(menuItems)}</span>
+    </div>`;
+  },
+
   _rowNarrative(r) {
     const { pnjId, hasActed, pnj } = r;
     const isFocused = pnjId === this._narrativeFocusId;
@@ -2359,7 +2446,7 @@ export const EncounterRenderer = {
     const strip = document.getElementById("encounter-active-strip");
     if (strip) strip.hidden = !enVeille;
     if (enVeille) {
-      const actif = model && model.narrative ? this._narrativeFocus(rows) : rows[state.turnIndex];
+      const actif = this._focusRow(rows, state, model);
       // ⚠ LES RANGÉES DE MOTEUR SUIVENT LE BANDEAU (correctif mobile).
       //
       // Les lots F et H ont déménagé des gestes vers la CONSOLE — les
@@ -2392,7 +2479,7 @@ export const EncounterRenderer = {
     // FOCUS (tap sur une ligne, focus-active) ; en ordonné, le combattant dont
     // c'est le tour. Un seul chemin d'aval ensuite — fiche « vue combat » +
     // budget d'actions, ou console de réaction si le focus est un PJ.
-    const active = model && model.narrative ? this._narrativeFocus(rows) : rows[state.turnIndex];
+    const active = this._focusRow(rows, state, model);
 
     // Polish DA « deux températures » : le mode est piloté par le tour (jamais
     // un réglage manuel) — Agir (fiche chaude) au tour d'un PNJ, Réagir (rack
@@ -2495,13 +2582,24 @@ export const EncounterRenderer = {
       // rendent toujours en tête d'offenseBlocks (② avant ③/④, cf. ce fichier),
       // donc l'inverser suffit à remonter la première pastille de jet sans
       // dupliquer aucun rendu.
-      box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">Agir · ${this._compactName(pnj.name)}</div>
+      // Registre « social » : la console s'ouvre sur ce que le PNJ DONNE À JOUER
+      // (`CardRenderer.exchangeBlocks`), sous le verbe verrouillé « Incarner » :
+      // comportement, jets sociaux du livre, compétences.
+      const social = this._isSocial();
+      const exchange = social ? CardRenderer.exchangeBlocks(pnj, CardRenderer.liveDeps()) : "";
+      box.innerHTML = `<div class="cluster encounter-mode-head is-agir${modeEnter ? " mode-enter" : ""}">${social ? "Incarner" : "Agir"} · ${this._compactName(pnj.name)}</div>
+        ${exchange ? `<div class="stack stack--tight encounter-exchange">${exchange}</div>` : ""}
         <div class="encounter-active-top">${this._activeTop(active, state)}</div>
         ${this._chaseRow(active)}
         ${this._matrixRow(active)}`;
       const deps = CardRenderer.liveDeps();
-      const offense = CardRenderer.offenseBlocks(pnj, deps);
-      if (offense != null) {
+      // En registre social la console ne monte PAS l'offensive : armes, sorts et
+      // esprits sont la face du combat, à un tap (commutateur de l'en-tête ou
+      // initiative). Les compétences, elles, sont déjà dans `exchangeBlocks`.
+      const offense = social ? null : CardRenderer.offenseBlocks(pnj, deps);
+      if (social) {
+        // rien à ajouter : la face sociale est posée plus haut
+      } else if (offense != null) {
         // B3.1 (C-011) — ✦ Esprit / ✦ Bannir rejoignent le bloc SORTS.
         //
         // Mesuré : l'invocateur étant l'acteur ACTIF (mode « AGIR · HANGMAN »),
@@ -2535,10 +2633,14 @@ export const EncounterRenderer = {
         CardRenderer.applyView(combatPnj, "combat");
         box.appendChild(CardRenderer.render(combatPnj, [], CardRenderer.liveDeps()));
       }
-      box.insertAdjacentHTML(
-        "beforeend",
-        `<div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`,
-      );
+      // Le budget d'actions (simples/complexe, Points d'Anarchy de scène…) est
+      // une économie de TOUR de combat : rien à compter dans un échange.
+      if (!social) {
+        box.insertAdjacentHTML(
+          "beforeend",
+          `<div class="encounter-active-economy">${this._activeEconomy(active, model)}</div>`,
+        );
+      }
       box.insertAdjacentHTML("beforeend", this._activeNote(active));
     }
   },
@@ -3474,7 +3576,9 @@ export const EncounterRenderer = {
     if (roundEl) {
       roundEl.textContent = ch
         ? `${(Chase.mode(App.edition, ch.mode) || {}).counter || "Round"} ${ch.round}${ch.total ? ` / ${ch.total}` : ""}`
-        : "Round " + state.round + this._passSuffix(state, model);
+        : this._isSocial()
+          ? "Scène sociale" // pas d'horloge de combat en registre social
+          : "Round " + state.round + this._passSuffix(state, model);
     }
 
     const nameEl = document.getElementById("sidebar-encounter-name");

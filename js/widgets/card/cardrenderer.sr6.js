@@ -21,7 +21,7 @@ Object.assign(CardRenderer, {
       this._gmPoolRow(
         "Intentions",
         pnj.judgeIntentions,
-        "Jauger les intentions : Intuition + Charisme",
+        "Jauger les intentions : Volonté + Intuition",
         { key: "judgeIntentions", pnj },
       ),
       this._gmPoolRow("Mémoire", pnj.memory, "Mémoire : Logique + Volonté", {

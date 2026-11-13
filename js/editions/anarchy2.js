@@ -578,6 +578,22 @@ export const EditionAnarchy2 = {
     steps: () => Spirits.ANARCHY_TIERS.map((label, i) => ({ value: i, label })),
   },
   skillModel: { shape: "extended", valRange: [0, 6], hasGroups: false },
+  /** Ce que ce personnage LANCE dans une scène sociale — même contrat que les
+      trois autres éditions (`{ pools, skills, limit }`, cf. sr5.js).
+      Anarchy 2.0 n'a pas de test d'attributs seuls : tout passe par une
+      compétence. Influence et ses spécialisations que les profils du jeu
+      notent à part (Intimidation, Négociation), p.55-56 ; Réseau, p.56 ;
+      Sociale, la spécialisation de Perception qui s'oppose à Influence, p.56.
+      Le sang-froid se teste par Survie associée à la Volonté (p.58) : c'est
+      une compétence de la fiche, elle reste dans la liste générale. `pools`
+      vide et `limit` null sont les valeurs neutres documentées. */
+  socialBlock() {
+    return {
+      pools: [],
+      skills: ["Influence", "Intimidation", "Négociation", "Réseau", "Sociale"],
+      limit: null,
+    };
+  },
   /** Le nombre porté par une puce de compétence Anarchy EST la réserve
       lancée (convention de l'app : les PNJ sont notés en réserves 0-6 et le
       panneau de risque les prend telles quelles) — aucun attribut ne s'y

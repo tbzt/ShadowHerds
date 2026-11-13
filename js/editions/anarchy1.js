@@ -567,6 +567,34 @@ export const EditionAnarchy1 = {
       ["Mineur", "Normal", "Majeur"].map((label, i) => ({ value: i, label })),
   },
   skillModel: { shape: "simple", valRange: [0, 6], hasGroups: false },
+  /** Ce que ce personnage LANCE dans une scène sociale — même contrat que les
+      trois autres éditions (`{ pools, skills, limit }`, cf. sr5.js).
+      Anarchy 1re : deux tests d'attributs de la liste p.149 — Estimer les
+      intentions (Charisme + Charisme) et Résister à l'intimidation (Charisme
+      + Volonté) ; les compétences de Charisme p.62, moins Animaux (domptage,
+      monte : pas un échange entre personnes). Ni Sang-froid nommé ni limite. */
+  socialBlock(pnj) {
+    const cha = Actor.attr(pnj, "CHA") || 0;
+    const vol = Actor.attr(pnj, "VOL") || 0;
+    return {
+      pools: [
+        {
+          key: null,
+          label: "Estimer les intentions",
+          value: cha + cha,
+          title: "Estimer les intentions : Charisme + Charisme",
+        },
+        {
+          key: null,
+          label: "Résister à l'intimidation",
+          value: cha + vol,
+          title: "Résister à l'intimidation : Charisme + Volonté",
+        },
+      ],
+      skills: ["Comédie", "Étiquette", "Intimidation", "Négociation"],
+      limit: null,
+    };
+  },
   /** Le nombre porté par une puce de compétence Anarchy EST la réserve
       lancée (convention de l'app : les PNJ sont notés en réserves 0-6 et le
       panneau de risque les prend telles quelles) — aucun attribut ne s'y

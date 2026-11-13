@@ -5205,6 +5205,36 @@ export const EditionSR5 = {
     pnj.membreActif = value == null || value === "" ? null : String(value);
     return pnj;
   },
+  /** Ce que ce personnage LANCE dans une scène sociale — contrat commun aux
+      quatre éditions, lu par la console de scène en registre « social » :
+      `{ pools, skills, limit }`.
+        - `pools`  : tests d'attributs seuls, `{key, label, value, title}` ;
+        - `skills` : NOMS des compétences sociales du livre (la fiche garde
+                     ses valeurs ; la surface les met en tête) ;
+        - `limit`  : `{label, value}` quand le livre plafonne ces tests, sinon
+                     null.
+      SR5 : Sang-froid (Charisme + Volonté) et Jauger les intentions (Charisme
+      + Intuition), p.154 ; les sept « Compétences sociales » p.140-143, plus
+      leurs deux groupes (Influence, Comédie) ; tous ces tests sont bornés par
+      la limite Sociale (table p.143). */
+  socialBlock(pnj) {
+    return {
+      pools: [
+        { key: "composure", label: "Sang-froid", value: pnj.composure, title: "Sang-froid : Charisme + Volonté" },
+        {
+          key: "judgeIntentions",
+          label: "Jauger les intentions",
+          value: pnj.judgeIntentions,
+          title: "Jauger les intentions : Charisme + Intuition",
+        },
+      ],
+      skills: [
+        "Escroquerie", "Étiquette", "Imposture", "Intimidation", "Leadership", "Négociation", "Représentation",
+        "Influence", "Comédie",
+      ],
+      limit: pnj.limSoc != null ? { label: "Limite Sociale", value: pnj.limSoc } : null,
+    };
+  },
   /** L'attribut qui entre dans la réserve d'une compétence active — « le
       rang de la compétence plus l'attribut lié » (p.44) : `{key, label,
       value}`, ou null quand aucun attribut unique ne s'impose (groupe aux

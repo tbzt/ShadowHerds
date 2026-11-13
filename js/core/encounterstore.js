@@ -46,7 +46,13 @@ export const EncounterStore = {
     // `matrix` en son temps : une scène persistée avant le moteur ⇉ le lit
     // `undefined`, ce que toutes les gardes traitent comme `null` — aucune
     // migration (cf. § Versionner les schémas).
-    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {}, chase: null };
+    // `register` = ce que la scène DONNE À REGARDER ("social" | "combat"), pas
+    // un moteur : il ne fait rien tourner, il choisit la face des fiches et le
+    // titre. Champ ADDITIF lui aussi : une scène persistée avant lui le lit
+    // `undefined`, que `Encounter.register()` — seul lecteur — rend "combat"
+    // (une partie en cours ne change pas d'aspect). Une scène NEUVE naît
+    // "social" : on se parle avant de se battre, et l'initiative bascule.
+    return { v: this._V, round: 1, pass: 1, turnIndex: 0, combatants: [], serverId: null, noise: 0, focusId: null, motors: ["combat"], matrix: {}, chase: null, register: "social" };
   },
 
   /* ---- Scène active ---- */

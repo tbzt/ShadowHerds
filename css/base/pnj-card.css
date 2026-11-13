@@ -140,8 +140,10 @@
 }
 
 /* ============================================================
-   LE RAIL « CARNET » (vues) — onglets de dossier hors-cadre sur le bord
-   droit (doctrine §5), glyphes monochromes, jamais un <select> natif. Vit
+   LE RAIL « CARNET » — onglets de dossier hors-cadre sur le bord droit
+   (doctrine §5), glyphes monochromes. Il ne porte plus que les raccourcis de
+   module phare (Suivi ❖, Relation ◈) : les VUES sont désormais nommées dans
+   la rangée `.lens-row`, plus bas. Vit
    dans la bande réservée par `.pnj-card.has-rail` (frame en retrait), donc
    à l'INTÉRIEUR du footprint de la carte : aucun débordement dans la
    colonne voisine du layout multi-colonnes. Chaque languette émerge du bord
@@ -390,8 +392,10 @@
    quand la CARTE atteint ~490px. Sous ce seuil, deux colonnes de stats seraient
    illisibles et la bascule se replie en silence : on retire alors le toggle pour
    qu'il ne propose pas une vue inatteignable à cette largeur (sur téléphone, la
-   fiche reste en vue complète). Cette requête résout vers `.pnj-card` (conteneur
-   le plus proche du rail, frère du frame). */
+   fiche reste en vue complète). Depuis que le toggle vit dans la rangée de vues
+   (`.lens-row`, DANS le frame), cette requête résout vers le frame — et une
+   carte sans rail a un frame aussi large qu'elle : le seuil de carte ne bouge
+   pas. */
 @container (max-width: 489px) {
   .lens-curated {
     display: none;
@@ -405,9 +409,51 @@
 /* Le toggle paysage vit dans le rail, mais SÉPARÉ des lentilles de pli
    (☰❝⚔) par un fin filet — c'est une vue à part, pas un pli. */
 .lens-curated {
-  margin-top: 5px;
-  padding-top: 7px;
-  border-top: 1px solid var(--border);
+  margin-left: auto;
+}
+
+/* ============================================================
+   LA RANGÉE DE VUES — « Incarner · Combat · Fiche » en toutes lettres, sous
+   l'en-tête (`CardRenderer._lensRow`). Des onglets de TEXTE, volontairement
+   légers : voix du corps, casse normale, ni capitales ni cadre. La vue
+   active se dit par la couleur du texte et un filet d'accent dessous —
+   l'accent marque l'état actif, rien d'autre (DESIGN-SYSTEM § 2). Cible :
+   plancher `--hit-min`, `--hit-cozy` au doigt (geste courant, pas répété). */
+.lens-row {
+  flex-wrap: nowrap;
+  gap: var(--sp-1);
+  padding: 0 var(--sp-3);
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+}
+.lens-view {
+  flex: none;
+  min-height: var(--hit-min);
+  padding: var(--sp-1) var(--sp-2);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  line-height: 1.2;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast),
+    border-color var(--dur-fast);
+}
+.lens-view:hover {
+  color: var(--text);
+}
+.lens-view.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+@media (pointer: coarse) {
+  .lens-view {
+    min-height: var(--hit-cozy);
+  }
 }
 .curated-monitor {
   margin-bottom: var(--sp-2);

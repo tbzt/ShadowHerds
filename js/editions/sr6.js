@@ -5532,7 +5532,7 @@ export const EditionSR6 = {
     const defense = attrs.RÉA + attrs.INT; // test de Défense
     const damageResist = attrs.CON; // encaisser les dommages
     const composure = attrs.VOL + attrs.CHA; // sang-froid
-    const judgeIntentions = attrs.INT + attrs.CHA; // jauger les intentions
+    const judgeIntentions = attrs.VOL + attrs.INT; // jauger les intentions (Volonté + Intuition, p.106)
     const memory = attrs.LOG + attrs.VOL; // mémoire
     // Tradition magique & esprit mentor (corrélés à l'origine).
     const isAwakened = isMagicProf || isMagicSpec;
@@ -5769,8 +5769,8 @@ export const EditionSR6 = {
         ];
       case "judgeIntentions":
         return [
+          { label: Utils.attrFullName("VOL"), value: A("VOL") },
           { label: Utils.attrFullName("INT"), value: A("INT") },
-          { label: Utils.attrFullName("CHA"), value: A("CHA") },
         ];
       case "memory":
         return [
@@ -5913,6 +5913,32 @@ export const EditionSR6 = {
     pnj.membreActif = value == null || value === "" ? null : String(value);
     return pnj;
   },
+  /** Ce que ce personnage LANCE dans une scène sociale — même contrat que les
+      trois autres éditions (`{ pools, skills, limit }`, cf. sr5.js).
+      SR6 : Sang-froid (Volonté + Charisme) et Jauger les intentions (Volonté +
+      Intuition), p.106 ; deux compétences liées au Charisme, Escroquerie
+      (p.101) et Influence — plus les anciens noms SR5 que des fiches portent
+      encore et qui en sont des spécialisations (`SkillCatalog.sr6Legacy`).
+      Pas de limite en SR6. */
+  socialBlock(pnj) {
+    const livre = ["Escroquerie", "Influence"];
+    const anciens = Object.keys(SkillCatalog.sr6Legacy).filter((k) =>
+      livre.includes(SkillCatalog.sr6Legacy[k].name),
+    );
+    return {
+      pools: [
+        { key: "composure", label: "Sang-froid", value: pnj.composure, title: "Sang-froid : Volonté + Charisme" },
+        {
+          key: "judgeIntentions",
+          label: "Jauger les intentions",
+          value: pnj.judgeIntentions,
+          title: "Jauger les intentions : Volonté + Intuition",
+        },
+      ],
+      skills: [...livre, ...anciens],
+      limit: null,
+    };
+  },
   /** L'attribut qui entre dans la réserve d'une compétence — « Compétence +
       Attribut » (p.36) : `{key, label, value}`, ou null si la compétence est
       inconnue du catalogue. Si un membre agit (`membreActif`), sa Force ou
@@ -5958,7 +5984,7 @@ export const EditionSR6 = {
     pnj.defense = A("RÉA") + A("INT");
     pnj.damageResist = A("CON");
     pnj.composure = A("VOL") + A("CHA");
-    pnj.judgeIntentions = A("INT") + A("CHA");
+    pnj.judgeIntentions = A("VOL") + A("INT"); // Volonté + Intuition (p.106), pas la formule SR5
     pnj.memory = A("LOG") + A("VOL");
     if (pnj.traditionDrainAttr) {
       pnj.drainResist = A("VOL") + A(pnj.traditionDrainAttr);

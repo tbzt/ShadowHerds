@@ -710,7 +710,14 @@
   <div class="modal-overlay" id="encounter-overlay" role="dialog" aria-modal="true" aria-labelledby="encounter-title">
     <div class="modal encounter-modal">
       <div class="cluster modal-header">
-        <span class="modal-title" id="encounter-title">Scène — Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span>
+        <span class="modal-title" id="encounter-title">Scène <span id="encounter-register-word"></span><span id="encounter-clock">— Round <span id="encounter-round">1</span><span id="encounter-pass"></span></span></span>
+        <!-- Registre de scène : ce qu'on REGARDE (face des fiches, titre), pas
+             un moteur. Glyphes du vocabulaire établi (❝ scène sociale / vue
+             Incarner, ⚔ action / vue Combat). État posé par EncounterRenderer. -->
+        <span class="cluster encounter-register" role="group" aria-label="Registre de la scène">
+          <button type="button" class="chip" data-action="set-register" data-register="social" aria-pressed="false" title="Scène sociale — les fiches montrent le comportement">❝ Sociale</button>
+          <button type="button" class="chip" data-action="set-register" data-register="combat" aria-pressed="false" title="Combat — les fiches montrent l'offensive">⚔ Combat</button>
+        </span>
         <!-- CE1 : ressources de scène groupées (portée = scène, pas combattant) —
              Menace (K5, Anarchy) + Bruit (M6, ex-fiche active/pied narratif). -->
         <span class="encounter-scene-resources" id="encounter-scene-resources">
@@ -812,6 +819,9 @@
             <!-- Mode narratif (Anarchy) : pas d'ordre de tour → l'action primaire
                  est « Round suivant » (rallume tous les combattants). -->
             <button class="btn-primary encounter-narrative-only" data-action="next-round">↻ Round suivant</button>
+            <!-- Registre social : ni tour ni round — l'action primaire est le
+                 PASSAGE au combat (initiative là où le livre en a une). -->
+            <button class="btn-primary encounter-social-only" data-action="to-combat">⚔ Passer au combat</button>
           </div>
         </div>
         <!-- Fiche du combattant actif (cf. EncounterRenderer.renderActiveCard) : masquée pour un PJ ad-hoc ou une scène vide. -->
