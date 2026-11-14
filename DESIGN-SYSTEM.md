@@ -1318,6 +1318,18 @@ Une phrase — pourquoi c'est utile
 panneau plein. Deux chemins pour le même geste, c'est un chemin de trop à
 apprendre.
 
+> **Le titre d'un état vide informe, il n'annonce pas** *(2026-11-15)*. Mesuré
+> avant correction : titre en `--fs-xl` (24px) interlettré, phrase en mono 12px
+> à interligne 2,2 — « Aucun contact » était l'élément le plus voyant de
+> l'écran, et l'explication parlait avec la voix du système (§ 4.2). Désormais :
+> titre en police d'édition à `--fs-md`, phrase en `--font-body` à `--fs-sm`,
+> interligne 1,5. **Une phrase, pas deux** : elle dit ce que l'écran contiendra,
+> jamais comment se servir du formulaire au-dessus. Le cadre et la teinte du
+> titre restent ceux de chaque thème (tampon SR5, coin coupé SR6, pointillés
+> Anarchy) — c'est de l'identité, pas du bruit. Dans le même lot, six
+> sous-titres d'en-tête de panneau qui redisaient le titre ont été retirés ;
+> restent « Ombres portées » et « Trames », dont le sous-titre décode un nom.
+
 #### Vide filtré — il y a des données, le filtre n'en montre aucune
 
 **Loi — c'est un état différent du vide primo, et il ne doit jamais afficher

@@ -749,7 +749,7 @@ export const Gen = {
     if (!zone || zone.children.length) return;
     zone.innerHTML = `<div class="empty-state gen-empty">
       <span class="empty-state-title">Aucun PNJ généré</span>
-      Réglez les filtres si vous voulez un profil précis — ou laissez tout en « Aléatoire » et appuyez sur Générer. Les fiches restent ici jusqu'à ce que vous les rangiez ou les effaciez.
+      Appuyez sur Générer. Les filtres sont facultatifs.
     </div>`;
   },
 

@@ -1628,7 +1628,7 @@ export const Play = {
   _emptyHtml() {
     return `<div class="play-onboard">
       <p class="play-onboard-lead">Votre première séance commence par un run.</p>
-      <p>Créons-le — <strong>nommez-le</strong>, et tout ce que vous préparez (PNJ, contacts, notes) s'y rangera. C'est la maille <strong>Campagne › Run › Scène</strong> autour de laquelle tourne la table.</p>
+      <p><strong>Nommez-le</strong> : PNJ, contacts et notes s'y rangeront.</p>
       <div class="cluster play-onboard-cta">
         <button class="btn-primary btn-small" data-action="play-first-run">＋ Créer mon premier run</button>
       </div>

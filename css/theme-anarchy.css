@@ -301,7 +301,12 @@
 [data-edition^="anarchy"] .empty-state-title {
   color: var(--accent);
   transform: rotate(-1deg);
-  display: inline-block;
+  /* Un bloc à la largeur de son texte, centré : la rotation veut une boîte,
+     mais `inline-block` laissait la phrase d'explication se coller au titre
+     sur la même ligne dès que celui-ci a cessé d'être en 24px. */
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
 }
 
 /* ---- Modale : bordure brute épaisse ---- */

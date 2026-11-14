@@ -47,7 +47,7 @@ export const Servers = Object.assign(
     labels: {
       allSummary: (n) => `Tous les serveurs (${n})`,
       emptyTitle: "Aucun serveur",
-      emptyBody: "Un serveur avec ses CI et son spider, prêt pour une intrusion — le formulaire le règle, le bouton le crée.",
+      emptyBody: "Un serveur avec ses CI et son spider, prêt pour une intrusion.",
       emptyCta: { label: "Créer le serveur", action: "create-server" },
       noMatch: (q) => `Aucun serveur ne correspond à « ${q} ».`,
     },

@@ -51,7 +51,7 @@ export const Characters = Object.assign(
       allSummary: (n) => `Tous les personnages (${n})`,
       groupSummary: (name, n) => `${name} (${n})`,
       emptyTitle: "Aucun personnage",
-      emptyBody: "Un nom suffit pour commencer — la fiche se complète ensuite, l'assistant complet reste à portée.",
+      emptyBody: "Un nom suffit pour commencer.",
       emptyCta: { label: "＋ PJ rapide", action: "pj-quick-add" },
       noMatch: (q) => `Aucun personnage ne correspond à « ${q} ».`,
       removed: (e) => `${e.name} supprimé.`,

@@ -24,7 +24,7 @@ const _contactsCollection = Collection.create(
     labels: {
       allSummary: (n) => `Tous les contacts (${n})`,
       emptyTitle: "Aucun contact",
-      emptyBody: "Un fixer, un informateur, un relais — générés en un tap, à convoquer ensuite sur un run.",
+      emptyBody: "Un fixer, un informateur, un relais, à convoquer sur un run.",
       // § 6.7 : l'action de l'état vide EST l'action reine de la barre.
       emptyCta: { label: "Générer un contact", action: "contact-generate" },
       noMatch: (q) => `Aucun contact ne correspond à « ${q} ».`,
