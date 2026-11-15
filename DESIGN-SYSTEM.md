@@ -1098,6 +1098,23 @@ système** : « Générer la trame », « Atomiser », « Reprendre ». Vos libe
 actuels sont bons — spécifiques, incarnés, jamais « OK / Valider ». Un
 libellé spécifique supprime le besoin de relire la question.
 
+**Règle — on ne déplie pas un menu pour remplir un vide** *(2026-11-16)*. La
+ligne active du suivi de combat portait huit carrés-glyphes (✓ ⚄ ⏸ ✸ ✎ ☠ ⛨ ✕),
+le menu ⋯ « déplié pour occuper l'espace sous la jauge » : huit gestes de même
+poids, aucun nommé, et « Retirer du combat » à un tap des gestes courants. Une
+ligne garde **au plus un verbe en toutes lettres** — celui que le moment
+demande et qu'aucun autre bouton ne porte (« ⏸ Retarder » sur l'actif,
+« ▶ Agir maintenant » sur une ligne retardée) — et **le même menu ⋯ sur toutes
+les lignes**, la suppression en dernier. Sur téléphone, la ligne active est
+passée de 224 à 162px.
+
+**Loi — un geste qu'on annonce ne se masque pas.** Mesuré le même jour : le
+menu ⋯ des lignes en attente était masqué depuis juillet (`.compact`), si bien
+que « ✸ Dégâts depuis chaque ligne », livré et annoncé en 1.150.0, n'était
+atteignable sur **aucune** ligne en attente, et qu'un combattant retardé n'avait
+plus de « Agir maintenant ». Avant de masquer un conteneur, lister ce qu'il
+contient ; avant d'ajouter un geste à un conteneur, vérifier qu'il s'affiche.
+
 ### 6.5 Les marqueurs
 
 **~50 classes** pour trois objets réels. La confusion coûte cher : rien ne

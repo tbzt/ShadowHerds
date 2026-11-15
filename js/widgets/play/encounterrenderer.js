@@ -783,26 +783,6 @@ export const EncounterRenderer = {
         .join("")}</div>`;
   },
 
-  /** Barre d'actions DÉPLIÉE de la ligne de l'actif (V7) : les mêmes items que
-      le menu ⋯ (mêmes `data-action` → délégation d'Encounter inchangée), mais
-      en boutons VISIBLES, pour occuper l'espace vide sous la jauge de vie du
-      combattant en focus. Rendu seulement pour la ligne pleine de l'actif
-      (_row, isLead) ; les lignes en attente/hors-combat gardent le ⋯. */
-  _leadActionBar(items) {
-    if (!items || !items.length) return "";
-    const esc = Utils.escHtml;
-    // Icônes monochromes rendues DIRECTEMENT dans .encounter-controls, à la suite
-    // des chips ✓/⚄/⏸ (mêmes carrés 32px) → une seule rangée alignée. Le libellé
-    // complet reste en title + aria-label (découvrabilité + accessibilité). Une
-    // fine séparation visuelle (première icône) distingue « verbes fréquents »
-    // (chips) et « actions dépliées ». Pas de wrapper : alignement flex direct.
-    return items
-      .map(
-        (a, i) =>
-          `<button type="button" class="encounter-lead-action${a.danger ? " is-danger" : ""}${i === 0 ? " is-first" : ""}" ${a.attrs} title="${esc(a.label)}" aria-label="${esc(a.label)}">${a.glyph || "•"}</button>`,
-      )
-      .join("");
-  },
 
   /** Suffixe « · Passe N » (SR5 uniquement) — partagé entre le titre du
       modal et le résumé sidebar pour ne pas dupliquer la condition. */
@@ -1029,36 +1009,47 @@ export const EncounterRenderer = {
     // Verbes du tour (fréquents) en chips inline lisibles à toutes tailles
     // de pointeur ; le reste (réordre, note, hors de combat, réinitialiser,
     // retirer) derrière le menu ⋯ canonique.
-    const actedChip = `<button class="chip encounter-chip encounter-acted-toggle${hasActed ? " is-done" : ""}" data-action="toggle-acted" data-id="${pnjId}" title="${hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »"}" aria-label="${hasActed ? "Marquer comme pas encore joué" : "Marquer comme a joué"}">${hasActed ? "↩" : "✓"}</button>`;
-    const rollChip = `<button class="chip encounter-chip" data-action="roll-init" data-id="${pnjId}" title="Lancer l'initiative" aria-label="Lancer l'initiative">⚄</button>`;
-    const delayChip = r.down
+    // UN verbe nommé sur la ligne, le reste au menu ⋯. La ligne active portait
+    // huit carrés-glyphes (✓ ⚄ ⏸ ✸ ✎ ☠ ⛨ ✕), « dépliés pour occuper l'espace
+    // vide sous la jauge » — du remplissage, et « Retirer du combat » à un tap
+    // des gestes courants. Le seul geste qui RESTE en ligne est celui que
+    // l'actif fait sur son propre tour et qu'aucun autre bouton ne porte :
+    // Retarder. Son pendant « Agir maintenant » vit sur la ligne retardée,
+    // dans la file : c'est le seul moyen de rendre la main à un combattant
+    // retardé (`_eligible` le saute jusqu'au round suivant).
+    // « A joué » et « Lancer l'initiative » passent au menu : le premier est
+    // déjà fait par « Tour suivant », le second par « Initiative » et le
+    // round — ils servent à rattraper, pas à jouer.
+    const turnVerb = r.down
       ? ""
       : r.delayed
-        ? `<button class="chip encounter-chip" data-action="act-now-combatant" data-id="${pnjId}" title="Agir maintenant" aria-label="Agir maintenant">▶</button>`
-        : `<button class="chip encounter-chip" data-action="delay-combatant" data-id="${pnjId}" title="Retarder l'action (tenir son tour)" aria-label="Retarder l'action">⏸</button>`;
-    // `glyph` : icône monochrome pour la barre dépliée de l'actif (_leadAction
-    // Bar, une seule ligne comme les chips) ; `label` reste le texte du menu ⋯
-    // (lignes en attente/hors-combat) et le title/aria-label de l'icône.
+        ? `<button class="chip encounter-chip encounter-verb is-act-now" data-action="act-now-combatant" data-id="${pnjId}">▶ Agir maintenant</button>`
+        : isActive
+          ? `<button class="chip encounter-chip encounter-verb" data-action="delay-combatant" data-id="${pnjId}" title="Tenir son tour : il agira plus tard dans le round">⏸ Retarder</button>`
+          : "";
+    // Même menu sur toutes les lignes (loi 3 : un verbe, un geste, au même
+    // endroit) ; le réordre manuel n'a de sens que dans la file.
     const menuItems = [
-      { attrs: `data-action="move-up" data-id="${pnjId}"`, label: "Monter dans l'ordre", glyph: "↑" },
-      { attrs: `data-action="move-down" data-id="${pnjId}"`, label: "Descendre dans l'ordre", glyph: "↓" },
       this._damageMenuItem(r, isMatrix),
-      hasNote ? null : { attrs: `data-action="note-toggle" data-id="${pnjId}"`, label: "Ajouter une note", glyph: "✎" },
+      hasNote ? null : { attrs: `data-action="note-toggle" data-id="${pnjId}"`, label: "Ajouter une note" },
+      r.down ? null : { attrs: `data-action="roll-init" data-id="${pnjId}"`, label: "Lancer l'initiative" },
+      r.down
+        ? null
+        : {
+            attrs: `data-action="toggle-acted" data-id="${pnjId}"`,
+            label: hasActed ? "Marquer « pas encore joué »" : "Marquer « a joué »",
+          },
+      isActive ? null : { attrs: `data-action="move-up" data-id="${pnjId}"`, label: "Monter dans l'ordre" },
+      isActive ? null : { attrs: `data-action="move-down" data-id="${pnjId}"`, label: "Descendre dans l'ordre" },
       pnj._adhoc || r.down
         ? null
-        : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat", glyph: "☠" },
+        : { attrs: `data-action="knockout-combatant" data-id="${pnjId}"`, label: "Hors de combat" },
       pnj._adhoc
         ? null
-        : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs", glyph: "⛨" },
+        : { attrs: `data-action="heal-combatant" data-id="${pnjId}"`, label: "Réinitialiser les moniteurs" },
       this._dismissMenuItem(r),
-      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true, glyph: "✕" },
+      { attrs: `data-action="remove-combatant" data-id="${pnjId}"`, label: "Retirer du combat", danger: true },
     ].filter(Boolean);
-    // La ligne PLEINE de l'actif (isActive, pas hors-combat) est le combattant
-    // EN FOCUS : elle a de la place sous sa jauge de vie → ses actions rares
-    // (celles derrière le ⋯ des lignes en attente) y sont DÉPLIÉES en un petit
-    // tableau de bord, et le ⋯ disparaît de cette ligne. Les lignes compactes
-    // (en attente) et hors-combat gardent le menu ⋯.
-    const isLead = isActive && !r.down;
     return `<div class="cluster encounter-row${isMatrix ? " is-matrix" : ""}${isActive ? " active-turn" : ""}${compact ? " compact" : ""}${hasActed ? " has-acted" : ""}${outOfPass ? " out-of-pass" : ""}${r.down ? " down" : ""}${r.delayed && !r.down ? " delayed" : ""}" data-id="${pnjId}">
       ${initZone}
       <div class="stack encounter-main">
@@ -1078,12 +1069,8 @@ export const EncounterRenderer = {
         ${this._rowDamageSheet(r, isMatrix)}
       </div>
       <div class="cluster encounter-controls">
-        ${actedChip}
-        ${rollChip}
-        ${delayChip}
-        ${isLead
-          ? this._leadActionBar(menuItems.filter((a) => !/data-action="move-(up|down)"/.test(a.attrs)))
-          : this._rowMenu(menuItems)}
+        ${turnVerb}
+        ${this._rowMenu(menuItems)}
       </div>
     </div>`;
   },

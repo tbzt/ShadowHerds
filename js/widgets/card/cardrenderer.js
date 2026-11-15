@@ -2360,9 +2360,10 @@ export const CardRenderer = {
      (encounterrenderer.js:1173) et exclut les PJ et les combattants hors de
      combat (:1320) — on ne pourrait ni poser un état au tour d'un PNJ, ni sur
      un PJ, ni sur un PNJ à terre (or un Enflammé continue de brûler). Ni dans
-     le menu ⋯, qui n'existe ni sur la ligne active (_leadActionBar le remplace)
-     ni sur les lignes en attente (.encounter-row.compact masque .encounter-
-     controls). La zone Combat, elle, est rendue par CardRenderer : donc sur la
+     le menu ⋯ d'une ligne du suivi, qui n'existait ni sur la ligne active ni
+     sur les lignes en attente quand ce lot a été écrit (il y est revenu en
+     1.231.2, mais un état se pose avec sa feuille, pas depuis un menu). La
+     zone Combat, elle, est rendue par CardRenderer : donc sur la
      carte, dans le coup d'œil ⛶, et dans les blocs d'offense du cockpit.
 
      ⚠ AMENDEMENT. « NON dans la console » disait POURQUOI la console ne peut

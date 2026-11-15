@@ -229,19 +229,27 @@
 /* File d'attente (option B, D1) : les combattants EN ATTENTE derrière l'actif
    passent en variante COMPACTE — une file scannable. On masque ce qui n'aide
    pas à repérer « qui joue ensuite » (steppers d'init, malus/score de passe,
-   chips + menu ⋯, note, bandeau de moral) ; restent le score d'init, le nom
-   (toujours cliquable → fiche) et la jauge de vie. Tout revient quand la ligne
-   redevient active (pleine ligne). */
+   note, bandeau de moral) ; restent le score d'init, le nom (toujours
+   cliquable → fiche), la jauge de vie — et les CONTRÔLES (le menu ⋯, plus
+   « ▶ Agir maintenant » sur une ligne retardée).
+   ⚠ Ils étaient masqués aussi, depuis le lot 2 (juillet). Deux gestes en
+   étaient morts sans un mot : « ✸ Dégâts », mis au menu de CHAQUE ligne en
+   1.150.0 et annoncé comme tel, n'était atteignable sur aucune ligne en
+   attente (mesuré à 375, 1024 et 1440px : 8 lignes, 0 menu) ; et un
+   combattant retardé, que `_eligible` saute jusqu'au round suivant, n'avait
+   plus de « Agir maintenant ». Un geste qu'on promet ne se masque pas. */
 .encounter-row.compact {
   padding: 0.4rem 0.6rem;
 }
 .encounter-row.compact .encounter-init-step,
 .encounter-row.compact .encounter-init-eff,
 .encounter-row.compact .wound-malus-badge,
-.encounter-row.compact .encounter-controls,
 .encounter-row.compact .encounter-flee,
 .encounter-row.compact .encounter-note {
   display: none;
+}
+.encounter-row.compact .encounter-controls {
+  margin-left: auto;
 }
 .encounter-row.compact .encounter-init {
   min-width: 2.2rem;
@@ -280,35 +288,19 @@
   margin-left: auto;
 }
 
-/* Icônes monochromes calquées sur les chips (✓/⚄/⏸) : carrées, contour discret
-   au repos, accent au survol. Rendues dans .encounter-controls, à la suite des
-   chips → une seule rangée alignée. La 1ʳᵉ (is-first) est séparée par une fine
-   marge : verbes fréquents (chips) à gauche, actions dépliées à droite. */
-.encounter-lead-action.is-first {
-  margin-left: 0.5rem;
+/* Le verbe du tour, en toutes lettres (« ⏸ Retarder » sur l'actif, « ▶ Agir
+   maintenant » sur une ligne retardée) : le seul geste qui reste hors du
+   menu ⋯. Puce `.chip` canonique, élargie à son mot. */
+.encounter-verb {
+  min-width: 0;
+  padding-inline: var(--sp-2);
+  font-family: var(--font-body);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
 }
-.encounter-lead-action {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 32px;
-  min-height: 32px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--text);
-  font-size: var(--fs-sm);
-  line-height: 1;
-  cursor: pointer;
-}
-.encounter-lead-action:hover {
-  border-color: var(--accent);
+.encounter-verb.is-act-now {
   color: var(--accent);
-}
-.encounter-lead-action.is-danger:hover {
-  border-color: var(--danger);
-  color: var(--danger);
+  border-color: var(--accent);
 }
 
 /* Séparateur « ordre du tour » entre l'actif et la file en attente. */
@@ -1132,11 +1124,6 @@
   .encounter-drag-handle {
     padding: 0 0.5rem;
     font-size: var(--fs-lg);
-  }
-  .encounter-lead-action {
-    min-width: 40px;
-    min-height: 40px;
-    font-size: var(--fs-md);
   }
 }
 
